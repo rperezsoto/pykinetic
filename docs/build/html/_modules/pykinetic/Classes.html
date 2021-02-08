@@ -1,0 +1,1199 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pykinetic.Classes &#8212; pykinetic  documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pykinetic.Classes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the core classes of the library: Energy, Compound,</span>
+<span class="sd">SymbReaction, Reaction and Chemical System. It also contains the default model</span>
+<span class="sd">for reactions: ElementalStep.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">.InputParse</span> <span class="kn">import</span> <span class="n">ReactionTypes</span>
+
+<div class="viewcode-block" id="OperationError"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.OperationError">[docs]</a><span class="k">class</span> <span class="nc">OperationError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">action</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">              Attempted to </span><span class="si">{}</span><span class="s2"> in a ChemicalSystem that is not updated. Run</span>
+<span class="s2">              the rupdate or the cupdate methods before.</span>
+<span class="s2">              &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OperationError</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">action</span><span class="p">),</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ParseError"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ParseError">[docs]</a><span class="k">class</span> <span class="nc">ParseError</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Energy"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Energy">[docs]</a><span class="k">class</span> <span class="nc">Energy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Objects that represents a number with an energy unit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        Number or object with a __float__ (the default is 0.0).</span>
+<span class="sd">    unit : str</span>
+<span class="sd">        Energy unit in which the value parameter is provided see class variable</span>
+<span class="sd">        _units for the different currently supported units</span>
+<span class="sd">        (the default is &#39;hartree&#39;).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    _units : list</span>
+<span class="sd">        {}</span>
+<span class="sd">    unit</span>
+<span class="sd">    value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_units</span> <span class="o">=</span> <span class="s1">&#39;hartree eV cm-1 kcal/mol kJ/mol J/mol K J Hz&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="vm">__doc__</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_units</span><span class="p">)</span>
+    <span class="n">_Factors</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">27.2107</span><span class="p">,</span> <span class="mf">219474.63</span><span class="p">,</span> <span class="mf">627.503</span><span class="p">,</span> <span class="mf">2625.5</span><span class="p">,</span> <span class="mf">2625500.0</span><span class="p">,</span>
+                <span class="mf">315777.0</span><span class="p">,</span> <span class="mf">43.60E-19</span><span class="p">,</span> <span class="mf">6.57966E15</span><span class="p">)</span>
+    <span class="n">_ConversionFactors</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">val</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_units</span><span class="p">,</span><span class="n">_Factors</span><span class="p">)}</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_value&#39;</span><span class="p">,</span><span class="s1">&#39;_conversion&#39;</span><span class="p">,</span><span class="s1">&#39;_SI&#39;</span><span class="p">,</span><span class="s1">&#39;_unit&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;hartree&#39;</span><span class="p">):</span>
+        <span class="c1"># Assume that value is in the specified unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conversion</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_ConversionFactors</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_SI</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_ConversionFactors</span><span class="p">[</span><span class="s1">&#39;J/mol&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">{0}</span><span class="s1">:</span><span class="si">{1}</span><span class="s1">,</span><span class="si">{2}</span><span class="s1">&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">Val</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_unit</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">])</span>
+    <span class="k">def</span> <span class="fm">__format__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">format_spec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="fm">__format__</span><span class="p">(</span><span class="n">format_spec</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">])</span>
+    <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="fm">__bool__</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conversion</span>
+    <span class="nd">@value</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_conversion</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unit</span>
+    <span class="nd">@unit</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_conversion</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_ConversionFactors</span><span class="p">[</span><span class="n">other</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Unit </span><span class="si">{}</span><span class="s1"> not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unit</span> <span class="o">=</span> <span class="n">other</span>
+
+    <span class="c1"># Emulate Numeric Type</span>
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self + other&quot; operation &#39;&#39;&#39;</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">other</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Out</span>
+    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self - other&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="o">-</span><span class="n">other</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self * other&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Energy*Energy not implemented&#39;</span><span class="p">)</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">*</span><span class="n">other</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Out</span>
+    <span class="k">def</span> <span class="nf">__div__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Defined for compatibility with Python2.7, Implements the</span>
+<span class="sd">        &quot;self/other&quot; behaviour in python 2 &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__truediv__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self / other&quot; operation &#39;&#39;&#39;</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">/</span><span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="o">/</span><span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">return</span> <span class="n">Out</span>
+    <span class="k">def</span> <span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;other + self&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">+</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self - other&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="o">-</span><span class="n">other</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span> <span class="o">*</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;+= other&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="fm">__isub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;-= other&quot; operation &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__iadd__</span><span class="p">(</span><span class="o">-</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="fm">__imul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;*= other&quot; operation &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">*</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="bp">self</span>
+    <span class="k">def</span> <span class="fm">__itruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;/= other&quot; operation &#39;&#39;&#39;</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">/</span> <span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">/</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Out</span>
+
+    <span class="k">def</span> <span class="fm">__neg__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;- self&quot; operation &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">Energy</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__abs__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the abs() function behaviour &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">Energy</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the int() function behaviour &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__float__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the float() function behaviour &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__round__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ndigits</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the round() function behaviour,</span>
+<span class="sd">        Must return an integrer &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">ndigits</span><span class="p">)</span>
+    <span class="c1"># Comparison methods</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self == other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="c1"># Implementation of equality test extracted from math.isclose</span>
+        <span class="n">atol</span> <span class="o">=</span> <span class="mf">1E-6</span>
+        <span class="n">rtol</span> <span class="o">=</span> <span class="mf">1E-9</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">A</span><span class="p">,</span><span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">A</span><span class="p">,</span><span class="n">B</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">other</span>
+        <span class="n">test</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rtol</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="nb">abs</span><span class="p">(</span><span class="n">B</span><span class="p">)),</span><span class="n">atol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">B</span><span class="p">)</span> <span class="o">==</span> <span class="n">test</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Difference between numbers is close to tolerance&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">B</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">test</span>
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self != other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self &lt; other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">_value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">Out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+        <span class="k">return</span> <span class="n">Out</span>
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self &gt; other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">((</span><span class="bp">self</span> <span class="o">&lt;</span> <span class="n">other</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self &lt;= other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">&gt;</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; Implements the &quot;self &gt;= other&quot; behaviour&#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">&lt;</span> <span class="n">other</span>
+
+
+<div class="viewcode-block" id="Energy.as_unit"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Energy.as_unit">[docs]</a>    <span class="k">def</span> <span class="nf">as_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">unit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a string with the value expressed in the unit specified.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        unit : str</span>
+<span class="sd">            A valid string representing an energy unit, see `Energy._units`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">F</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_ConversionFactors</span><span class="p">[</span><span class="n">unit</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Unit </span><span class="si">{}</span><span class="s1"> not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unit</span><span class="p">))</span>
+        <span class="n">Val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_value</span> <span class="o">*</span> <span class="n">F</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Val</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Energy.to_SI"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Energy.to_SI">[docs]</a>    <span class="k">def</span> <span class="nf">to_SI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the value in units of the SI.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_value</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_SI</span></div>
+<div class="viewcode-block" id="Energy.to_unit"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Energy.to_unit">[docs]</a>    <span class="k">def</span> <span class="nf">to_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">unit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Changes the unit of the object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        unit : str</span>
+<span class="sd">            A valid string representing an energy unit, see `Energy._units`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span></div></div>
+
+<div class="viewcode-block" id="Compound"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Compound">[docs]</a><span class="k">class</span> <span class="nc">Compound</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object representation of a chemical species.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    label : str</span>
+<span class="sd">        identifier/name of the species</span>
+<span class="sd">    energy : energy</span>
+<span class="sd">        relative or absolute free energy of the species.</span>
+<span class="sd">    key : int</span>
+<span class="sd">        integrer used to represent the species in the overall chemical system</span>
+<span class="sd">        see `ChemicalSystem` (the default is None).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span><span class="s2">&quot;energy&quot;</span><span class="p">,</span><span class="s2">&quot;key&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">label</span><span class="p">,</span><span class="n">energy</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">out</span>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">))</span>
+    <span class="k">def</span> <span class="fm">__int__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span>
+<div class="viewcode-block" id="Compound.DotGraphRepr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Compound.DotGraphRepr">[docs]</a>    <span class="k">def</span> <span class="nf">DotGraphRepr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string for the construction of a .dot file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">F0</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">{0:}</span><span class="s1">&quot; [label=&quot;</span><span class="si">{0:}</span><span class="s1">&quot;]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F0</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="SymbReaction"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction">[docs]</a><span class="k">class</span> <span class="nc">SymbReaction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An object that serves as connection between the `Reaction` implementation</span>
+<span class="sd">    and the user input reaction. Requires the existence of a dict-like in the</span>
+<span class="sd">    namespace named &#39;ReactionTypes&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Reaction : str</span>
+<span class="sd">        Direct reading of the reaction from the user input</span>
+<span class="sd">    EParse : str</span>
+<span class="sd">        How the energy included in the input should be interpreted, either as</span>
+<span class="sd">        &#39;relative&#39; to the reactants or as the &#39;absolute&#39; energy of the TS</span>
+<span class="sd">        (the default is &quot;relative&quot;).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    symb : str</span>
+<span class="sd">        Symbolic user input representation</span>
+<span class="sd">    energy : float</span>
+<span class="sd">        see `EParse`.</span>
+<span class="sd">    reactants</span>
+<span class="sd">    products</span>
+<span class="sd">    RType : string</span>
+<span class="sd">        string representing the type of reaction</span>
+<span class="sd">    IsUpdated : bool</span>
+<span class="sd">        Marker that informs if the object has been read by a ChemicalSystem</span>
+<span class="sd">        instance. (False on initialization)</span>
+<span class="sd">    EParse</span>
+<span class="sd">    child_reactions : Used to store a link to Reaction objects created from the</span>
+<span class="sd">        information of each SymbReaction (Empty on initialization)</span>
+<span class="sd">    TS : Used to store the energy of the &#39;TS&#39;. (None upon initialization)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Reaction</span><span class="p">,</span><span class="n">EParse</span><span class="o">=</span><span class="s1">&#39;relative&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symb</span> <span class="o">=</span> <span class="n">Reaction</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">EParse</span> <span class="o">=</span> <span class="n">EParse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IsUpdated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Reaction</span><span class="p">,</span><span class="n">ActEnergy</span> <span class="o">=</span> <span class="n">Reaction</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">ActEnergy</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">marker</span> <span class="o">=</span> <span class="s1">&#39; </span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span> <span class="c1"># Auxiliary function for string matching</span>
+        <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">ReactionTypes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">marker</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symb</span><span class="p">:</span>
+                <span class="n">Rs</span><span class="p">,</span><span class="n">Ps</span> <span class="o">=</span> <span class="n">Reaction</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">RType</span> <span class="o">=</span> <span class="n">symbol</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No Reaction Symbol found in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Line</span><span class="p">))</span>
+        <span class="c1"># Separe the different compounds</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">marker</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">Rs</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">if</span> <span class="n">R</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">products</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">Ps</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">if</span> <span class="n">P</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reactants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_products</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symb</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SymbReaction.reset_update"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.reset_update">[docs]</a>    <span class="k">def</span> <span class="nf">reset_update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the state of the object as if it was not Updated with</span>
+<span class="sd">        a Mapper.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">IsUpdated</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reactants</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">products</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_products</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IsUpdated</span> <span class="o">=</span> <span class="kc">False</span></div>
+<div class="viewcode-block" id="SymbReaction.update"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rebuilds the reactants and products lists using a dict-like object.</span>
+<span class="sd">        to fill them with Compound Objects. After it, calculates the TS energy</span>
+<span class="sd">        taking into account the type of Energy Parsing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mapper : Mappable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Map reactants and products</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapper</span><span class="p">[</span><span class="n">R</span><span class="p">]</span> <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapper</span><span class="p">[</span><span class="n">P</span><span class="p">]</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">]</span>
+        <span class="c1"># Now Calculate the TS Energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_TS</span><span class="p">()</span>
+        <span class="c1"># Change State of the object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IsUpdated</span> <span class="o">=</span> <span class="kc">True</span></div>
+<div class="viewcode-block" id="SymbReaction.calc_TS"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.calc_TS">[docs]</a>    <span class="k">def</span> <span class="nf">calc_TS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper for recalculating the TS energy. Updates the value</span>
+<span class="sd">        of the attribute &#39;TS&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">E_Rs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span>
+        <span class="n">E_Ps</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="n">ReactionTypes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">RType</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">EParse</span><span class="p">](</span><span class="n">E_Rs</span><span class="p">,</span><span class="n">E_Ps</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SymbReaction.child"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.child">[docs]</a>    <span class="k">def</span> <span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">child</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a child to the list of child reactions of the Symbolic Reaction.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        child : Reaction</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If the child is not an instance of a Reaction or any Reaction</span>
+<span class="sd">            subclass.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span><span class="n">Reaction</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is not a instance of a Reaction class/subclasss&#39;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">child</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span></div>
+<div class="viewcode-block" id="SymbReaction.reset_childs"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.reset_childs">[docs]</a>    <span class="k">def</span> <span class="nf">reset_childs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Similar to list.pop but returning the whole list of child_reactions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_reactions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="SymbReaction.to_Reaction"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.SymbReaction.to_Reaction">[docs]</a>    <span class="k">def</span> <span class="nf">to_Reaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Model</span><span class="o">=</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of tuples in which each tuple contains the information</span>
+<span class="sd">        needed to initialize each Reaction Instance (See Classes.Reaction).</span>
+<span class="sd">        Compound initialization is left to the ChemicalSystem.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Model : str</span>
+<span class="sd">            Name of the &#39;modeling strategy&#39;/subclass of &#39;Reaction&#39; to use.</span>
+<span class="sd">            (Defaults to &#39;ElementalStep&#39;)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of tuples to unpack for the init method of the Reaction</span>
+<span class="sd">            ( or subclass), i.e. for ElementalStep is:</span>
+<span class="sd">            (compounds, reactants, RType, AE).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">IsUpdated</span><span class="p">:</span>
+            <span class="n">Items</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ReactionTypes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">RType</span><span class="p">][</span><span class="n">Model</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">Items</span></div></div>
+
+<div class="viewcode-block" id="Reaction"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction">[docs]</a><span class="k">class</span> <span class="nc">Reaction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for reactions, contains the Parsers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reactants : list</span>
+<span class="sd">        `Compound` instances that represent the reactants of the reaction</span>
+<span class="sd">    products : list</span>
+<span class="sd">        `Compound` instances that represent the products of the reaction</span>
+<span class="sd">    RType : str</span>
+<span class="sd">        Symbol that represents the connection between reactants and products.</span>
+<span class="sd">        Only used for printing purposes (the default is None).</span>
+<span class="sd">    AE : type</span>
+<span class="sd">        Activation energy of the reaction. Depending on the inheriting class</span>
+<span class="sd">        the type might change between list of Energy instances or Energy</span>
+<span class="sd">        instance (the default is None).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reactants</span>
+<span class="sd">    compounds</span>
+<span class="sd">    key : int</span>
+<span class="sd">        number that identifies the reaction in a `ChemicalSystem` instance.</span>
+<span class="sd">    products</span>
+<span class="sd">    RType</span>
+<span class="sd">    AE</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Models</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reactants</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">RType</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">AE</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">reactants</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">products</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">products</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="mi">0</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">products</span><span class="p">)}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="o">.</span><span class="n">elements</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RType</span> <span class="o">=</span> <span class="n">RType</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AE</span> <span class="o">=</span> <span class="n">AE</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">()])</span>
+        <span class="n">products</span> <span class="o">=</span> <span class="s1">&#39; + &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="o">.</span><span class="n">elements</span><span class="p">()])</span>
+        <span class="n">RType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RType</span>
+        <span class="k">if</span> <span class="n">RType</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">RType</span> <span class="o">=</span> <span class="s1">&#39;?&#39;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="se">\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">RType</span><span class="p">,</span><span class="n">products</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">Rformat</span> <span class="o">=</span> <span class="s1">&#39;&lt; </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> of Type </span><span class="si">{}</span><span class="s1"> with </span><span class="si">{}</span><span class="s1"> reacts and </span><span class="si">{}</span><span class="s1"> products &gt;&#39;</span><span class="o">.</span><span class="n">format</span>
+        <span class="k">return</span> <span class="n">Rformat</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">RType</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span>
+
+<div class="viewcode-block" id="Reaction.Coefficient"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.Coefficient">[docs]</a>    <span class="k">def</span> <span class="nf">Coefficient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the global coefficient of the compound in the reaction if</span>
+<span class="sd">        the compound is in the reaction, otherwise returns a 0</span>
+<span class="sd">        This function acts as a wrapper for readability</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Reaction.set_AE_from"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.set_AE_from">[docs]</a>    <span class="k">def</span> <span class="nf">set_AE_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the Activation Energy of the reaction from some structured data.</span>
+<span class="sd">        By default it will assume that it is accessible as the last item &#39;[-1]&#39;.</span>
+<span class="sd">        This function acts as a wrapper to provide more flexibility when</span>
+<span class="sd">        including new Reaction Models.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : Iterable</span>
+<span class="sd">            Iterable structure in whose end is the Activation energy to set as</span>
+<span class="sd">            value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AE</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Calc_k</span><span class="p">()</span></div>
+<div class="viewcode-block" id="Reaction.Calc_k"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.Calc_k">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">Calc_k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provides the logic to calculate the kinetic constants from</span>
+<span class="sd">        the AE Attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Reaction.Ratelaw"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.Ratelaw">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">Ratelaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the expression of the Ratelaw of the reaction as a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Reaction.PartialDiff"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.PartialDiff">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">PartialDiff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string with the partial derivative of the Ratelaw with</span>
+<span class="sd">        respect to the concentration of `Compound`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Reaction.k_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.k_Expr">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">k_Expr</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string that assigns the value to the constants of the</span>
+<span class="sd">        reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Reaction.from_sreaction"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.from_sreaction">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_sreaction</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span><span class="n">sreaction</span><span class="p">,</span><span class="n">Model</span><span class="o">=</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes Reaction Instances from a SymbReaction Instance.</span>
+<span class="sd">        It chooses the appropiate parser according to the RType of the</span>
+<span class="sd">        SymbReaction instance. Returns a list of Reaction Instances</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        ParseError</span>
+<span class="sd">            If the SymbReaction was not initialized within a ChemicalSystem</span>
+<span class="sd">            Instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">IsUpdated</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> Was not updated by a ChemicalSystem instance&#39;</span>
+            <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sreaction</span><span class="p">))</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">to_Reaction</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="nb">input</span><span class="p">)</span> <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Reaction.ActE2k"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.ActE2k">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ActE2k</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">AE</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms an activation energy to a kinetic constant. Uses TST and</span>
+<span class="sd">        Erying Equation with the transmission coefficient equal to 1. The</span>
+<span class="sd">        partition coefficients correspond to fluid phase.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        T : float</span>
+<span class="sd">            Temperature in Kelvin.</span>
+<span class="sd">        AE : Energy</span>
+<span class="sd">            Activation energy.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a negative activation energy is provided</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kb</span> <span class="o">=</span> <span class="mf">1.38064852E-023</span>
+        <span class="n">h</span> <span class="o">=</span>  <span class="mf">6.62607004E-034</span>
+        <span class="n">R</span> <span class="o">=</span>  <span class="mf">8.31445985</span>
+        <span class="k">if</span> <span class="n">AE</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Negative Activation energy found&#39;</span><span class="p">)</span>
+        <span class="n">AE_SI</span>  <span class="o">=</span> <span class="n">AE</span><span class="o">.</span><span class="n">to_SI</span><span class="p">()</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">kb</span><span class="o">*</span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="n">h</span><span class="p">)</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">AE_SI</span><span class="o">/</span><span class="p">(</span><span class="n">R</span><span class="o">*</span><span class="p">(</span><span class="n">T</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">k</span></div>
+
+<div class="viewcode-block" id="Reaction.Model"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.Reaction.Model">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">Model</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class Decorator for registering different Models for Reactions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">Reaction</span><span class="o">.</span><span class="n">Models</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="k">return</span> <span class="bp">cls</span></div></div>
+
+<div class="viewcode-block" id="ElementalStep"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ElementalStep">[docs]</a><span class="nd">@Reaction</span><span class="o">.</span><span class="n">Model</span>
+<span class="k">class</span> <span class="nc">ElementalStep</span><span class="p">(</span><span class="n">Reaction</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object that represents a reaction as an elemental step.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reactants : list</span>
+<span class="sd">        `Compound` instances that represent the reactants of the reaction</span>
+<span class="sd">    products : list</span>
+<span class="sd">        `Compound` instances that represent the products of the reaction</span>
+<span class="sd">    AE : type</span>
+<span class="sd">        Activation energy of the reaction. Depending on the inheriting class</span>
+<span class="sd">        the type might change between list of Energy instances or Energy</span>
+<span class="sd">        instance (the default is None).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reactants</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">AE</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ElementalStep</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">RType</span><span class="o">=</span><span class="s1">&#39;=&gt;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AE</span> <span class="o">=</span> <span class="n">AE</span>
+<div class="viewcode-block" id="ElementalStep.Calc_k"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ElementalStep.Calc_k">[docs]</a>    <span class="k">def</span> <span class="nf">Calc_k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">Reaction</span><span class="o">.</span><span class="n">ActE2k</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">AE</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; in reaction:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">msg</span><span class="p">,)</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+<div class="viewcode-block" id="ElementalStep.Ratelaw"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ElementalStep.Ratelaw">[docs]</a>    <span class="k">def</span> <span class="nf">Ratelaw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string of the rate law of the reaction as:</span>
+<span class="sd">        &#39;r00 = k00*x[i]*x[j]...x[n]&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">RateLawFormat</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">r</span><span class="si">{0.key:02.0f}</span><span class="s1"> = k</span><span class="si">{0.key:02.0f}</span><span class="s1">*</span><span class="si">{1:}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">()</span> <span class="c1"># Unpack the reactants Counter</span>
+        <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;x[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="p">))</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RateLawFormat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reactants</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ElementalStep.k_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ElementalStep.k_Expr">[docs]</a>    <span class="k">def</span> <span class="nf">k_Expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns the expresion of the kinetic constant with the format</span>
+<span class="sd">        &#39;\\tk00 = 0.0000000000E-0&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">k</span><span class="si">{0.key:02.0f}</span><span class="s1"> = </span><span class="si">{0.k:0.10e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ElementalStep.PartialDiff"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ElementalStep.PartialDiff">[docs]</a>    <span class="k">def</span> <span class="nf">PartialDiff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string with the partial derivative with respect to the</span>
+<span class="sd">        `compound` as:</span>
+<span class="sd">        &#39;k00*(x[compound]**(i-1))*x[j]...x[n]&#39;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        compound : Compound</span>
+<span class="sd">            Compound whose partial differential is to be calculated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            A string with the expresion for the partial differential equation</span>
+<span class="sd">            of the ratelaw with respect to the compound</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span> <span class="ow">or</span> <span class="n">compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;k</span><span class="si">{0.key:02.0f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">key</span><span class="p">):</span>
+            <span class="c1"># Guess the coefficient</span>
+            <span class="n">coef</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="n">R</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">R</span> <span class="o">==</span> <span class="n">compound</span><span class="p">:</span>
+                <span class="n">coef</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="n">R</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">coef</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:0.1f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactants</span><span class="p">[</span><span class="n">R</span><span class="p">]))</span>
+                <span class="n">coef</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="c1"># Handle the string formating</span>
+            <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">elif</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span>  <span class="s1">&#39;x[</span><span class="si">{}</span><span class="s1">]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="s1">&#39;(x[</span><span class="si">{}</span><span class="s1">]**</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="p">,</span><span class="n">coef</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">var</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;*&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="ChemicalSystem"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem">[docs]</a><span class="k">class</span> <span class="nc">ChemicalSystem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents a chemical system, understanding</span>
+<span class="sd">    it as a set of compounds, reactions, barriers and Free Energies</span>
+<span class="sd">    of Reaction, it includes the utilities for human representation</span>
+<span class="sd">    (A + B =&gt; C) and the matrix representation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    T : float</span>
+<span class="sd">        Temperature in K (the default is 298.15).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape : tuple</span>
+<span class="sd">        (n_reactions, n_compounds)</span>
+<span class="sd">    Name2Compound : dict</span>
+<span class="sd">        Mapping used for accesing the compounds by name</span>
+<span class="sd">    compounds : list</span>
+<span class="sd">    reactions : list</span>
+<span class="sd">    sreactions : list</span>
+<span class="sd">        List of human-ish representations of the reactions. Rules and types</span>
+<span class="sd">        are established in InputParse.py</span>
+<span class="sd">    T</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">T</span> <span class="c1"># K</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">()</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">{}</span><span class="s1"> with </span><span class="si">{}</span><span class="s1"> compounds and </span><span class="si">{}</span><span class="s1"> reactions&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span> <span class="ow">or</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span>
+
+    <span class="k">def</span> <span class="nf">_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the shape based on compounds and reactions&quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span><span class="p">,</span><span class="n">m</span>
+
+    <span class="c1"># Methods related with the (c)ompounds attribute</span>
+<div class="viewcode-block" id="ChemicalSystem.cadd"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.cadd">[docs]</a>    <span class="k">def</span> <span class="nf">cadd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">compound</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forcefully adds a compound object and updates the dictionaries</span>
+<span class="sd">        overwriting it if it already existed.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        compound : Compound</span>
+<span class="sd">        update : bool</span>
+<span class="sd">            Whether to update the compounds in the system after adding it or not</span>
+<span class="sd">            (the default is False).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="n">compound</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">[</span><span class="n">compound</span><span class="o">.</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">compound</span>
+        <span class="k">if</span> <span class="n">update</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cupdate</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ChemicalSystem.cextend"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.cextend">[docs]</a>    <span class="k">def</span> <span class="nf">cextend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">new_compounds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extends the self.compounds attr without overwriting.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_compounds : list</span>
+<span class="sd">            list of `Compound` instances</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">C</span> <span class="ow">in</span> <span class="n">new_compounds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">C</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cadd</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cupdate</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ChemicalSystem.compounds_fromFile"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.compounds_fromFile">[docs]</a>    <span class="k">def</span> <span class="nf">compounds_fromFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">FilePath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads compounds from a file and updates the self.compounds as</span>
+<span class="sd">        well as the Dictionaries.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        FilePath : str</span>
+<span class="sd">            A valid filepath with the specifications of the `README`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">FilePath</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">F</span><span class="p">:</span>
+                <span class="n">Line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">Line</span> <span class="ow">or</span> <span class="n">Line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="n">names</span><span class="p">,</span><span class="n">energies</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">A</span><span class="p">)</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="p">[</span><span class="n">Energy</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">energies</span><span class="p">]</span>
+        <span class="n">compounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">Compound</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">E</span><span class="p">)</span> <span class="k">for</span> <span class="n">N</span><span class="p">,</span><span class="n">E</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span><span class="n">energies</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cextend</span><span class="p">(</span><span class="n">compounds</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ChemicalSystem.cupdate"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.cupdate">[docs]</a>    <span class="k">def</span> <span class="nf">cupdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">UpdateDict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the `compounds` attr reinitializing the indices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start : int</span>
+<span class="sd">            Positive integrer that represents the initial index used to</span>
+<span class="sd">            represent compounds. This parameter should only be changed when</span>
+<span class="sd">            writing programs for non-python languages or for including the T</span>
+<span class="sd">            and/or V in the differential equations.(the default is 0)</span>
+<span class="sd">        UpdateDict : bool</span>
+<span class="sd">            if True it will update the `Name2Compound` attr</span>
+<span class="sd">            (the default is False).</span>
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        AssertionError</span>
+<span class="sd">            If the start value is negative the whole</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">compounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">C</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">compounds</span><span class="p">):</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">start</span>
+            <span class="k">if</span> <span class="n">UpdateDict</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ChemicalSystem.check_compounds"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.check_compounds">[docs]</a>    <span class="k">def</span> <span class="nf">check_compounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if all the compounds in the sreactions are &#39;defined&#39; in the</span>
+<span class="sd">        within the ChemicalSystem instance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        set</span>
+<span class="sd">            set with the labels of the compounds not &#39;defined&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">missing_compounds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">_reactants</span><span class="p">,</span><span class="n">reaction</span><span class="o">.</span><span class="n">_products</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">:</span> <span class="c1"># Is this if overhead ?</span>
+                     <span class="n">missing_compounds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">missing_compounds</span></div>
+
+    <span class="c1"># Methods related with the (sr)eactions attribute</span>
+<div class="viewcode-block" id="ChemicalSystem.sradd"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.sradd">[docs]</a>    <span class="k">def</span> <span class="nf">sradd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sreaction</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds and updates the sreaction avoiding duplicates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sreaction : SymbReaction</span>
+<span class="sd">        update : bool</span>
+<span class="sd">            if True it will modify the state of the sreaction Instance</span>
+<span class="sd">            to link the ChemicalSystem compounds with the sreaction</span>
+<span class="sd">            reactants and products (the default is True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sreaction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">update</span><span class="p">:</span>
+                <span class="n">sreaction</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sreaction</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ChemicalSystem.srextend"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.srextend">[docs]</a>    <span class="k">def</span> <span class="nf">srextend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sreactions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lazy Addition, it first adds all the reactions and then</span>
+<span class="sd">        it updates them.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sreactions : list</span>
+<span class="sd">            list of SymbReaction instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">SR</span> <span class="ow">in</span> <span class="n">sreactions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sradd</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srupdate</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ChemicalSystem.srupdate"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.srupdate">[docs]</a>    <span class="k">def</span> <span class="nf">srupdate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the compounds in the sreactions exist and then updates</span>
+<span class="sd">        the Symbreactions of the system.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            Attempted to update the sreactions that contain compounds not</span>
+<span class="sd">            defined in the ChemicalSystem</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">missing_compounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_compounds</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">missing_compounds</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ERROR: The following compounds are not defined&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">missing_compounds</span><span class="p">):</span>
+                <span class="n">msg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="s1">NUMBER&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">SR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">SR</span><span class="o">.</span><span class="n">IsUpdated</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">SR</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">)</span></div>
+
+    <span class="c1"># Methods related with the (r)eactions attribute</span>
+<div class="viewcode-block" id="ChemicalSystem.radd"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.radd">[docs]</a>    <span class="k">def</span> <span class="nf">radd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds and updates a Reaction Instance avoiding duplicates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reaction : Reaction</span>
+<span class="sd">            reaction to add to the system.</span>
+<span class="sd">        update : bool</span>
+<span class="sd">            if True it modifies the state of the Reaction Instance</span>
+<span class="sd">            (the default is True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reaction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">update</span><span class="p">:</span>
+                <span class="n">reaction</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">key</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">reaction</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">reaction</span><span class="o">.</span><span class="n">Calc_k</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ChemicalSystem.rextend"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.rextend">[docs]</a>    <span class="k">def</span> <span class="nf">rextend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reactions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lazy Addition, it first adds all the reactions and then</span>
+<span class="sd">        it updates them</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reactions : list</span>
+<span class="sd">            list of Reaction instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">reactions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">radd</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rupdate</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ChemicalSystem.rupdate"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.rupdate">[docs]</a>    <span class="k">def</span> <span class="nf">rupdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the `reactions` attr updating the key, T and k of each</span>
+<span class="sd">        Reaction Instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start : int</span>
+<span class="sd">            Initial index (the default is 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reactions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">R</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reactions</span><span class="p">):</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">start</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">Calc_k</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+<div class="viewcode-block" id="ChemicalSystem.reactions_fromFile"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.reactions_fromFile">[docs]</a>    <span class="k">def</span> <span class="nf">reactions_fromFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">FilePath</span><span class="p">,</span><span class="n">EParse</span><span class="p">,</span><span class="n">Model</span><span class="o">=</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the reactions from the file and enforces that the</span>
+<span class="sd">        Energy Parsing mode is either &#39;relative&#39; or &#39;absolute&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        FilePath : str</span>
+<span class="sd">            A valid filepath with the specifications of the `README`.</span>
+<span class="sd">        EParse : str</span>
+<span class="sd">            How the energy provided with the reaction should be considered</span>
+<span class="sd">            either &#39;relative&#39; to reactants or the TS &#39;absolute&#39; energy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">EParse</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span> <span class="ow">or</span> <span class="n">EParse</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;relative&#39;</span>
+        <span class="n">sreactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">FilePath</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">F</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">sreactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SymbReaction</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="n">EParse</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srextend</span><span class="p">(</span><span class="n">sreactions</span><span class="p">)</span>
+        <span class="n">ReactionModel</span> <span class="o">=</span> <span class="n">Reaction</span><span class="o">.</span><span class="n">Models</span><span class="p">[</span><span class="n">Model</span><span class="p">]</span>
+        <span class="n">reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Use self.sreactions to avoid the presence of duplicates in sreactions</span>
+        <span class="k">for</span> <span class="n">SR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="n">new_reactions</span> <span class="o">=</span> <span class="n">ReactionModel</span><span class="o">.</span><span class="n">from_sreaction</span><span class="p">(</span><span class="n">SR</span><span class="p">,</span><span class="n">Model</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">new_reactions</span><span class="p">:</span>
+                <span class="n">reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+                <span class="n">SR</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rextend</span><span class="p">(</span><span class="n">reactions</span><span class="p">)</span></div>
+
+    <span class="c1"># Utilities</span>
+<div class="viewcode-block" id="ChemicalSystem.RxCMatrix"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.RxCMatrix">[docs]</a>    <span class="k">def</span> <span class="nf">RxCMatrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a matrix that represents the system in which per each</span>
+<span class="sd">        Matrix[i,j] corresponds to the coefficient of the j compound in the</span>
+<span class="sd">        i reaction. Possitive if its a product and negative if its a reactant.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.array</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        OperationError</span>
+<span class="sd">            If the ChemicalSystem is not Updated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">OperationError</span><span class="p">(</span><span class="s1">&#39;calculate the RxCMatrix&#39;</span><span class="p">)</span>
+        <span class="n">RxCMat</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">reaction</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">:</span> <span class="c1"># For each Reactant</span>
+                <span class="n">RxCMat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">1.0</span>
+            <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">:</span> <span class="c1"># for each Product</span>
+                <span class="n">RxCMat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">P</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+        <span class="k">return</span> <span class="n">RxCMat</span></div>
+
+    <span class="c1"># Main API</span>
+<div class="viewcode-block" id="ChemicalSystem.k_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.k_Expr">[docs]</a>    <span class="k">def</span> <span class="nf">k_Expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of lines with the expressions of the constants for all</span>
+<span class="sd">        the reactions in the ChemicalSystem.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        OperationError</span>
+<span class="sd">            If the ChemicalSystem is not Updated</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">OperationError</span><span class="p">(</span><span class="s1">&#39;obtain the reaction constants expressions&#39;</span><span class="p">)</span>
+        <span class="n">ks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">ks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">k_Expr</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">ks</span></div>
+<div class="viewcode-block" id="ChemicalSystem.Rates_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.Rates_Expr">[docs]</a>    <span class="k">def</span> <span class="nf">Rates_Expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of lines with the expressions of the rates for all</span>
+<span class="sd">        the reactions in the ChemicalSystem.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        OperationError</span>
+<span class="sd">            If the ChemicalSystem is not Updated</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">OperationError</span><span class="p">(</span><span class="s1">&#39;obtain the rates expressions&#39;</span><span class="p">)</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">rates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">Ratelaw</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">rates</span></div>
+<div class="viewcode-block" id="ChemicalSystem.MassBalance"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.MassBalance">[docs]</a>    <span class="k">def</span> <span class="nf">MassBalance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a string with the expresion for the mass balance of</span>
+<span class="sd">        a compound in the Chemical system. Assumes a batch reactor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        compound : Compound</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">OFormat</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">dxdt[</span><span class="si">{}</span><span class="s1">] = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">)</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">coef</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">Coefficient</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">reaction</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">R_Expr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">r</span><span class="si">{1.key:02.0f}</span><span class="s1">&#39;</span>
+                <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span>
+                <span class="k">elif</span> <span class="n">coef</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:+0.1f}</span><span class="s1">*&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+                <span class="n">rates</span> <span class="o">+=</span> <span class="n">R_Expr</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Aux</span><span class="p">,</span><span class="n">reaction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rates</span><span class="p">:</span>
+            <span class="n">rates</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+        <span class="k">return</span> <span class="n">OFormat</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">key</span><span class="p">,</span><span class="n">rates</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ChemicalSystem.MassBalances_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.MassBalances_Expr">[docs]</a>    <span class="k">def</span> <span class="nf">MassBalances_Expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of lines with the expressions of the MassBalances for</span>
+<span class="sd">        all the reactions in the ChemicalSystem.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        OperationError</span>
+<span class="sd">            If the ChemicalSystem is not Updated</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">OperationError</span><span class="p">(</span><span class="s1">&#39;obtain the MassBalances expressions&#39;</span><span class="p">)</span>
+        <span class="n">MassBalances</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+            <span class="n">MassBalances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MassBalance</span><span class="p">(</span><span class="n">compound</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">MassBalances</span></div>
+<div class="viewcode-block" id="ChemicalSystem.Jacobian_Expr"><a class="viewcode-back" href="../../pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem.Jacobian_Expr">[docs]</a>    <span class="k">def</span> <span class="nf">Jacobian_Expr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of lines with the expressions of the partial</span>
+<span class="sd">        derivatives for all the compounds in all the reactions of the</span>
+<span class="sd">        ChemicalSystem.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        OperationError</span>
+<span class="sd">            If the ChemicalSystem is not Updated</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">OperationError</span><span class="p">(</span><span class="s1">&#39;obtain the Jacobian expressions&#39;</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">LineStart</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">Jac[</span><span class="si">{0.key}</span><span class="s1">,</span><span class="si">{1.key}</span><span class="s1">] = &#39;</span>
+        <span class="k">for</span> <span class="n">compound1</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span> <span class="c1"># for each MassBalance</span>
+            <span class="k">for</span> <span class="n">compound2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span> <span class="c1"># for each Compound</span>
+                <span class="n">exprs_old</span> <span class="o">=</span> <span class="n">exprs</span> <span class="o">=</span> <span class="n">LineStart</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">compound1</span><span class="p">,</span><span class="n">compound2</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span> <span class="c1"># for each reaction</span>
+                    <span class="n">coef</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">Coefficient</span><span class="p">(</span><span class="n">compound1</span><span class="p">)</span>
+                    <span class="n">Partial</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># Get Sign</span>
+                    <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">coef_Expr</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span>
+                    <span class="k">elif</span> <span class="n">coef</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">coef_Expr</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">coef_Expr</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:+0.1f}</span><span class="s1">*&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">compound2</span> <span class="ow">in</span> <span class="n">reaction</span><span class="p">:</span>
+                        <span class="n">Partial</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">PartialDiff</span><span class="p">(</span><span class="n">compound2</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">Partial</span><span class="p">:</span>
+                            <span class="n">exprs</span> <span class="o">+=</span> <span class="n">coef_Expr</span> <span class="o">+</span> <span class="n">Partial</span>
+                <span class="k">if</span> <span class="n">exprs_old</span> <span class="o">!=</span> <span class="n">exprs</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exprs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Raul Perez-Soto.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

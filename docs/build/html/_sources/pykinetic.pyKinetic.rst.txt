@@ -1,0 +1,7 @@
+pykinetic.pyKinetic module
+==========================
+
+.. automodule:: pykinetic.pyKinetic
+   :members:
+   :undoc-members:
+   :show-inheritance:

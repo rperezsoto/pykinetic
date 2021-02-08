@@ -1,0 +1,31 @@
+# Calculation handling a maximum matrix size
+if species*tfin/dt > MaxMem:
+	tfin2 = MaxMem*dt/species
+	ti = 0
+else:
+	tfin2 = tfin
+	ti = 0
+t = np.arange(0,tfin2+dt,dt)
+xini2 = xini
+# Time indexes and Out predefinition
+Out_index = []
+t_old = -(report_t+1.0)
+for i in range(len(t)):
+	if t[i] - t_old >= report_t:
+		Out_index.append(i)
+		t_old = t[i]
+Out = ['' for i in Out_index]
+while ti+tfin2 <= tfin:
+	print('Current interval: [{{}},{{}}] s'.format(ti,ti+tfin2))
+	x = odeint(f,xini2,t,Dfun=Jacobian,{0.Conv_Params})
+	# Output Writing
+	for j,i in enumerate(Out_index):
+		Row = '\t'.join(map(str,x[i,:].tolist()))
+		Out[j] = '{{}}\t{{}}'.format(ti+t[i],Row)
+		t_old = t[i]
+	with open('{{}}.txt'.format(OFile),'a') as F:
+		F.write('\n'.join(Out))
+		F.write('\n')
+	xini2 = x[-1,:]
+	ti += tfin2
+#

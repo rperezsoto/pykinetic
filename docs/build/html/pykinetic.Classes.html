@@ -1,0 +1,937 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pykinetic.Classes module &#8212; pykinetic  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pykinetic  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pykinetic.Classes">
+<span id="pykinetic-classes-module"></span><h1>pykinetic.Classes module<a class="headerlink" href="#module-pykinetic.Classes" title="Permalink to this headline">¶</a></h1>
+<p>This module contains the core classes of the library: Energy, Compound,
+SymbReaction, Reaction and Chemical System. It also contains the default model
+for reactions: ElementalStep.</p>
+<dl class="py class">
+<dt id="pykinetic.Classes.ChemicalSystem">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">ChemicalSystem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">298.15</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>This class represents a chemical system, understanding
+it as a set of compounds, reactions, barriers and Free Energies
+of Reaction, it includes the utilities for human representation
+(A + B =&gt; C) and the matrix representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>T</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Temperature in K (the default is 298.15).</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.shape">
+<code class="sig-name descname">shape</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>(n_reactions, n_compounds)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.Name2Compound">
+<code class="sig-name descname">Name2Compound</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.Name2Compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mapping used for accesing the compounds by name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.compounds">
+<code class="sig-name descname">compounds</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.compounds" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.reactions">
+<code class="sig-name descname">reactions</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.reactions" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.sreactions">
+<code class="sig-name descname">sreactions</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.sreactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of human-ish representations of the reactions. Rules and types
+are established in InputParse.py</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.ChemicalSystem.T">
+<code class="sig-name descname">T</code><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.T" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.Jacobian_Expr">
+<code class="sig-name descname">Jacobian_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.Jacobian_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.Jacobian_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lines with the expressions of the partial
+derivatives for all the compounds in all the reactions of the
+ChemicalSystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.OperationError" title="pykinetic.Classes.OperationError"><strong>OperationError</strong></a> – If the ChemicalSystem is not Updated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.MassBalance">
+<code class="sig-name descname">MassBalance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compound</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.MassBalance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.MassBalance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string with the expresion for the mass balance of
+a compound in the Chemical system. Assumes a batch reactor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>compound</strong> (<a class="reference internal" href="#pykinetic.Classes.Compound" title="pykinetic.Classes.Compound"><em>Compound</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.MassBalances_Expr">
+<code class="sig-name descname">MassBalances_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.MassBalances_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.MassBalances_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lines with the expressions of the MassBalances for
+all the reactions in the ChemicalSystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.OperationError" title="pykinetic.Classes.OperationError"><strong>OperationError</strong></a> – If the ChemicalSystem is not Updated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.Rates_Expr">
+<code class="sig-name descname">Rates_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.Rates_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.Rates_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lines with the expressions of the rates for all
+the reactions in the ChemicalSystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.OperationError" title="pykinetic.Classes.OperationError"><strong>OperationError</strong></a> – If the ChemicalSystem is not Updated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.RxCMatrix">
+<code class="sig-name descname">RxCMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.RxCMatrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.RxCMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a matrix that represents the system in which per each
+Matrix[i,j] corresponds to the coefficient of the j compound in the
+i reaction. Possitive if its a product and negative if its a reactant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.OperationError" title="pykinetic.Classes.OperationError"><strong>OperationError</strong></a> – If the ChemicalSystem is not Updated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.cadd">
+<code class="sig-name descname">cadd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compound</span></em>, <em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.cadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.cadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forcefully adds a compound object and updates the dictionaries
+overwriting it if it already existed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compound</strong> (<a class="reference internal" href="#pykinetic.Classes.Compound" title="pykinetic.Classes.Compound"><em>Compound</em></a>) – </p></li>
+<li><p><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to update the compounds in the system after adding it or not
+(the default is False).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.cextend">
+<code class="sig-name descname">cextend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_compounds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.cextend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.cextend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends the self.compounds attr without overwriting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>new_compounds</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – list of <cite>Compound</cite> instances</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.check_compounds">
+<code class="sig-name descname">check_compounds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.check_compounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.check_compounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if all the compounds in the sreactions are ‘defined’ in the
+within the ChemicalSystem instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>set with the labels of the compounds not ‘defined’</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.8)">set</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.compounds_fromFile">
+<code class="sig-name descname">compounds_fromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">FilePath</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.compounds_fromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.compounds_fromFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads compounds from a file and updates the self.compounds as
+well as the Dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>FilePath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A valid filepath with the specifications of the <cite>README</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.cupdate">
+<code class="sig-name descname">cupdate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">UpdateDict</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.cupdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.cupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the <cite>compounds</cite> attr reinitializing the indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Positive integrer that represents the initial index used to
+represent compounds. This parameter should only be changed when
+writing programs for non-python languages or for including the T
+and/or V in the differential equations.(the default is 0)</p></li>
+<li><p><strong>UpdateDict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True it will update the <cite>Name2Compound</cite> attr
+(the default is False).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AssertionError" title="(in Python v3.8)"><strong>AssertionError</strong></a> – If the start value is negative the whole</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.k_Expr">
+<code class="sig-name descname">k_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.k_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.k_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lines with the expressions of the constants for all
+the reactions in the ChemicalSystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.OperationError" title="pykinetic.Classes.OperationError"><strong>OperationError</strong></a> – If the ChemicalSystem is not Updated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.radd">
+<code class="sig-name descname">radd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reaction</span></em>, <em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.radd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.radd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds and updates a Reaction Instance avoiding duplicates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reaction</strong> (<a class="reference internal" href="#pykinetic.Classes.Reaction" title="pykinetic.Classes.Reaction"><em>Reaction</em></a>) – reaction to add to the system.</p></li>
+<li><p><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True it modifies the state of the Reaction Instance
+(the default is True).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.reactions_fromFile">
+<code class="sig-name descname">reactions_fromFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">FilePath</span></em>, <em class="sig-param"><span class="n">EParse</span></em>, <em class="sig-param"><span class="n">Model</span><span class="o">=</span><span class="default_value">'ElementalStep'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.reactions_fromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.reactions_fromFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the reactions from the file and enforces that the
+Energy Parsing mode is either ‘relative’ or ‘absolute’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>FilePath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A valid filepath with the specifications of the <cite>README</cite>.</p></li>
+<li><p><strong>EParse</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – How the energy provided with the reaction should be considered
+either ‘relative’ to reactants or the TS ‘absolute’ energy</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.rextend">
+<code class="sig-name descname">rextend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactions</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.rextend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.rextend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lazy Addition, it first adds all the reactions and then
+it updates them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>reactions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – list of Reaction instances</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.rupdate">
+<code class="sig-name descname">rupdate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.rupdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.rupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the <cite>reactions</cite> attr updating the key, T and k of each
+Reaction Instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Initial index (the default is 0).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.sradd">
+<code class="sig-name descname">sradd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sreaction</span></em>, <em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.sradd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.sradd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds and updates the sreaction avoiding duplicates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sreaction</strong> (<a class="reference internal" href="#pykinetic.Classes.SymbReaction" title="pykinetic.Classes.SymbReaction"><em>SymbReaction</em></a>) – </p></li>
+<li><p><strong>update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if True it will modify the state of the sreaction Instance
+to link the ChemicalSystem compounds with the sreaction
+reactants and products (the default is True).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.srextend">
+<code class="sig-name descname">srextend</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sreactions</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.srextend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.srextend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lazy Addition, it first adds all the reactions and then
+it updates them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sreactions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – list of SymbReaction instances</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ChemicalSystem.srupdate">
+<code class="sig-name descname">srupdate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ChemicalSystem.srupdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ChemicalSystem.srupdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the compounds in the sreactions exist and then updates
+the Symbreactions of the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.8)"><strong>RuntimeError</strong></a> – Attempted to update the sreactions that contain compounds not
+    defined in the ChemicalSystem</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Classes.Compound">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">Compound</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">energy</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Compound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Compound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Object representation of a chemical species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – identifier/name of the species</p></li>
+<li><p><strong>energy</strong> (<em>energy</em>) – relative or absolute free energy of the species.</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – integrer used to represent the species in the overall chemical system
+see <cite>ChemicalSystem</cite> (the default is None).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykinetic.Classes.Compound.DotGraphRepr">
+<code class="sig-name descname">DotGraphRepr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Compound.DotGraphRepr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Compound.DotGraphRepr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string for the construction of a .dot file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Compound.energy">
+<code class="sig-name descname">energy</code><a class="headerlink" href="#pykinetic.Classes.Compound.energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Compound.key">
+<code class="sig-name descname">key</code><a class="headerlink" href="#pykinetic.Classes.Compound.key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Compound.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#pykinetic.Classes.Compound.label" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Classes.ElementalStep">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">ElementalStep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span></em>, <em class="sig-param"><span class="n">AE</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ElementalStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ElementalStep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pykinetic.Classes.Reaction" title="pykinetic.Classes.Reaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">pykinetic.Classes.Reaction</span></code></a></p>
+<p>Object that represents a reaction as an elemental step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reactants</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – <cite>Compound</cite> instances that represent the reactants of the reaction</p></li>
+<li><p><strong>products</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – <cite>Compound</cite> instances that represent the products of the reaction</p></li>
+<li><p><strong>AE</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – Activation energy of the reaction. Depending on the inheriting class
+the type might change between list of Energy instances or Energy
+instance (the default is None).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykinetic.Classes.ElementalStep.Calc_k">
+<code class="sig-name descname">Calc_k</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ElementalStep.Calc_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ElementalStep.Calc_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the logic to calculate the kinetic constants from
+the AE Attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ElementalStep.PartialDiff">
+<code class="sig-name descname">PartialDiff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compound</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ElementalStep.PartialDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ElementalStep.PartialDiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string with the partial derivative with respect to the
+<cite>compound</cite> as:
+‘k00*(x[compound]**(i-1))*x[j]…x[n]’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>compound</strong> (<a class="reference internal" href="#pykinetic.Classes.Compound" title="pykinetic.Classes.Compound"><em>Compound</em></a>) – Compound whose partial differential is to be calculated.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string with the expresion for the partial differential equation
+of the ratelaw with respect to the compound</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ElementalStep.Ratelaw">
+<code class="sig-name descname">Ratelaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ElementalStep.Ratelaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ElementalStep.Ratelaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string of the rate law of the reaction as:
+‘r00 = k00*x[i]*x[j]…x[n]’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.ElementalStep.k_Expr">
+<code class="sig-name descname">k_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#ElementalStep.k_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ElementalStep.k_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the expresion of the kinetic constant with the format
+‘tk00 = 0.0000000000E-0’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Classes.Energy">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">Energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">unit</span><span class="o">=</span><span class="default_value">'hartree'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Objects that represents a number with an energy unit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Number or object with a __float__ (the default is 0.0).</p></li>
+<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Energy unit in which the value parameter is provided see class variable
+_units for the different currently supported units
+(the default is ‘hartree’).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Energy._units">
+<code class="sig-name descname">_units</code><a class="headerlink" href="#pykinetic.Classes.Energy._units" title="Permalink to this definition">¶</a></dt>
+<dd><p>[‘hartree’, ‘eV’, ‘cm-1’, ‘kcal/mol’, ‘kJ/mol’, ‘J/mol’, ‘K’, ‘J’, ‘Hz’]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Energy.unit">
+<code class="sig-name descname">unit</code><a class="headerlink" href="#pykinetic.Classes.Energy.unit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Energy.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#pykinetic.Classes.Energy.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Energy.as_unit">
+<code class="sig-name descname">as_unit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">unit</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Energy.as_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Energy.as_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string with the value expressed in the unit specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A valid string representing an energy unit, see <cite>Energy._units</cite>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Energy.to_SI">
+<code class="sig-name descname">to_SI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Energy.to_SI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Energy.to_SI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value in units of the SI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Energy.to_unit">
+<code class="sig-name descname">to_unit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">unit</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Energy.to_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Energy.to_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the unit of the object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A valid string representing an energy unit, see <cite>Energy._units</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id0">
+<em class="property">property </em><code class="sig-name descname">unit</code><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="id1">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt id="pykinetic.Classes.OperationError">
+<em class="property">exception </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">OperationError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#OperationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.OperationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="pykinetic.Classes.ParseError">
+<em class="property">exception </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">ParseError</code><a class="reference internal" href="_modules/pykinetic/Classes.html#ParseError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.ParseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#AttributeError" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AttributeError</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Classes.Reaction">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">Reaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reactants</span></em>, <em class="sig-param"><span class="n">products</span></em>, <em class="sig-param"><span class="n">RType</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">AE</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Base class for reactions, contains the Parsers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reactants</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – <cite>Compound</cite> instances that represent the reactants of the reaction</p></li>
+<li><p><strong>products</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – <cite>Compound</cite> instances that represent the products of the reaction</p></li>
+<li><p><strong>RType</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Symbol that represents the connection between reactants and products.
+Only used for printing purposes (the default is None).</p></li>
+<li><p><strong>AE</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – Activation energy of the reaction. Depending on the inheriting class
+the type might change between list of Energy instances or Energy
+instance (the default is None).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.reactants">
+<code class="sig-name descname">reactants</code><a class="headerlink" href="#pykinetic.Classes.Reaction.reactants" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.compounds">
+<code class="sig-name descname">compounds</code><a class="headerlink" href="#pykinetic.Classes.Reaction.compounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.key">
+<code class="sig-name descname">key</code><a class="headerlink" href="#pykinetic.Classes.Reaction.key" title="Permalink to this definition">¶</a></dt>
+<dd><p>number that identifies the reaction in a <cite>ChemicalSystem</cite> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.products">
+<code class="sig-name descname">products</code><a class="headerlink" href="#pykinetic.Classes.Reaction.products" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.RType">
+<code class="sig-name descname">RType</code><a class="headerlink" href="#pykinetic.Classes.Reaction.RType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.AE">
+<code class="sig-name descname">AE</code><a class="headerlink" href="#pykinetic.Classes.Reaction.AE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.ActE2k">
+<em class="property">static </em><code class="sig-name descname">ActE2k</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">T</span></em>, <em class="sig-param"><span class="n">AE</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.ActE2k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.ActE2k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms an activation energy to a kinetic constant. Uses TST and
+Erying Equation with the transmission coefficient equal to 1. The
+partition coefficients correspond to fluid phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Temperature in Kelvin.</p></li>
+<li><p><strong>AE</strong> (<a class="reference internal" href="#pykinetic.Classes.Energy" title="pykinetic.Classes.Energy"><em>Energy</em></a>) – Activation energy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.8)"><strong>ValueError</strong></a> – If a negative activation energy is provided</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.Calc_k">
+<em class="property">abstract </em><code class="sig-name descname">Calc_k</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.Calc_k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.Calc_k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the logic to calculate the kinetic constants from
+the AE Attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.Coefficient">
+<code class="sig-name descname">Coefficient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compound</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.Coefficient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.Coefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the global coefficient of the compound in the reaction if
+the compound is in the reaction, otherwise returns a 0
+This function acts as a wrapper for readability</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.Model">
+<em class="property">static </em><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class Decorator for registering different Models for Reactions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.Reaction.Models">
+<code class="sig-name descname">Models</code><em class="property"> = {'ElementalStep': &lt;class 'pykinetic.Classes.ElementalStep'&gt;}</em><a class="headerlink" href="#pykinetic.Classes.Reaction.Models" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.PartialDiff">
+<em class="property">abstract </em><code class="sig-name descname">PartialDiff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Compound</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.PartialDiff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.PartialDiff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string with the partial derivative of the Ratelaw with
+respect to the concentration of <cite>Compound</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.Ratelaw">
+<em class="property">abstract </em><code class="sig-name descname">Ratelaw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.Ratelaw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.Ratelaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the expression of the Ratelaw of the reaction as a string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.from_sreaction">
+<em class="property">classmethod </em><code class="sig-name descname">from_sreaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sreaction</span></em>, <em class="sig-param"><span class="n">Model</span><span class="o">=</span><span class="default_value">'ElementalStep'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.from_sreaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.from_sreaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes Reaction Instances from a SymbReaction Instance.
+It chooses the appropiate parser according to the RType of the
+SymbReaction instance. Returns a list of Reaction Instances</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.Classes.ParseError" title="pykinetic.Classes.ParseError"><strong>ParseError</strong></a> – If the SymbReaction was not initialized within a ChemicalSystem
+    Instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.k_Expr">
+<em class="property">abstract </em><code class="sig-name descname">k_Expr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.k_Expr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.k_Expr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a string that assigns the value to the constants of the
+reaction</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.Reaction.set_AE_from">
+<code class="sig-name descname">set_AE_from</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#Reaction.set_AE_from"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.Reaction.set_AE_from" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the Activation Energy of the reaction from some structured data.
+By default it will assume that it is accessible as the last item ‘[-1]’.
+This function acts as a wrapper to provide more flexibility when
+including new Reaction Models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<em>Iterable</em>) – Iterable structure in whose end is the Activation energy to set as
+value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Classes.SymbReaction">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Classes.</code><code class="sig-name descname">SymbReaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Reaction</span></em>, <em class="sig-param"><span class="n">EParse</span><span class="o">=</span><span class="default_value">'relative'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>An object that serves as connection between the <cite>Reaction</cite> implementation
+and the user input reaction. Requires the existence of a dict-like in the
+namespace named ‘ReactionTypes’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Reaction</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Direct reading of the reaction from the user input</p></li>
+<li><p><strong>EParse</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – How the energy included in the input should be interpreted, either as
+‘relative’ to the reactants or as the ‘absolute’ energy of the TS
+(the default is “relative”).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.symb">
+<code class="sig-name descname">symb</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.symb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Symbolic user input representation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.energy">
+<code class="sig-name descname">energy</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>see <cite>EParse</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.reactants">
+<code class="sig-name descname">reactants</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.reactants" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.products">
+<code class="sig-name descname">products</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.products" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.RType">
+<code class="sig-name descname">RType</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.RType" title="Permalink to this definition">¶</a></dt>
+<dd><p>string representing the type of reaction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.IsUpdated">
+<code class="sig-name descname">IsUpdated</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.IsUpdated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marker that informs if the object has been read by a ChemicalSystem
+instance. (False on initialization)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.EParse">
+<code class="sig-name descname">EParse</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.EParse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.child_reactions">
+<code class="sig-name descname">child_reactions</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.child_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>information of each SymbReaction (Empty on initialization)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Used to store a link to Reaction objects created from the</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Classes.SymbReaction.TS">
+<code class="sig-name descname">TS</code><a class="headerlink" href="#pykinetic.Classes.SymbReaction.TS" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Used to store the energy of the ‘TS’. (None upon initialization)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.calc_TS">
+<code class="sig-name descname">calc_TS</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.calc_TS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.calc_TS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for recalculating the TS energy. Updates the value
+of the attribute ‘TS’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.child">
+<code class="sig-name descname">child</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">child</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.child"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.child" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a child to the list of child reactions of the Symbolic Reaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>child</strong> (<a class="reference internal" href="#pykinetic.Classes.Reaction" title="pykinetic.Classes.Reaction"><em>Reaction</em></a>) – </p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.8)"><strong>TypeError</strong></a> – If the child is not an instance of a Reaction or any Reaction
+    subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.reset_childs">
+<code class="sig-name descname">reset_childs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.reset_childs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.reset_childs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to list.pop but returning the whole list of child_reactions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.reset_update">
+<code class="sig-name descname">reset_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.reset_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.reset_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets the state of the object as if it was not Updated with
+a Mapper.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.to_Reaction">
+<code class="sig-name descname">to_Reaction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Model</span><span class="o">=</span><span class="default_value">'ElementalStep'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.to_Reaction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.to_Reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of tuples in which each tuple contains the information
+needed to initialize each Reaction Instance (See Classes.Reaction).
+Compound initialization is left to the ChemicalSystem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>Model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name of the ‘modeling strategy’/subclass of ‘Reaction’ to use.
+(Defaults to ‘ElementalStep’)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of tuples to unpack for the init method of the Reaction
+( or subclass), i.e. for ElementalStep is:
+(compounds, reactants, RType, AE).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Classes.SymbReaction.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mapper</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Classes.html#SymbReaction.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Classes.SymbReaction.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rebuilds the reactants and products lists using a dict-like object.
+to fill them with Compound Objects. After it, calculates the TS energy
+taking into account the type of Energy Parsing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mapper</strong> (<em>Mappable</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pykinetic.Classes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pykinetic  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Raul Perez-Soto.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

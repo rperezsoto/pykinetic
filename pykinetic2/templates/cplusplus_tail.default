@@ -1,0 +1,27 @@
+//[ublas_main
+int main()
+{{
+    outfile.open("{0.OFileName}", ofstream::out);
+	// time parameters
+    double tini,tend,tstep,trep;
+    tini = 0.0;
+    tend = {0.Sim_Params[tfin]}; // Final time, s
+    tstep = {0.Sim_Params[dt]}; // Timestep, s
+	trep = {0.Sim_Params[report_t]}; // s
+
+	// Convergence Parameters
+	double atol, rtol;
+	{0.Conv_Params}
+
+	state_type x({0.species});
+	for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){{
+        x[*i] = 0.0;
+    }}
+	{0.Sim_Params[Conc_ini]}
+    typedef runge_kutta_dopri5< state_type > stepper_type;
+    integrate_adaptive(make_controlled(atol, rtol, stepper_type()), model , x ,
+                     tini , tend , tstep , write_cout );
+    outfile.close();
+    return 0;
+}}
+//]

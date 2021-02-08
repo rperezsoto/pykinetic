@@ -1,0 +1,450 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pykinetic.Utils &#8212; pykinetic  documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pykinetic.Utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains several utilities grouped by usage:</span>
+
+<span class="sd">   *   General utilities.</span>
+<span class="sd">   *   The pykinetic Utilities are Classes and functions without chemical</span>
+<span class="sd">       meaning but necessary to write out the classes of the &#39;pyKinetic&#39; module.</span>
+<span class="sd">   *   Class Specializations. Subclasses of the ChemicalSystem used for the</span>
+<span class="sd">       scripts pykinetic-scan and pykinetic-scanTS. Note that New Models should</span>
+<span class="sd">       not be place here.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+
+<span class="kn">from</span> <span class="nn">.Classes</span> <span class="kn">import</span> <span class="n">ChemicalSystem</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Energy</span>
+
+<span class="c1">############################ General Utilities #################################</span>
+
+<div class="viewcode-block" id="mkdir_p"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.mkdir_p">[docs]</a><span class="k">def</span> <span class="nf">mkdir_p</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Same functionality as mkdir -p in bash console</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Copied from stackoverflow:</span>
+    <span class="c1"># stackoverflow.com/questions/600268/mkdir-p-functionality-in-python</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># Python &gt;2.5</span>
+        <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span></div>
+
+<span class="c1">########################## Pykinetic Utilities #################################</span>
+
+<div class="viewcode-block" id="FileTemplate"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate">[docs]</a><span class="k">class</span> <span class="nc">FileTemplate</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object that represents the script that when executed runs the</span>
+<span class="sd">    simulation. The parameters employed to construct the object are</span>
+<span class="sd">    parsed and converted to strings.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Header : str</span>
+<span class="sd">        File template where the Head of the script is located</span>
+<span class="sd">        (the default is templates/Header.txt).</span>
+<span class="sd">    Tail : str</span>
+<span class="sd">        File template where the Tail of the script is located. Contains the code</span>
+<span class="sd">        for the integration and the logic for the output generation (the default</span>
+<span class="sd">        is templates/Tail.txt).</span>
+<span class="sd">    Function : str</span>
+<span class="sd">        File template where the function format of the script is located</span>
+<span class="sd">        (the default is templates/Function.txt).</span>
+<span class="sd">    Jacobian : str</span>
+<span class="sd">        File template where the format of the Jacobian of the script is located</span>
+<span class="sd">        (the default is templates/Jacobian.txt).</span>
+<span class="sd">    Sim_Params : str</span>
+<span class="sd">        File with the values for the parameters of the Simulation</span>
+<span class="sd">        (the default is templates/Sim_Params.txt).</span>
+<span class="sd">    Conv_Params : str</span>
+<span class="sd">        File with the values for the convergence parameters of the numerical</span>
+<span class="sd">        solver (the default is templates/Conv_Params.txt).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    OFileName</span>
+<span class="sd">    end</span>
+<span class="sd">    T</span>
+<span class="sd">    ks</span>
+<span class="sd">    species</span>
+<span class="sd">    massbalances</span>
+<span class="sd">    rates</span>
+<span class="sd">    partials</span>
+<span class="sd">    Header</span>
+<span class="sd">    Tail</span>
+<span class="sd">    Function</span>
+<span class="sd">    Jacobian</span>
+<span class="sd">    Sim_Params</span>
+<span class="sd">    Conv_Params</span>
+<span class="sd">    txt</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Jacobian</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">Sim_Params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Conv_Params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Tail</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">templates_path</span> <span class="o">=</span> <span class="n">resource_filename</span><span class="p">(</span><span class="s1">&#39;pykinetic&#39;</span><span class="p">,</span><span class="s1">&#39;templates&#39;</span><span class="p">)</span>
+        <span class="c1"># Assign Defaults</span>
+        <span class="k">if</span> <span class="n">Header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Header</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Header.txt&#39;</span>
+        <span class="k">if</span> <span class="n">Tail</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Tail</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Tail.txt&#39;</span>
+        <span class="k">if</span> <span class="n">Function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Function</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Function.txt&#39;</span>
+        <span class="k">if</span> <span class="n">Jacobian</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Jacobian</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Jacobian.txt&#39;</span>
+        <span class="k">if</span> <span class="n">Sim_Params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Sim_Params</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Sim_Params.txt&#39;</span>
+        <span class="k">if</span> <span class="n">Conv_Params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Conv_Params</span> <span class="o">=</span> <span class="n">templates_path</span> <span class="o">+</span> <span class="s1">&#39;/Conv_Params.txt&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OFileName</span> <span class="o">=</span> <span class="s1">&#39;OutFile&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span> <span class="c1"># Usefull for formatting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">massbalances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partials</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0.Header}{0.Function}{0.Jacobian}{0.Tail}</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="c1"># Read Files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadTemplate</span><span class="p">(</span><span class="n">Header</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadTemplate</span><span class="p">(</span><span class="n">Tail</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadTemplate</span><span class="p">(</span><span class="n">Function</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadTemplate</span><span class="p">(</span><span class="n">Jacobian</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Conv_Params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadParams</span><span class="p">(</span><span class="n">Conv_Params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sim_Params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ReadParams</span><span class="p">(</span><span class="n">Sim_Params</span><span class="p">)</span>
+        <span class="c1"># Handle special cases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Format_Cini</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Format_Conv_Params</span><span class="p">()</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">{}</span><span class="s1"> Object&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FileTemplate.ReadTemplate"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.ReadTemplate">[docs]</a>    <span class="k">def</span> <span class="nf">ReadTemplate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">File</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads a file line by line and removes all ending empty lines.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        File : str</span>
+<span class="sd">            filepath</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            string with the format ready to do a str.format(self)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        -------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the file is empty</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">File</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">Out</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">F</span><span class="p">]</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">Out</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">Out</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;File </span><span class="si">{}</span><span class="s1"> is empty&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">File</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Out</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Out</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FileTemplate.ReadParams"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.ReadParams">[docs]</a>    <span class="k">def</span> <span class="nf">ReadParams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">File</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads a file line by line and transforms it into a dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        File : str</span>
+<span class="sd">            filepath</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            dictionary containing first column as key and an empty string or</span>
+<span class="sd">            the rest of columns as a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">File</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">F</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                    <span class="n">Aux</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">key</span> <span class="o">=</span> <span class="n">Aux</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">item</span> <span class="o">=</span> <span class="n">Aux</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">item</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">finally</span><span class="p">:</span>
+                        <span class="n">Out</span><span class="p">[</span><span class="n">Aux</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Aux</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Out</span></div>
+<div class="viewcode-block" id="FileTemplate.Format_Cini"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.Format_Cini">[docs]</a>    <span class="k">def</span> <span class="nf">Format_Cini</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parses the Initial Concentrations and separates them by lines.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Sep_Comps</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span>
+        <span class="n">Sep_Values</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;xini[</span><span class="si">{0}</span><span class="s1">] = </span><span class="si">{1}</span><span class="s1">&#39;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sim_Params</span><span class="p">[</span><span class="s1">&#39;Conc_ini&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">Sep_Comps</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span><span class="n">val</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">Sep_Values</span><span class="p">)</span>
+            <span class="n">Aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">val</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sim_Params</span><span class="p">[</span><span class="s1">&#39;Conc_ini&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Aux</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FileTemplate.Format_Conv_Params"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.Format_Conv_Params">[docs]</a>    <span class="k">def</span> <span class="nf">Format_Conv_Params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formats self._Conv_Params dict to a single line set of kwargs and</span>
+<span class="sd">        updates the self.Conv_Params.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span>
+        <span class="n">Out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Conv_Params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">val</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Conv_Params</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Out</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FileTemplate.Add_Conv_Param"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.Add_Conv_Param">[docs]</a>    <span class="k">def</span> <span class="nf">Add_Conv_Param</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wrapper to add a certain Conv_Parameter. Forces str on parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_Conv_Params</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Format_Conv_Params</span><span class="p">()</span></div>
+<div class="viewcode-block" id="FileTemplate.Fill"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.Fill">[docs]</a>    <span class="k">def</span> <span class="nf">Fill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fills the values of the template with the appropiated values and updates</span>
+<span class="sd">        the &#39;txt&#39; attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Construct the scheme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="c1"># Fill in values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FileTemplate.write_to"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.write_to">[docs]</a>    <span class="k">def</span> <span class="nf">write_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the contents of self.txt in a valid filepath</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txt</span><span class="p">)</span></div>
+<div class="viewcode-block" id="FileTemplate.update_with"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.FileTemplate.update_with">[docs]</a>    <span class="k">def</span> <span class="nf">update_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ChemSys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uses a ChemicalSystem instance to update the &#39;species&#39;, &#39;T&#39;, &#39;ks&#39;,</span>
+<span class="sd">        &#39;rates&#39;,&#39;massbalances&#39; and &#39;partials&#39; attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">species</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">compounds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">ChemSys</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ks</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">k_Expr</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">Rates_Expr</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">massbalances</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">MassBalances_Expr</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">partials</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">Jacobian_Expr</span><span class="p">())</span></div></div>
+
+<div class="viewcode-block" id="Write_IndexFile"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.Write_IndexFile">[docs]</a><span class="k">def</span> <span class="nf">Write_IndexFile</span><span class="p">(</span><span class="n">ChemSys</span><span class="p">,</span><span class="n">FilePath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writes a File that summarizes both Compounds and Reactions Files as</span>
+<span class="sd">    they were modeled. Simple division of this file should lead to two files</span>
+<span class="sd">    that should be able reproduce at least the function and the Jacobian.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ChemSys : ChemicalSystem</span>
+<span class="sd">        A ChemicalSystem or subclass to output</span>
+<span class="sd">    FilePath : str</span>
+<span class="sd">        A valid filepath for the IndexFile</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Name</span> <span class="o">=</span> <span class="n">FilePath</span>
+    <span class="n">Out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;#### compounds ####&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ChemSys</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0.key}</span><span class="s1">)</span><span class="se">\t</span><span class="si">{0.label}</span><span class="se">\t</span><span class="si">{0.energy: 0.6f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;#### reactions ####&#39;</span><span class="p">)</span>
+    <span class="n">oformat</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0:}</span><span class="s1">)</span><span class="se">\t</span><span class="si">{1:}</span><span class="se">\t</span><span class="s1">!</span><span class="si">{2:0.1f}</span><span class="s1">&#39;</span>
+    <span class="c1">#riformat = &#39;{0:})\t{3:}\t{2:}\t{1:}\t!{4:}&#39;</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">reaction</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ChemSys</span><span class="o">.</span><span class="n">reactions</span><span class="p">):</span>
+        <span class="n">reaction</span><span class="o">.</span><span class="n">AE</span><span class="o">.</span><span class="n">to_unit</span><span class="p">(</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
+        <span class="n">AE</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">AE</span><span class="p">)</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oformat</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">AE</span><span class="p">))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Name</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span> <span class="p">:</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Out</span><span class="p">))</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DotFile"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.DotFile">[docs]</a><span class="k">def</span> <span class="nf">DotFile</span><span class="p">(</span><span class="n">ChemSys</span><span class="p">,</span><span class="n">Rank</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of lines with a graph that relates reactants with</span>
+<span class="sd">    reactions and reactions with products for each elemental step in .dot format</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ChemSys : ChemicalSystem</span>
+<span class="sd">        An updated ChemicalSystem instance</span>
+<span class="sd">    Rank : bool</span>
+<span class="sd">        Wether to align or not the different initial reactants</span>
+<span class="sd">        (the default is False).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;strict Digraph {&#39;</span><span class="p">)</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">concentrate=true&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">ChemSys</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+        <span class="n">Rs</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">])</span>
+        <span class="n">Rs</span> <span class="o">=</span> <span class="s1">&#39;{&#39;</span><span class="o">+</span> <span class="n">Rs</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
+        <span class="n">Ps</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">products</span><span class="p">])</span>
+        <span class="n">Ps</span> <span class="o">=</span> <span class="s1">&#39;{&#39;</span><span class="o">+</span> <span class="n">Ps</span> <span class="o">+</span> <span class="s1">&#39;}&#39;</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{}</span><span class="s1">-&gt; &quot;</span><span class="si">{}</span><span class="s1">&quot; -&gt; </span><span class="si">{}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Rs</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">Ps</span><span class="p">))</span>
+    <span class="n">rs</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ChemSys</span><span class="o">.</span><span class="n">reactions</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">Rank</span><span class="p">:</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">{rank = same;&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;}&#39;</span><span class="p">)</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Out</span></div>
+
+<span class="c1">###################### Specializations of Classes ##############################</span>
+<div class="viewcode-block" id="CorrChemSys"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.CorrChemSys">[docs]</a><span class="k">class</span> <span class="nc">CorrChemSys</span><span class="p">(</span><span class="n">ChemicalSystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A specialization used to directly apply an Energy Correction similar to</span>
+<span class="sd">    Standard State Correction.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Corr : float, Energy</span>
+<span class="sd">        Description of parameter `Corr` (the default is 0.0).</span>
+<span class="sd">    T : float</span>
+<span class="sd">        Temperature in K (the default is 298.15).</span>
+<span class="sd">    unit : str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    CorrUnit: str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Corr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="n">CorrUnit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CorrChemSys</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Corr</span><span class="o">.</span><span class="n">to_unit</span><span class="p">(</span><span class="n">CorrUnit</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">Corr</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">Corr</span><span class="p">,</span><span class="n">CorrUnit</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Corr</span> <span class="o">=</span> <span class="n">Corr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span>
+<div class="viewcode-block" id="CorrChemSys.cadd"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.CorrChemSys.cadd">[docs]</a>    <span class="k">def</span> <span class="nf">cadd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">compound</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Patches the `ChemicalSystem.cadd` by adding the Corr to the</span>
+<span class="sd">        energy of the compound added, before actually adding it</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Corr</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CorrChemSys</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">cadd</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span><span class="n">update</span><span class="p">)</span></div>
+<div class="viewcode-block" id="CorrChemSys.sradd"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.CorrChemSys.sradd">[docs]</a>    <span class="k">def</span> <span class="nf">sradd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">sreaction</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Patches the addition of sreactions so that it applies the correction</span>
+<span class="sd">        to the energy of the sreaction except if it is of RType &#39;&lt;d&gt;&#39;. and then</span>
+<span class="sd">        adds it normally.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">RType</span> <span class="o">==</span> <span class="s1">&#39;&lt;d&gt;&#39;</span><span class="p">:</span>
+            <span class="n">sreaction</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">sreaction</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sreaction</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">sreaction</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+            <span class="n">sreaction</span><span class="o">.</span><span class="n">energy</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Corr</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CorrChemSys</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">sradd</span><span class="p">(</span><span class="n">sreaction</span><span class="p">,</span><span class="n">update</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="MutableSystem"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.MutableSystem">[docs]</a><span class="k">class</span> <span class="nc">MutableSystem</span><span class="p">(</span><span class="n">CorrChemSys</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A specialization of a CorrChemSys used to mutate the energy of the</span>
+<span class="sd">    species, minima and/or TS, a fixed amount.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MutableSystem.MutateEnergy"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.MutableSystem.MutateEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">MutateEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Value</span><span class="p">,</span><span class="n">Model</span><span class="o">=</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">Comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+            <span class="n">Comp</span><span class="o">.</span><span class="n">energy</span> <span class="o">+=</span> <span class="n">Value</span>
+        <span class="n">reactions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">SR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="c1"># Recalculate the TS energy</span>
+            <span class="k">if</span> <span class="n">SR</span><span class="o">.</span><span class="n">RType</span> <span class="o">!=</span> <span class="s1">&#39;&lt;d&gt;&#39;</span><span class="p">:</span>
+                <span class="n">SR</span><span class="o">.</span><span class="n">energy</span> <span class="o">+=</span> <span class="n">Value</span>
+            <span class="n">SR</span><span class="o">.</span><span class="n">calc_TS</span><span class="p">()</span>
+            <span class="c1"># Calculate the Barriers for the child reactions</span>
+            <span class="n">NewData</span> <span class="o">=</span> <span class="n">SR</span><span class="o">.</span><span class="n">to_Reaction</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">child</span><span class="p">,</span><span class="n">data</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">SR</span><span class="o">.</span><span class="n">child_reactions</span><span class="p">,</span><span class="n">NewData</span><span class="p">):</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">set_AE_from</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+<div class="viewcode-block" id="MutableSystem.MutateTSs"><a class="viewcode-back" href="../../pykinetic.Utils.html#pykinetic.Utils.MutableSystem.MutateTSs">[docs]</a>    <span class="k">def</span> <span class="nf">MutateTSs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Value</span><span class="p">,</span><span class="n">Model</span><span class="o">=</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">SR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sreactions</span><span class="p">:</span>
+            <span class="c1"># Only Apply mutation to indicated reactions</span>
+            <span class="k">if</span> <span class="n">SR</span><span class="o">.</span><span class="n">RType</span> <span class="o">!=</span> <span class="s1">&#39;&lt;s&gt;&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">E_Ps</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">SR</span><span class="o">.</span><span class="n">products</span><span class="p">)</span>
+            <span class="n">E_Rs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">SR</span><span class="o">.</span><span class="n">reactants</span><span class="p">)</span>
+            <span class="n">MaxVal</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">E_Ps</span><span class="p">,</span><span class="n">E_Rs</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">SR</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="n">MaxVal</span> <span class="o">&lt;</span> <span class="n">Value</span><span class="p">:</span>
+                <span class="n">NewVal</span> <span class="o">=</span> <span class="n">SR</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="n">MaxVal</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">NewVal</span> <span class="o">=</span> <span class="n">Value</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">NewVal</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1E-14</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="p">:</span>
+                <span class="n">NewVal</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">NewVal</span><span class="o">.</span><span class="n">_unit</span><span class="p">)</span>
+            <span class="n">SR</span><span class="o">.</span><span class="n">energy</span> <span class="o">-=</span> <span class="n">NewVal</span>
+            <span class="n">SR</span><span class="o">.</span><span class="n">calc_TS</span><span class="p">()</span>
+            <span class="c1"># Reduce the barriers of the childs the same amount</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">SR</span><span class="o">.</span><span class="n">child_reactions</span><span class="p">:</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">AE</span> <span class="o">-=</span> <span class="n">NewVal</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">Calc_k</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Raul Perez-Soto.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

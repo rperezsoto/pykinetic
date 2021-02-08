@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pykinetic.InputParse &#8212; pykinetic  documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for pykinetic.InputParse</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the rules used for parsing the reactions.txt File.</span>
+<span class="sd">This module is intended to be imported only by the &#39;Classes&#39; module.</span>
+<span class="sd">The module builds the &#39;ReactionTypes&#39; variable from two variables:</span>
+<span class="sd">&#39;items&#39; and &#39;keys&#39;.</span>
+
+<span class="sd">The &#39;keys&#39; variable contains the string identifiers of the behaviours encoded in</span>
+<span class="sd">items:</span>
+
+<span class="sd">   *  The first position is the string corresponding to the marker used in the</span>
+<span class="sd">      input file, such as &#39;&lt;=&gt;&#39; or &#39;&lt;d&gt;&#39;. It is not advised to use empty spaces</span>
+<span class="sd">      or \\t in the markers.</span>
+<span class="sd">   *  The second and third elements are functions that take a tuple of</span>
+<span class="sd">      reactants, a tuple of products and an energy associated to the reaction</span>
+<span class="sd">      and should return the energy of the transition state.</span>
+<span class="sd">   *  The second element corresponds to the behaviour when the energies provided</span>
+<span class="sd">      by the user are absolute energies.</span>
+<span class="sd">   *  The third element corresponds to the behaviour when the energies provided</span>
+<span class="sd">      by the user are relative energies. (By design, in this case the values</span>
+<span class="sd">      associated to the reaction correspond to the barrier).</span>
+<span class="sd">   *  Each of the following elements correspond to the behaviours of each model.</span>
+<span class="sd">      The corresponding key (in keys) is a string with the name of the model.</span>
+<span class="sd">      Every one of these items has to be a tuple of functions. These functions</span>
+<span class="sd">      have to receive as input a SymbReaction instance and return a tuple with</span>
+<span class="sd">      the parameters needed to create an instance of the corresponding</span>
+<span class="sd">      &#39;Reaction&#39; subclass.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactionTypes&#39;</span><span class="p">,</span><span class="s1">&#39;EnergyInput&#39;</span><span class="p">]</span>
+
+<span class="c1">####################### Rules for parsing energies #############################</span>
+
+<div class="viewcode-block" id="EnergyInput"><a class="viewcode-back" href="../../pykinetic.InputParse.html#pykinetic.InputParse.EnergyInput">[docs]</a><span class="k">def</span> <span class="nf">EnergyInput</span><span class="p">(</span><span class="n">item</span><span class="p">):</span> <span class="c1"># TODO</span>
+    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;file&#39;</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">EnergyUnits</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+
+<span class="c1">############################ Auxiliary Functions ###############################</span>
+
+<span class="c1"># Auxiliary functions that define how to calculate the energy of the TS from   #</span>
+<span class="c1"># the input:                                                                   #</span>
+
+<span class="c1">## When the Energy is given as &#39;absolute&#39; values</span>
+<span class="n">absolute</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">e</span><span class="p">:</span> <span class="n">e</span>
+<span class="n">diffusion</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">e</span><span class="p">:</span> <span class="n">e</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">)</span>
+
+<span class="c1">## When the Energy is given as &#39;relative&#39; values</span>
+<span class="n">from_reacts</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">e</span><span class="p">:</span> <span class="n">e</span> <span class="o">+</span> <span class="n">r</span>
+<span class="n">from_products</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">,</span><span class="n">p</span><span class="p">,</span><span class="n">e</span><span class="p">:</span> <span class="n">e</span> <span class="o">+</span> <span class="n">p</span> <span class="c1"># included for completeness</span>
+
+<span class="c1"># Auxiliary functions that return input as needed to instantiate a certain     #</span>
+<span class="c1"># Reaction model.                                                              #</span>
+
+<span class="c1">## Model: ElementalStep (default)</span>
+<span class="k">def</span> <span class="nf">RtoP</span><span class="p">(</span><span class="n">sreaction</span><span class="p">):</span>
+    <span class="n">Rs</span><span class="p">,</span><span class="n">Ps</span> <span class="o">=</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">,</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">products</span>
+    <span class="n">AE</span> <span class="o">=</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="n">Rs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">AE</span>
+<span class="k">def</span> <span class="nf">PtoR</span><span class="p">(</span><span class="n">reaction</span><span class="p">):</span>
+    <span class="n">Rs</span><span class="p">,</span><span class="n">Ps</span> <span class="o">=</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">,</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">products</span>
+    <span class="n">AE</span> <span class="o">=</span> <span class="n">sreaction</span><span class="o">.</span><span class="n">TS</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">P</span> <span class="ow">in</span> <span class="n">Ps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">Rs</span><span class="p">,</span> <span class="n">AE</span>
+
+<span class="c1">######################## &#39;keys&#39; and &#39;items&#39; variables ##########################</span>
+
+<span class="n">keys</span>  <span class="o">=</span>  <span class="p">[</span> <span class="kc">None</span><span class="p">,</span><span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="s1">&#39;relative&#39;</span><span class="p">,</span><span class="s1">&#39;ElementalStep&#39;</span><span class="p">]</span>
+<span class="n">items</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;&lt;=&gt;&#39;</span><span class="p">,</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">from_reacts</span><span class="p">,(</span><span class="n">RtoP</span><span class="p">,</span><span class="n">PtoR</span><span class="p">)],</span>
+         <span class="p">[</span> <span class="s1">&#39;=&gt;&#39;</span><span class="p">,</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">from_reacts</span><span class="p">,(</span><span class="n">RtoP</span><span class="p">,)],</span>
+         <span class="p">[</span><span class="s1">&#39;&lt;=&#39;</span> <span class="p">,</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">from_reacts</span><span class="p">,(</span><span class="n">PtoR</span><span class="p">,)],</span> <span class="c1">#By design: Erel -&gt; from_reacts</span>
+         <span class="p">[</span><span class="s1">&#39;&lt;d&gt;&#39;</span><span class="p">,</span> <span class="n">diffusion</span><span class="p">,</span>  <span class="n">diffusion</span><span class="p">,(</span><span class="n">RtoP</span><span class="p">,</span><span class="n">PtoR</span><span class="p">)],</span>
+         <span class="p">[</span><span class="s1">&#39;&lt;s&gt;&#39;</span><span class="p">,</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">from_reacts</span><span class="p">,(</span><span class="n">RtoP</span><span class="p">,</span><span class="n">PtoR</span><span class="p">)]]</span>
+
+<span class="c1">######################### High Level API preparation ###########################</span>
+
+<span class="c1"># Currently it should not be an OrderedDict since the current implementation</span>
+<span class="c1"># should not have any clash between &#39;&lt;=&gt;&#39;,&#39;=&gt;&#39; and &#39;&lt;=&#39;. However Better safe</span>
+<span class="c1"># than sorry as the only cost is the usage of an OrderedDict that comes with the</span>
+<span class="c1"># standard python library</span>
+
+<span class="n">ReactionTypes</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+    <span class="n">ReactionTypes</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">item</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">item</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">:])}</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pykinetic  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Raul Perez-Soto.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

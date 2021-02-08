@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>pykinetic.Utils module &#8212; pykinetic  documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pykinetic  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pykinetic.Utils">
+<span id="pykinetic-utils-module"></span><h1>pykinetic.Utils module<a class="headerlink" href="#module-pykinetic.Utils" title="Permalink to this headline">¶</a></h1>
+<p>This module contains several utilities grouped by usage:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>General utilities.</p></li>
+<li><p>The pykinetic Utilities are Classes and functions without chemical
+meaning but necessary to write out the classes of the ‘pyKinetic’ module.</p></li>
+<li><p>Class Specializations. Subclasses of the ChemicalSystem used for the
+scripts pykinetic-scan and pykinetic-scanTS. Note that New Models should
+not be place here.</p></li>
+</ul>
+</div></blockquote>
+<dl class="py class">
+<dt id="pykinetic.Utils.CorrChemSys">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">CorrChemSys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Corr</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">298.15</span></em>, <em class="sig-param"><span class="n">unit</span><span class="o">=</span><span class="default_value">'kcal/mol'</span></em>, <em class="sig-param"><span class="n">CorrUnit</span><span class="o">=</span><span class="default_value">'kcal/mol'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#CorrChemSys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.CorrChemSys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem" title="pykinetic.Classes.ChemicalSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">pykinetic.Classes.ChemicalSystem</span></code></a></p>
+<p>A specialization used to directly apply an Energy Correction similar to
+Standard State Correction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Corr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>, </em><a class="reference internal" href="pykinetic.Classes.html#pykinetic.Classes.Energy" title="pykinetic.Classes.Energy"><em>Energy</em></a>) – Description of parameter <cite>Corr</cite> (the default is 0.0).</p></li>
+<li><p><strong>T</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Temperature in K (the default is 298.15).</p></li>
+<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – (the default is ‘kcal/mol’).</p></li>
+<li><p><strong>CorrUnit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – (the default is ‘kcal/mol’).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="pykinetic.Utils.CorrChemSys.cadd">
+<code class="sig-name descname">cadd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compound</span></em>, <em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#CorrChemSys.cadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.CorrChemSys.cadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patches the <cite>ChemicalSystem.cadd</cite> by adding the Corr to the
+energy of the compound added, before actually adding it</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.CorrChemSys.sradd">
+<code class="sig-name descname">sradd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sreaction</span></em>, <em class="sig-param"><span class="n">update</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#CorrChemSys.sradd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.CorrChemSys.sradd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patches the addition of sreactions so that it applies the correction
+to the energy of the sreaction except if it is of RType ‘&lt;d&gt;’. and then
+adds it normally.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pykinetic.Utils.DotFile">
+<code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">DotFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ChemSys</span></em>, <em class="sig-param"><span class="n">Rank</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#DotFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.DotFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of lines with a graph that relates reactants with
+reactions and reactions with products for each elemental step in .dot format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ChemSys</strong> (<a class="reference internal" href="pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem" title="pykinetic.Classes.ChemicalSystem"><em>ChemicalSystem</em></a>) – An updated ChemicalSystem instance</p></li>
+<li><p><strong>Rank</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Wether to align or not the different initial reactants
+(the default is False).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Utils.FileTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">FileTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Header</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Function</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Jacobian</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Sim_Params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Conv_Params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Tail</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Object that represents the script that when executed runs the
+simulation. The parameters employed to construct the object are
+parsed and converted to strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Header</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File template where the Head of the script is located
+(the default is templates/Header.txt).</p></li>
+<li><p><strong>Tail</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File template where the Tail of the script is located. Contains the code
+for the integration and the logic for the output generation (the default
+is templates/Tail.txt).</p></li>
+<li><p><strong>Function</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File template where the function format of the script is located
+(the default is templates/Function.txt).</p></li>
+<li><p><strong>Jacobian</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File template where the format of the Jacobian of the script is located
+(the default is templates/Jacobian.txt).</p></li>
+<li><p><strong>Sim_Params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File with the values for the parameters of the Simulation
+(the default is templates/Sim_Params.txt).</p></li>
+<li><p><strong>Conv_Params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File with the values for the convergence parameters of the numerical
+solver (the default is templates/Conv_Params.txt).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.OFileName">
+<code class="sig-name descname">OFileName</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.OFileName" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.end">
+<code class="sig-name descname">end</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.end" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.T">
+<code class="sig-name descname">T</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.T" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.ks">
+<code class="sig-name descname">ks</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.ks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.species">
+<code class="sig-name descname">species</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.species" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.massbalances">
+<code class="sig-name descname">massbalances</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.massbalances" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.rates">
+<code class="sig-name descname">rates</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.rates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.partials">
+<code class="sig-name descname">partials</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.partials" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Header">
+<code class="sig-name descname">Header</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Tail">
+<code class="sig-name descname">Tail</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Tail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Function">
+<code class="sig-name descname">Function</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Function" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Jacobian">
+<code class="sig-name descname">Jacobian</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Jacobian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Sim_Params">
+<code class="sig-name descname">Sim_Params</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Sim_Params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.Conv_Params">
+<code class="sig-name descname">Conv_Params</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Conv_Params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="pykinetic.Utils.FileTemplate.txt">
+<code class="sig-name descname">txt</code><a class="headerlink" href="#pykinetic.Utils.FileTemplate.txt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.Add_Conv_Param">
+<code class="sig-name descname">Add_Conv_Param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">val</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.Add_Conv_Param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Add_Conv_Param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to add a certain Conv_Parameter. Forces str on parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.Fill">
+<code class="sig-name descname">Fill</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.Fill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Fill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fills the values of the template with the appropiated values and updates
+the ‘txt’ attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.Format_Cini">
+<code class="sig-name descname">Format_Cini</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.Format_Cini"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Format_Cini" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the Initial Concentrations and separates them by lines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.Format_Conv_Params">
+<code class="sig-name descname">Format_Conv_Params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.Format_Conv_Params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.Format_Conv_Params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats self._Conv_Params dict to a single line set of kwargs and
+updates the self.Conv_Params.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.ReadParams">
+<code class="sig-name descname">ReadParams</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">File</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.ReadParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.ReadParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file line by line and transforms it into a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>File</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filepath</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary containing first column as key and an empty string or
+the rest of columns as a string</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.ReadTemplate">
+<code class="sig-name descname">ReadTemplate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">File</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.ReadTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.ReadTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a file line by line and removes all ending empty lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>File</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – filepath</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>string with the format ready to do a str.format(self)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.8)"><strong>RuntimeError</strong></a> – If the file is empty</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.update_with">
+<code class="sig-name descname">update_with</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ChemSys</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.update_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.update_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses a ChemicalSystem instance to update the ‘species’, ‘T’, ‘ks’,
+‘rates’,’massbalances’ and ‘partials’ attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.FileTemplate.write_to">
+<code class="sig-name descname">write_to</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#FileTemplate.write_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.FileTemplate.write_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the contents of self.txt in a valid filepath</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pykinetic.Utils.MutableSystem">
+<em class="property">class </em><code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">MutableSystem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Corr</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">298.15</span></em>, <em class="sig-param"><span class="n">unit</span><span class="o">=</span><span class="default_value">'kcal/mol'</span></em>, <em class="sig-param"><span class="n">CorrUnit</span><span class="o">=</span><span class="default_value">'kcal/mol'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#MutableSystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.MutableSystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pykinetic.Utils.CorrChemSys" title="pykinetic.Utils.CorrChemSys"><code class="xref py py-class docutils literal notranslate"><span class="pre">pykinetic.Utils.CorrChemSys</span></code></a></p>
+<p>A specialization of a CorrChemSys used to mutate the energy of the
+species, minima and/or TS, a fixed amount.</p>
+<dl class="py method">
+<dt id="pykinetic.Utils.MutableSystem.MutateEnergy">
+<code class="sig-name descname">MutateEnergy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Value</span></em>, <em class="sig-param"><span class="n">Model</span><span class="o">=</span><span class="default_value">'ElementalStep'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#MutableSystem.MutateEnergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.MutableSystem.MutateEnergy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="pykinetic.Utils.MutableSystem.MutateTSs">
+<code class="sig-name descname">MutateTSs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Value</span></em>, <em class="sig-param"><span class="n">Model</span><span class="o">=</span><span class="default_value">'ElementalStep'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#MutableSystem.MutateTSs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.MutableSystem.MutateTSs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="pykinetic.Utils.Write_IndexFile">
+<code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">Write_IndexFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ChemSys</span></em>, <em class="sig-param"><span class="n">FilePath</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#Write_IndexFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.Write_IndexFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a File that summarizes both Compounds and Reactions Files as
+they were modeled. Simple division of this file should lead to two files
+that should be able reproduce at least the function and the Jacobian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ChemSys</strong> (<a class="reference internal" href="pykinetic.Classes.html#pykinetic.Classes.ChemicalSystem" title="pykinetic.Classes.ChemicalSystem"><em>ChemicalSystem</em></a>) – A ChemicalSystem or subclass to output</p></li>
+<li><p><strong>FilePath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A valid filepath for the IndexFile</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pykinetic.Utils.mkdir_p">
+<code class="sig-prename descclassname">pykinetic.Utils.</code><code class="sig-name descname">mkdir_p</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pykinetic/Utils.html#mkdir_p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pykinetic.Utils.mkdir_p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same functionality as mkdir -p in bash console</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pykinetic.Utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pykinetic  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Raul Perez-Soto.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
