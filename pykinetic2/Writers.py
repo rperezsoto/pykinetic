@@ -273,12 +273,12 @@ class PythonWriter(Writer):
     def _massbalances(self,chemicalsys):
         MBs = ['#MassBalances',]
         for compound in chemicalsys.compounds:
-            MB = chemicalsys._MassBalance(compound)
+            MB = chemicalsys.massbalance(compound)
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law}')
         return MBs
-    def _jacobian_elements(self,chemicalsys):
-        MBs = [chemicalsys._MassBalance(compound)
+    def jacobian_elements(self,chemicalsys):
+        MBs = [chemicalsys.massbalance(compound) 
                 for compound in chemicalsys.compounds]
         Jac = ['#Non-zero Elements',]
         for MB in MBs:
@@ -287,6 +287,14 @@ class PythonWriter(Writer):
                 var,expr = self.jacobian_element(Jac_ij)
                 if expr and expr != '0':
                     Jac.append(f'{var} = {expr}')
+        return Jac
+    def _jacobian_elements(self,chemicalsys):
+        Jac = ['#Non-zero Elements',]
+        jac_elements = chemicalsys.jacobian()
+        for jac_ij in jac_elements: 
+            var,expr = self.jacobian_element(jac_ij)
+            if expr and expr != '0':
+                Jac.append(f'{var} = {expr}')
         return Jac
     def _function(self,chemicalsys,level=0):
         """
@@ -466,7 +474,7 @@ class CplusplusWriter(Writer):
     def _massbalances(self,chemicalsys):
         MBs = ['// MassBalances',]
         for compound in chemicalsys.compounds:
-            MB = chemicalsys._MassBalance(compound)
+            MB = chemicalsys.massbalance(compound)
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law};')
         return MBs

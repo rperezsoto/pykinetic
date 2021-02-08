@@ -37,9 +37,9 @@ class CompoundTest(unittest.TestCase):
         C2 = Compound(self.label1,self.energy3,self.key2)
         C3 = Compound(self.label1,self.energy3,self.key1)
         self.assertEqual(hash(C0),hash(C0))
-        self.assertEqual(hash(C0)==hash(C1),False)
-        self.assertEqual(hash(C0)==hash(C2),False)
-        self.assertEqual(hash(C0)==hash(C3),True)
+        self.assertNotEqual(hash(C0),hash(C1))
+        self.assertEqual(hash(C0),hash(C2))
+        self.assertEqual(hash(C0),hash(C3))
 
     # Test number conversion
     def test_int(self):

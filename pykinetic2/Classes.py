@@ -334,11 +334,12 @@ class Compound(object):
         finally:
             return out
     def __hash__(self):
-        return hash((self.label,self.key))
+        return hash(self.label)
     def __int__(self):
         return int(self.key)
     def __repr__(self):
-        return self.label
+        cls = self.__class__
+        return f"{cls} <'{self.label}'>"
     def DotGraphRepr(self):
         """
         Returns a string for the construction of a .dot file
@@ -346,6 +347,25 @@ class Compound(object):
         F0 = '"{}"'
         F1 = '"{0:}" [label="{0:}"]'.format(self.label)
         return F0.format(self.label)
+
+class TransitionState(object): 
+    def __init__(self,label,energy,reactions,scannable=False):
+        self.label = label
+        self.energy = energy
+        self.reactions = reactions
+        self.scannable = scannable
+    def __eq__(self,other):
+        try:
+            out = self.label == other.label
+        except AttributeError:
+            out = False
+        finally:
+            return out
+    def __hash__(self):
+        return hash(self.label)
+    def __repr__(self):
+        cls = self.__class__
+        return f"{cls} <'{self.label}'>"
 
 class SymbReaction(object):
     """
@@ -500,7 +520,7 @@ class SymbReaction(object):
 
 class Reaction(object):
     """
-    Base class for reactions, contains the Parsers.
+    Object that represents a reaction as an elemental step.
 
     Parameters
     ----------
@@ -511,10 +531,9 @@ class Reaction(object):
     RType : str
         Symbol that represents the connection between reactants and products.
         Only used for printing purposes (the default is None).
-    AE : type
-        Activation energy of the reaction. Depending on the inheriting class
-        the type might change between list of Energy instances or Energy
-        instance (the default is None).
+    TS : TransitionState
+        Transition state that connects reactants and products. It must contain
+        a 'energy' attribute
 
     Attributes
     ----------
@@ -529,7 +548,7 @@ class Reaction(object):
     """
     Models = {}
 
-    def __init__(self,reactants,products,RType=None,AE=None):
+    def __init__(self,reactants,products,RType=None,T=298.15):
         self.reactants = Counter(reactants)
         self.products = Counter(products)
         self.compounds = {i:0 for i in chain(reactants,products)}
@@ -539,7 +558,7 @@ class Reaction(object):
             self.compounds[i] += 1
         self.key = None
         self.RType = RType
-        self.AE = AE
+        self.T = T # K
     def __str__(self):
         reactants = ' + '.join([r.label for r in self.reactants.elements()])
         products = ' + '.join([p.label for p in self.products.elements()])
@@ -582,33 +601,17 @@ class Reaction(object):
         """
         self.AE = other[-1]
         self.Calc_k()
-    @abstractmethod
-    def Calc_k(self):
-        """
-        Provides the logic to calculate the kinetic constants from
-        the AE Attribute.
-        """
-        pass
-    @abstractmethod
-    def Ratelaw(self):
-        """
-        Returns the expression of the Ratelaw of the reaction as a string
-        """
-        pass
-    @abstractmethod
-    def PartialDiff(self,Compound):
-        """
-        Returns a string with the partial derivative of the Ratelaw with
-        respect to the concentration of `Compound`
-        """
-        pass
-    @abstractmethod
-    def k_Expr():
-        """
-        Returns a string that assigns the value to the constants of the
-        reaction
-        """
-        pass
+
+    @property
+    def k(self):
+        try:
+            reactants = sum([c.energy for c in self.reactants.elements()])
+            AE = self.TS - reactants
+            self.k = self.ActE2k(self.T,AE)
+        except ValueError as e:
+            msg = str(e) + ' in reaction:\n\t{}'.format(str(self))
+            e.args = (msg,)
+            raise e
 
     @classmethod
     def from_sreaction(cls,sreaction,Model='ElementalStep'):
@@ -663,101 +666,6 @@ class Reaction(object):
         k = (kb*(T)/h)*numpy.exp(-AE_SI/(R*(T)))
         return k
 
-    @staticmethod
-    def Model(cls):
-        """
-        Class Decorator for registering different Models for Reactions.
-        """
-        key = cls.__name__
-        Reaction.Models[key] = cls
-        return cls
-
-@Reaction.Model
-class ElementalStep(Reaction):
-    """
-    Object that represents a reaction as an elemental step.
-
-    Parameters
-    ----------
-    reactants : list
-        `Compound` instances that represent the reactants of the reaction
-    products : list
-        `Compound` instances that represent the products of the reaction
-    AE : type
-        Activation energy of the reaction. Depending on the inheriting class
-        the type might change between list of Energy instances or Energy
-        instance (the default is None).
-
-    """
-
-    def __init__(self,reactants,products,AE=None):
-        super(ElementalStep, self).__init__(reactants,products,RType='=>')
-        self.AE = AE
-    def Calc_k(self):
-        try:
-            self.k = Reaction.ActE2k(self.T,self.AE)
-        except ValueError as e:
-            msg = str(e) + ' in reaction:\n\t{}'.format(str(self))
-            e.args = (msg,)
-            raise e
-    def Ratelaw(self):
-        """
-        Returns a string of the rate law of the reaction as:
-        'r00 = k00*x[i]*x[j]...x[n]'
-        """
-        RateLawFormat = 'r{0.key:02.0f} = k{0.key:02.0f}*{1:}'.format
-        out = []
-        reactants = self.reactants.elements() # Unpack the reactants Counter
-        for R in sorted(reactants,key=lambda x: x.key):
-            out.append('x[{}]'.format(R.key))
-        reactants = '*'.join(out)
-        return RateLawFormat(self,reactants)
-    def k_Expr(self):
-        """
-        returns the expresion of the kinetic constant with the format
-        '\\tk00 = 0.0000000000E-0'
-        """
-        return 'k{0.key:02.0f} = {0.k:0.10e}'.format(self)
-    def PartialDiff(self,compound):
-        """
-        Returns a string with the partial derivative with respect to the
-        `compound` as:
-        'k00*(x[compound]**(i-1))*x[j]...x[n]'
-
-        Parameters
-        ----------
-        compound : Compound
-            Compound whose partial differential is to be calculated.
-
-        Returns
-        -------
-        str
-            A string with the expresion for the partial differential equation
-            of the ratelaw with respect to the compound
-        """
-        out = []
-        if compound not in self or compound not in self.reactants:
-            return ''
-        out.append('k{0.key:02.0f}'.format(self))
-        for R in sorted(self.reactants,key=lambda x: x.key):
-            # Guess the coefficient
-            coef = self.reactants[R]
-            if R == compound:
-                coef = self.reactants[R]
-                if coef > 1:
-                    out.append('{:0.1f}'.format(self.reactants[R]))
-                coef -= 1
-            # Handle the string formating
-            if coef == 0:
-                var = ''
-            elif coef == 1:
-                var =  'x[{}]'.format(R.key)
-            else:
-                var = '(x[{}]**{})'.format(R.key,coef)
-            if var:
-                out.append(var)
-        return '*'.join(out)
-
 class ChemicalSystem(object):
     """
     This class represents a chemical system, understanding
@@ -785,12 +693,11 @@ class ChemicalSystem(object):
 
     """
     def __init__(self,T=298.15):
-        self.T = T # K
+        self._T = T # K
         self.compounds = []
         self.Name2Compound = dict()
         self.reactions = []
         self.sreactions = []
-        self.shape = (len(self.reactions),len(self.compounds))
 
     def __repr__(self):
         n,m = self._shape()
@@ -799,15 +706,24 @@ class ChemicalSystem(object):
     def __contains__(self,item):
         return item in self.compounds or item in self.reactions
 
-    def _shape(self):
-        """Returns the shape based on compounds and reactions"""
-        m = len(self.compounds)
-        n = len(self.reactions)
-        return n,m
-
+    @property
+    def shape(self): 
+        return len(self.reactions),len(self.compounds)
+    
     @property
     def species(self):
         return len(self.compounds)
+    
+    @property
+    def T(self):
+        return self._T
+    @T.setter
+    def T(self,other):
+        self._T = other
+        for reaction in self.reactions:
+            reaction.T = T
+
+
     # Methods related with the (c)ompounds attribute
     def cadd(self,compound,update=False):
         """
@@ -888,7 +804,6 @@ class ChemicalSystem(object):
             C.key = i + start
             if UpdateDict:
                 self.Name2Compound[C.label] = C
-        self.shape = (self.shape[0],len(self.compounds))
 
     def check_compounds(self):
         """
@@ -901,64 +816,11 @@ class ChemicalSystem(object):
             set with the labels of the compounds not 'defined'
         """
         missing_compounds = set()
-        for reaction in self.sreactions:
-            for compound in chain(reaction._reactants,reaction._products):
+        for reaction in self.reactions:
+            for compound in reaction.compounds:
                 if compound not in self.Name2Compound: # Is this if overhead ?
                      missing_compounds.add(compound)
         return missing_compounds
-
-    # Methods related with the (sr)eactions attribute
-    def sradd(self,sreaction,update=True):
-        """
-        Adds and updates the sreaction avoiding duplicates.
-
-        Parameters
-        ----------
-        sreaction : SymbReaction
-        update : bool
-            if True it will modify the state of the sreaction Instance
-            to link the ChemicalSystem compounds with the sreaction
-            reactants and products (the default is True).
-        """
-        if sreaction not in self.sreactions:
-            if update:
-                sreaction.update(self.Name2Compound)
-            self.sreactions.append(sreaction)
-    def srextend(self,sreactions):
-        """
-        Lazy Addition, it first adds all the reactions and then
-        it updates them.
-
-        Parameters
-        ----------
-        sreactions : list
-            list of SymbReaction instances
-        """
-        for SR in sreactions:
-            self.sradd(SR,update=False)
-        self.srupdate()
-    def srupdate(self):
-        """
-        Checks if the compounds in the sreactions exist and then updates
-        the Symbreactions of the system.
-
-        Raises
-        -------
-        RuntimeError
-            Attempted to update the sreactions that contain compounds not
-            defined in the ChemicalSystem
-
-        """
-        missing_compounds = self.check_compounds()
-        if missing_compounds:
-            msg = ['ERROR: The following compounds are not defined']
-            for item in sorted(missing_compounds):
-                msg.append('{}\tNUMBER'.format(item))
-            raise RuntimeError('\n'.join(msg))
-        for SR in self.sreactions:
-            if SR.IsUpdated:
-                continue
-            SR.update(self.Name2Compound)
 
     # Methods related with the (r)eactions attribute
     def radd(self,reaction,update=True):
@@ -1007,7 +869,7 @@ class ChemicalSystem(object):
             R.key = i + start
             R.T = self.T
             R.Calc_k()
-        self.shape = (len(self.reactions),self.shape[1])
+
     def reactions_fromFile(self,FilePath,EParse,Model='ElementalStep'):
         """
         Reads the reactions from the file and enforces that the
@@ -1016,7 +878,7 @@ class ChemicalSystem(object):
         Parameters
         ----------
         FilePath : str
-            A valid filepath with the specifications of the `README`.
+            A valid to a file that follows the specifications of the `README`.
         EParse : str
             How the energy provided with the reaction should be considered
             either 'relative' to reactants or the TS 'absolute' energy
@@ -1030,11 +892,11 @@ class ChemicalSystem(object):
                     continue
                 sreactions.append(SymbReaction(line,EParse))
         self.srextend(sreactions)
-        ReactionModel = Reaction.Models[Model]
+
         reactions = []
         # Use self.sreactions to avoid the presence of duplicates in sreactions
         for SR in self.sreactions:
-            new_reactions = ReactionModel.from_sreaction(SR,Model)
+            new_reactions = ElementalStep.from_sreaction(SR,Model)
             for R in new_reactions:
                 reactions.append(R)
                 SR.child(R)
@@ -1056,84 +918,29 @@ class ChemicalSystem(object):
         OperationError
             If the ChemicalSystem is not Updated
         """
-        if self.shape != self._shape():
-            raise OperationError('calculate the RxCMatrix')
         RxCMat = numpy.zeros(shape=self.shape)
         for i,reaction in enumerate(self.reactions):
-            for R in reaction.reactants: # For each Reactant
+            for R in reaction.reactants.elements(): # For each Reactant
                 RxCMat[i,R.key] -= 1.0
-            for P in reaction.products: # for each Product
+            for P in reaction.products.elements(): # for each Product
                 RxCMat[i,P.key] += 1.0
         return RxCMat
 
     # Main API
-    def k_Expr(self):
+    def massbalance(self,compound):
         """
-        Returns a list of lines with the expressions of the constants for all
-        the reactions in the ChemicalSystem.
-
-        Raises
-        -------
-        OperationError
-            If the ChemicalSystem is not Updated
-
-        """
-        if self.shape != self._shape():
-            raise OperationError('obtain the reaction constants expressions')
-        ks = []
-        for reaction in self.reactions:
-            ks.append(f'const double {reaction.k_Expr()};')
-        return ks
-    def Rates_Expr(self):
-        """
-        Returns a list of lines with the expressions of the rates for all
-        the reactions in the ChemicalSystem.
-
-        Raises
-        -------
-        OperationError
-            If the ChemicalSystem is not Updated
-
-        """
-        if self.shape != self._shape():
-            raise OperationError('obtain the rates expressions')
-        rates = []
-        vars = []
-        rates.append(vars)
-        for reaction in self.reactions:
-            ratelaw = reaction.Ratelaw()
-            vars.append(ratelaw.split('=')[0].strip())
-            rates.append(f'\t{ratelaw};')
-        rates[0] = f"\tdouble {','.join(vars)};"
-        return rates
-    def MassBalance(self,compound):
-        """
-        Returns a string with the expresion for the mass balance of
-        a compound in the Chemical system. Assumes a batch reactor.
+        returns the mass balance of the compound for the chemical system.
 
         Parameters
         ----------
         compound : Compound
+            Compound whose mass balance is to be obtained
 
+        Returns
+        -------
+        MB
+            MassBalance object
         """
-        OFormat = 'dxdt[{}] = {}'.format
-        n = len(self.reactions)
-        rates = ''
-        for reaction in self.reactions:
-            coef = reaction.Coefficient(compound)
-            if compound in reaction and abs(coef) > 0:
-                R_Expr = '{0}r{1.key:02.0f}'
-                if coef == 1:
-                    Aux = '+'
-                elif coef == -1:
-                    Aux = '-'
-                else:
-                    Aux = '{:+0.1f}*'.format(coef)
-                rates += R_Expr.format(Aux,reaction)
-        if not rates:
-            rates = '0'
-        return OFormat(compound.key,rates)
-    def _MassBalance(self,compound):
         MB = MassBalance(compound)
         n = len(self.reactions)
         for reaction in self.reactions:
@@ -1142,65 +949,19 @@ class ChemicalSystem(object):
             if abs(coef) > 0:
                 MB.items.append((coef,reaction))
         return MB
-    def MassBalances_Expr(self):
+    def jacobian(self):
         """
-        Returns a list of lines with the expressions of the MassBalances for
-        all the reactions in the ChemicalSystem.
+        returns a list of Jacobian elements for the mass balances of all the 
+        compounds in the system.
 
-        Raises
+        Returns
         -------
-        OperationError
-            If the ChemicalSystem is not Updated
-
+        Out
+            list of JacobianElement items.
         """
-        if self.shape != self._shape():
-            raise OperationError('obtain the MassBalances expressions')
-        MassBalances = []
+        Out = []
         for compound in self.compounds:
-            MassBalances.append(f'\t{self.MassBalance(compound)};')
-        return MassBalances
-    def Jacobian_Expr(self):
-        """
-        Returns a list of lines with the expressions of the partial
-        derivatives for all the compounds in all the reactions of the
-        ChemicalSystem.
-
-        Raises
-        -------
-        OperationError
-            If the ChemicalSystem is not Updated
-
-        """
-        if self.shape != self._shape():
-            raise OperationError('obtain the Jacobian expressions')
-        out = []
-        LineStart = '\tJac[{0.key},{1.key}] = '
-        for compound1 in self.compounds: # for each MassBalance
-            for compound2 in self.compounds: # for each Compound
-                exprs_old = exprs = LineStart.format(compound1,compound2)
-                for reaction in self.reactions: # for each reaction
-                    coef = reaction.Coefficient(compound1)
-                    Partial = ''
-                    if coef == 0:
-                        continue
-                    # Get Sign
-                    if coef == 1:
-                        coef_Expr = '+'
-                    elif coef == -1:
-                        coef_Expr = '-'
-                    else:
-                        coef_Expr = '{:+0.1f}*'.format(coef)
-                    if compound2 in reaction:
-                        Partial = reaction.PartialDiff(compound2)
-                        if Partial:
-                            exprs += coef_Expr + Partial
-                if exprs_old != exprs:
-                    out.append(exprs)
-        return out
-    def _Jacobian(self): # TODO?
-        Jacobian = []
-        for compound in self.compounds:
-            MB = self._MassBalance(compound)
+            MB = self.massbalance(compound)
             for compound2 in self.compounds:
-                Jacobian.append(MB.partial(compound2))
-        return Jacobians
+                Out.append(MB.partial(compound2))
+        return Out

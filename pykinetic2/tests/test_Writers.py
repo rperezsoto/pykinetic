@@ -103,7 +103,7 @@ class PythonWriterTest(unittest.TestCase):
         for s,c in zip(solutions,compounds):
             with self.subTest(compound=c):
                 ## Future MB = self.chemsys.massbalance(c)
-                MB = self.chemsys._MassBalance(c)
+                MB = self.chemsys.massbalance(c)
                 _ , test = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
     def test_massbalance_var(self):
@@ -117,7 +117,7 @@ class PythonWriterTest(unittest.TestCase):
         for s,c in zip(solutions,compounds):
             with self.subTest(compound=c):
                 ## Future MB = self.chemsys.massbalance(c)
-                MB = self.chemsys._MassBalance(c)
+                MB = self.chemsys.massbalance(c)
                 test, _ = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
     def test_jacobian_element_expr(self):
@@ -146,7 +146,7 @@ class PythonWriterTest(unittest.TestCase):
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
             ## Future MB = self.chemsys.massbalance(c)
-            MB = self.chemsys._MassBalance(c)
+            MB = self.chemsys.massbalance(c)
             ## Future Jacobian
             for c2,s in zip(compounds,sols):
                 Jac_ij = MB.partial(c2)
@@ -179,7 +179,7 @@ class PythonWriterTest(unittest.TestCase):
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
             ## Future MB = self.chemsys.massbalance(c)
-            MB = self.chemsys._MassBalance(c)
+            MB = self.chemsys.massbalance(c)
             ## Future Jacobian
             for c2,s in zip(compounds,sols):
                 Jac_ij = MB.partial(c2)
@@ -313,7 +313,7 @@ class CplusplusWriterTest(unittest.TestCase):
         for s,c in zip(solutions,compounds):
             with self.subTest(compound=c):
                 ## Future MB = self.chemsys.massbalance(c)
-                MB = self.chemsys._MassBalance(c)
+                MB = self.chemsys.massbalance(c)
                 _ , test = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
     def test_massbalance_var(self):
@@ -327,7 +327,7 @@ class CplusplusWriterTest(unittest.TestCase):
         for s,c in zip(solutions,compounds):
             with self.subTest(compound=c):
                 ## Future MB = self.chemsys.massbalance(c)
-                MB = self.chemsys._MassBalance(c)
+                MB = self.chemsys.massbalance(c)
                 test, _ = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
     def test_jacobian_element_expr(self):
@@ -356,7 +356,7 @@ class CplusplusWriterTest(unittest.TestCase):
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
             ## Future MB = self.chemsys.massbalance(c)
-            MB = self.chemsys._MassBalance(c)
+            MB = self.chemsys.massbalance(c)
             ## Future Jacobian
             for c2,s in zip(compounds,sols):
                 Jac_ij = MB.partial(c2)
@@ -389,7 +389,7 @@ class CplusplusWriterTest(unittest.TestCase):
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
             ## Future MB = self.chemsys.massbalance(c)
-            MB = self.chemsys._MassBalance(c)
+            MB = self.chemsys.massbalance(c)
             ## Future Jacobian
             for c2,s in zip(compounds,sols):
                 Jac_ij = MB.partial(c2)
