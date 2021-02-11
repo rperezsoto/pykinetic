@@ -340,6 +340,11 @@ class Compound(object):
     def __repr__(self):
         cls = self.__class__
         return f"{cls} <'{self.label}'>"
+    def copy(self):
+        """
+        Creates a copy of the object with the key set as None.
+        """
+        return self.__class___(self.label,self.energy,key=None)
     def DotGraphRepr(self):
         """
         Returns a string for the construction of a .dot file
@@ -348,10 +353,16 @@ class Compound(object):
         F1 = '"{0:}" [label="{0:}"]'.format(self.label)
         return F0.format(self.label)
 
-class TransitionState(object): 
-    def __init__(self,label,energy,reactions,scannable=False):
+class TransitionState(object):
+    defaultname = 0 
+    def __init__(self,energy,reactions=None,label=None,scannable=False):
+        if label is None:
+            label =  f'TS{self.defaultname:02d}'
+            self.__class__.defaultname += 1
         self.label = label
         self.energy = energy
+        if reactions is None:
+            reactions = []
         self.reactions = reactions
         self.scannable = scannable
     def __eq__(self,other):
@@ -366,6 +377,35 @@ class TransitionState(object):
     def __repr__(self):
         cls = self.__class__
         return f"{cls} <'{self.label}'>"
+    
+    @property
+    def energy(self):
+        return self._energy
+    @energy.setter
+    def energy(self,other):
+        self._energy = other
+
+class DiffusionTS(TransitionState):
+    defaultname = 0
+    def __init__(self,barrier,reactions,label=None,scannable=False):
+        self.barrier = barrier
+        if label is None:
+            label = f'DiffTS{self.defaultname:02d}'
+            self.__class__.defaultname += 1
+        self.label = label
+        self.reactions = reactions
+        self.scannable = scannable
+    
+    @property
+    def energy(self):
+        energy = max([r.reactants_energy for r in self.reactions])
+        return self.barrier + energy
+    @energy.setter
+    def energy(self,other):
+        energy = max([r.reactants_energy for r in self.reactions])
+        if other < energy: 
+            raise ValueError("Cannot set an energy lower than the reactants'")
+        self.barrier = other - energy
 
 class SymbReaction(object):
     """
@@ -528,9 +568,6 @@ class Reaction(object):
         `Compound` instances that represent the reactants of the reaction
     products : list
         `Compound` instances that represent the products of the reaction
-    RType : str
-        Symbol that represents the connection between reactants and products.
-        Only used for printing purposes (the default is None).
     TS : TransitionState
         Transition state that connects reactants and products. It must contain
         a 'energy' attribute
@@ -542,13 +579,13 @@ class Reaction(object):
     key : int
         number that identifies the reaction in a `ChemicalSystem` instance.
     products
-    RType
-    AE
+    TS
+    T
 
     """
     Models = {}
 
-    def __init__(self,reactants,products,RType=None,T=298.15):
+    def __init__(self,reactants,products,TS=None,T=298.15):
         self.reactants = Counter(reactants)
         self.products = Counter(products)
         self.compounds = {i:0 for i in chain(reactants,products)}
@@ -557,8 +594,8 @@ class Reaction(object):
         for i in self.products.elements():
             self.compounds[i] += 1
         self.key = None
-        self.RType = RType
-        self.T = T # K
+        self.T = T # Temperature in K
+        self.TS = TS # Transition state associated, may be shared
     def __str__(self):
         reactants = ' + '.join([r.label for r in self.reactants.elements()])
         products = ' + '.join([p.label for p in self.products.elements()])
@@ -586,52 +623,28 @@ class Reaction(object):
         This function acts as a wrapper for readability
         """
         return self.compounds.get(compound,0)
-    def set_AE_from(self,other):
-        """
-        Sets the Activation Energy of the reaction from some structured data.
-        By default it will assume that it is accessible as the last item '[-1]'.
-        This function acts as a wrapper to provide more flexibility when
-        including new Reaction Models.
 
-        Parameters
-        ----------
-        other : Iterable
-            Iterable structure in whose end is the Activation energy to set as
-            value.
-        """
-        self.AE = other[-1]
-        self.Calc_k()
+    @property
+    def reactants_energy(self):
+        return sum([c.energy for c in self.reactants.elements()])
+
+    @property
+    def AE(self):
+        AE = self.TS.energy - self.reactants_energy
+        return  AE
+    @AE.setter
+    def AE(self,other):
+        reactants_energy = sum([c.energy for c in self.reactants.elements()])
+        self.TS.energy = reactants_energy + other
 
     @property
     def k(self):
         try:
-            reactants = sum([c.energy for c in self.reactants.elements()])
-            AE = self.TS - reactants
-            self.k = self.ActE2k(self.T,AE)
+            self.k = self.ActE2k(self.T,self.AE)
         except ValueError as e:
             msg = str(e) + ' in reaction:\n\t{}'.format(str(self))
             e.args = (msg,)
             raise e
-
-    @classmethod
-    def from_sreaction(cls,sreaction,Model='ElementalStep'):
-        """
-        Initializes Reaction Instances from a SymbReaction Instance.
-        It chooses the appropiate parser according to the RType of the
-        SymbReaction instance. Returns a list of Reaction Instances
-
-        Raises
-        -------
-        ParseError
-            If the SymbReaction was not initialized within a ChemicalSystem
-            Instance.
-
-        """
-        if not sreaction.IsUpdated:
-            msg = '{} Was not updated by a ChemicalSystem instance'
-            raise ParseError(msg.format(sreaction))
-        inputs = sreaction.to_Reaction(Model)
-        return [cls(*input) for input in inputs]
 
     @staticmethod
     def ActE2k(T,AE):
@@ -695,9 +708,10 @@ class ChemicalSystem(object):
     def __init__(self,T=298.15):
         self._T = T # K
         self.compounds = []
-        self.Name2Compound = dict()
         self.reactions = []
-        self.sreactions = []
+        self.transitionstates = []
+        self.Name2Compound = dict()
+        self.Name2TS = dict()
 
     def __repr__(self):
         n,m = self._shape()
@@ -737,13 +751,17 @@ class ChemicalSystem(object):
             Whether to update the compounds in the system after adding it or not
             (the default is False).
         """
-        if compound in self:
-            _ = self.compounds.pop(self.compounds.key(compound))
-        self.compounds.append(compound)
+        if compound.label in self.Name2Compound:
+            index = self.Name2Compound[compound.label].key
+            old = self.compounds[index]
+            self.compounds[index] = compound
+            raise Warning(f'Overwrote {old} at {self} with {compound}')
+        else:
+            self.compounds.append(compound)
         self.Name2Compound[compound.label] = compound
         if update:
             self.cupdate()
-    def cextend(self,new_compounds):
+    def cextend(self,compounds):
         """
         Extends the self.compounds attr without overwriting.
 
@@ -753,32 +771,10 @@ class ChemicalSystem(object):
             list of `Compound` instances
 
         """
-        for C in new_compounds:
-            if C not in self:
-                self.cadd(C)
+        for compound in compounds:
+            if compound not in self:
+                self.cadd(compound)
         self.cupdate()
-    def compounds_fromFile(self,FilePath):
-        """
-        Reads compounds from a file and updates the self.compounds as
-        well as the Dictionaries.
-
-        Parameters
-        ----------
-        FilePath : str
-            A valid filepath with the specifications of the `README`
-
-        """
-        with open(FilePath,"r") as F:
-            A = []
-            for line in F:
-                Line = line.strip()
-                if not Line or Line.startswith("#"):
-                    continue
-                A.append(Line.split())
-        names,energies = zip(*A)
-        energies = [Energy(E,self.unit) for E in energies]
-        compounds = [Compound(N,E) for N,E in zip(names,energies)]
-        self.cextend(compounds)
     def cupdate(self,start=0,UpdateDict=False):
         """
         Updates the `compounds` attr reinitializing the indices.
@@ -839,7 +835,6 @@ class ChemicalSystem(object):
             if update:
                 reaction.key = self.reactions[-1].key + 1
                 reaction.T = self.T
-                reaction.Calc_k()
             self.reactions.append(reaction)
     def rextend(self,reactions):
         """
@@ -868,7 +863,6 @@ class ChemicalSystem(object):
         for i,R in enumerate(reactions):
             R.key = i + start
             R.T = self.T
-            R.Calc_k()
 
     def reactions_fromFile(self,FilePath,EParse,Model='ElementalStep'):
         """
