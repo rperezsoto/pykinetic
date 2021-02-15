@@ -11,9 +11,6 @@ import warnings
 
 import numpy
 
-class ParseError(AttributeError):
-    pass
-
 class Energy(object):
     """
     Objects that represents a number with an energy unit.
