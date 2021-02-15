@@ -1,4 +1,4 @@
-from pykinetic2.Classes import Compound, Reaction, Energy, TransitionState
+from pykinetic2.Classes import *
 import unittest
 
 class CompoundTest(unittest.TestCase):
@@ -112,3 +112,39 @@ class ReactionTest(unittest.TestCase):
             reaction.AE = -1.0
             _ = reaction.k
 
+class MassBalanceTest(unittest.TestCase):
+    def setUp(self):
+        C1 = self.Compound1 = Compound('C1',Energy(0.0,'kcal/mol'))
+        C2 = self.Compound2 = Compound('C2',Energy(0.0,'kcal/mol'))
+        C3 = self.Compound3 = Compound('C3',Energy(-2.0,'kcal/mol'))
+        self.reaction1 = Reaction(reactants=(C1,C2),products=(C3,))
+        self.reaction2 = Reaction(reactants=(C3,),products=(C1,C2))
+        self.reaction3 = Reaction(reactants=(C1,C1),products=(C1,C3))
+
+    def test_partial(self):
+        C1 = Compound('C1',Energy(0.0,'kcal/mol'))
+        C2 = Compound('C2',Energy(0.0,'kcal/mol'))
+        C3 = Compound('C3',Energy(-2.0,'kcal/mol'))
+        r1 = Reaction(reactants=(C1,C2),products=(C3,))
+        r2 = Reaction(reactants=(C3,),products=(C1,C2))
+        r3 = Reaction(reactants=(C1,C1),products=(C1,C3))
+        r1.key = 1
+        r2.key = 2 
+        r3.key = 3
+        MB1 = MassBalance(C1,items=[(-1,r1),(1,r2),(-1,r3)])
+        MB2 = MassBalance(C2,items=[(-1,r1),(1,r2)])
+        MB3 = MassBalance(C3,items=[(1,r1),(-1,r2),(1,r3)])
+        partials = [[JacobianElement(C1,C1,items=[(-1,r1),(1,r2),(-1,r3)]),
+                     JacobianElement(C1,C2,items=[(-1,r1),(1,r2)]),
+                     JacobianElement(C1,C3,items=[(-1,r1),(1,r2),(-1,r3)])],
+                    [JacobianElement(C2,C1,items=[(-1,r1),(1,r2)]),
+                     JacobianElement(C2,C2,items=[(-1,r1),(1,r2)]),
+                     JacobianElement(C2,C3,items=[(-1,r1),(1,r2)])],
+                    [JacobianElement(C3,C1,items=[(1,r1),(-1,r2),(1,r3)]),
+                     JacobianElement(C3,C2,items=[(1,r1),(-1,r2)]),
+                     JacobianElement(C3,C3,items=[(1,r1),(-1,r2),(1,r3)])]]
+        for i,(MB,elements) in enumerate(zip([MB1,MB2,MB3],partials)): 
+            for j,(C,element) in enumerate(zip([C1,C2,C3],elements)):
+                with self.subTest(MB=i+1,partial=j+1):
+                    test = MB.partial(C).items
+                    self.assertEqual(test,element.items) 

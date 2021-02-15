@@ -277,17 +277,6 @@ class PythonWriter(Writer):
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law}')
         return MBs
-    def jacobian_elements(self,chemicalsys):
-        MBs = [chemicalsys.massbalance(compound) 
-                for compound in chemicalsys.compounds]
-        Jac = ['#Non-zero Elements',]
-        for MB in MBs:
-            for compound in chemicalsys.compounds:
-                Jac_ij = MB.partial(compound)
-                var,expr = self.jacobian_element(Jac_ij)
-                if expr and expr != '0':
-                    Jac.append(f'{var} = {expr}')
-        return Jac
     def _jacobian_elements(self,chemicalsys):
         Jac = ['#Non-zero Elements',]
         jac_elements = chemicalsys.jacobian()

@@ -280,8 +280,7 @@ class JacobianElement(object):
     compound2 : Compound
         Compound of the partial derivative.
     items : list
-        list of Reactions with a derivative with respect to compound2 != 0 for 
-        that mass balance.
+        list of Reactions in which compound2 appears.
 
     """
     def __init__(self,compound1,compound2,items=None):
