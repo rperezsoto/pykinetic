@@ -342,6 +342,23 @@ class Compound(object):
         return F0.format(self.label)
 
 class TransitionState(object):
+    """
+    Object representation of the TS. Without an instance of this class assigned
+    to a reaction it is not possible to calculate the Activation energy.
+
+    Parameters
+    ----------
+    energy : Energy
+        free energy of the transition state.
+    reactions : list
+        A list of reactions where the TS is used. It is used to have a reference
+        to those instances in case it is needed.
+    label : str
+        A string to identify the Transition State. If none is provided a default
+        one is assigned upon initialization.
+    scannable : bool
+        Marks if the Transition State is object of a scan.
+    """
     defaultname = 0 
     def __init__(self,energy,reactions=None,label=None,scannable=False):
         if label is None:
@@ -374,6 +391,25 @@ class TransitionState(object):
         self._energy = other
 
 class DiffusionTS(TransitionState):
+    """
+    Object representation of the TS for a diffusion process. It requires a 
+    reactions argument and a relative barrier. The transition state will always 
+    be 'barrier' in energy higher than the highest reactants.
+
+    Parameters
+    ----------
+    energy : Energy
+        free energy of the transition state.
+    reactions : list
+        A list of reactions where the TS is used. It is used to ensure that 
+        any modification to the TS energy or to the compounds of those reactions 
+        does not lead t below any of the reactants in those reactions
+    label : str
+        A string to identify the Transition State. If none is provided a default
+        one is assigned upon initialization.
+    scannable : bool
+        Marks if the Transition State is object of a scan.
+    """
     defaultname = 0
     def __init__(self,barrier,reactions,label=None,scannable=False):
         self.barrier = barrier
@@ -394,157 +430,6 @@ class DiffusionTS(TransitionState):
         if other < energy: 
             raise ValueError("Cannot set an energy lower than the reactants'")
         self.barrier = other - energy
-
-class SymbReaction(object):
-    """
-    An object that serves as connection between the `Reaction` implementation
-    and the user input reaction. Requires the existence of a dict-like in the
-    namespace named 'ReactionTypes'.
-
-    Parameters
-    ----------
-    Reaction : str
-        Direct reading of the reaction from the user input
-    EParse : str
-        How the energy included in the input should be interpreted, either as
-        'relative' to the reactants or as the 'absolute' energy of the TS
-        (the default is "relative").
-
-    Attributes
-    ----------
-    symb : str
-        Symbolic user input representation
-    energy : float
-        see `EParse`.
-    reactants
-    products
-    RType : string
-        string representing the type of reaction
-    IsUpdated : bool
-        Marker that informs if the object has been read by a ChemicalSystem
-        instance. (False on initialization)
-    EParse
-    child_reactions : Used to store a link to Reaction objects created from the
-        information of each SymbReaction (Empty on initialization)
-    TS : Used to store the energy of the 'TS'. (None upon initialization)
-
-    """
-    def __init__(self,Reaction,EParse='relative'):
-        self.symb = Reaction.replace('\t',' '*4)
-        self.EParse = EParse
-        self.IsUpdated = False
-        self.child_reactions = []
-        self.TS = None
-        Reaction,ActEnergy = Reaction.split("!")
-        self.energy = float(ActEnergy.strip())
-        marker = ' {} '.format # Auxiliary function for string matching
-        for symbol in ReactionTypes:
-            if marker(symbol) in self.symb:
-                Rs,Ps = Reaction.split(symbol)
-                self.RType = symbol
-                break
-        else:
-            raise RuntimeError("No Reaction Symbol found in {}".format(Line))
-        # Separe the different compounds
-        key = marker('+')
-        self.reactants = tuple(R.strip() for R in Rs.split(key) if R.strip())
-        self.products = tuple(P.strip() for P in Ps.split(key) if P.strip())
-        self._reactants = self.reactants
-        self._products = self.products
-
-    def __repr__(self):
-        return self.symb
-    def __str__(self):
-        return self.__repr__()
-
-    def reset_update(self):
-        """
-        Resets the state of the object as if it was not Updated with
-        a Mapper.
-        """
-        if self.IsUpdated:
-            self.reactants = self._reactants
-            self.products = self._products
-            self.TS = None
-            self.IsUpdated = False
-    def update(self,mapper):
-        """
-        Rebuilds the reactants and products lists using a dict-like object.
-        to fill them with Compound Objects. After it, calculates the TS energy
-        taking into account the type of Energy Parsing.
-
-        Parameters
-        ----------
-        mapper : Mappable
-        """
-        # Map reactants and products
-        self.reactants = [mapper[R] for R in self.reactants]
-        self.products = [mapper[P] for P in self.products]
-        # Now Calculate the TS Energy
-        self.calc_TS()
-        # Change State of the object
-        self.IsUpdated = True
-    def calc_TS(self):
-        """
-        Wrapper for recalculating the TS energy. Updates the value
-        of the attribute 'TS'
-        """
-        E_Rs = sum(R.energy for R in self.reactants)
-        E_Ps = sum(P.energy for P in self.products)
-        self.TS = ReactionTypes[self.RType][self.EParse](E_Rs,E_Ps,self.energy)
-
-    def child(self,child):
-        """
-        Adds a child to the list of child reactions of the Symbolic Reaction.
-
-        Parameters
-        ----------
-        child : Reaction
-
-        Raises
-        -------
-        TypeError
-            If the child is not an instance of a Reaction or any Reaction
-            subclass.
-
-        """
-        if not issubclass(child.__class__,Reaction):
-            msg = '{} is not a instance of a Reaction class/subclasss'
-            raise TypeError(msg.format(child))
-        self.child_reactions.append(child)
-    def reset_childs(self):
-        """
-        Similar to list.pop but returning the whole list of child_reactions.
-        """
-        out = self.child_reactions
-        self.child_reactions = []
-        return out
-
-    def to_Reaction(self,Model='ElementalStep'):
-        """
-        Returns a list of tuples in which each tuple contains the information
-        needed to initialize each Reaction Instance (See Classes.Reaction).
-        Compound initialization is left to the ChemicalSystem.
-
-        Parameters
-        ----------
-        Model : str
-            Name of the 'modeling strategy'/subclass of 'Reaction' to use.
-            (Defaults to 'ElementalStep')
-
-        Returns
-        -------
-        list
-            List of tuples to unpack for the init method of the Reaction
-            ( or subclass), i.e. for ElementalStep is:
-            (compounds, reactants, RType, AE).
-
-        """
-        if self.IsUpdated:
-            Items = [item(self) for item in ReactionTypes[self.RType][Model]]
-        else:
-            Items = []
-        return Items
 
 class Reaction(object):
     """
