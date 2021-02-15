@@ -1,5 +1,4 @@
-from pykinetic2.Classes import Compound, Energy, ChemicalSystem
-from pykinetic2.Classes import ElementalStep as Reaction
+from pykinetic2.Classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic2.Writers import Indent, PythonWriter, CplusplusWriter
 import unittest
 
@@ -38,21 +37,23 @@ class PythonWriterTest(unittest.TestCase):
         B = Compound('B',Energy( 0.0,unit))
         C = Compound('C',Energy( 2.0,unit))
         D = Compound('D',Energy(-1.0,unit))
+        # TransitionState(Energy(1.0,unit))
         self.compounds = [A,B,C,D]
         self.chemsys = ChemicalSystem()
         for c in self.compounds:
             self.chemsys.cadd(c,update=False)
         self.chemsys.cupdate()
-        self.reactions = [Reaction((A,),(C,),Energy(1.0,unit)),
-                          Reaction((A,B),(C,),Energy(1.0,unit)),
-                          Reaction((A,A),(C,),Energy(1.0,unit)),
-                          Reaction((A,),(B,C),Energy(1.0,unit)),
-                          Reaction((A,),(C,B),Energy(1.0,unit)),
-                          Reaction((A,),(C,C),Energy(1.0,unit)),
-                          Reaction((A,B),(C,D),Energy(1.0,unit)),
-                          Reaction((A,B,C),(D,),Energy(1.0,unit)),
-                          Reaction((A,),(B,C,D),Energy(1.0,unit))]
+        self.reactions = [Reaction((A,),(C,)),
+                          Reaction((A,B),(C,)),
+                          Reaction((A,A),(C,)),
+                          Reaction((A,),(B,C)),
+                          Reaction((A,),(C,B)),
+                          Reaction((A,),(C,C)),
+                          Reaction((A,B),(C,D)),
+                          Reaction((A,B,C),(D,)),
+                          Reaction((A,),(B,C,D))]
         for r in self.reactions:
+            r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
 
@@ -239,7 +240,6 @@ class PythonWriterTest(unittest.TestCase):
         test = self.writer._jacobian_elements(self.chemsys)
         self.assertEqual(test,solution)
 
-
 class CplusplusWriterTest(unittest.TestCase):
     def setUp(self):
         self.writer = CplusplusWriter()
@@ -253,16 +253,17 @@ class CplusplusWriterTest(unittest.TestCase):
         for c in self.compounds:
             self.chemsys.cadd(c,update=False)
         self.chemsys.cupdate()
-        self.reactions = [Reaction((A,),(C,),Energy(1.0,unit)),
-                          Reaction((A,B),(C,),Energy(1.0,unit)),
-                          Reaction((A,A),(C,),Energy(1.0,unit)),
-                          Reaction((A,),(B,C),Energy(1.0,unit)),
-                          Reaction((A,),(C,B),Energy(1.0,unit)),
-                          Reaction((A,),(C,C),Energy(1.0,unit)),
-                          Reaction((A,B),(C,D),Energy(1.0,unit)),
-                          Reaction((A,B,C),(D,),Energy(1.0,unit)),
-                          Reaction((A,),(B,C,D),Energy(1.0,unit))]
+        self.reactions = [Reaction((A,),(C,)),
+                          Reaction((A,B),(C,)),
+                          Reaction((A,A),(C,)),
+                          Reaction((A,),(B,C)),
+                          Reaction((A,),(C,B)),
+                          Reaction((A,),(C,C)),
+                          Reaction((A,B),(C,D)),
+                          Reaction((A,B,C),(D,)),
+                          Reaction((A,),(B,C,D))]
         for r in self.reactions:
+            r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
 
