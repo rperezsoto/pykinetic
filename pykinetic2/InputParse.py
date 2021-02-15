@@ -9,9 +9,15 @@ MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
            '<d>': {'TS':DiffusionTS,}}      # Reversible diffusion
 
 for mark in MARKERS: 
-    MARKERS['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
+    MARKERS[mark]['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
 
-is_energy = re.compile('([0-9]*\.[0-9]*)\s*?([^\s]*?)').findall
+re_is_energy = re.compile('([0-9]*\.[0-9]*)\s*?([^\s]*?)')
+def is_energy(text):
+    test = re_is_energy.findall(text)
+    if test:
+        return test[0]
+    else:
+        return False
 
 def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=False):
     chemicalsystem = cls()
@@ -96,6 +102,8 @@ def read_reactions(file):
     return raw_reactions,TS_lines
 def create_TS_dict(TS_lines,energy_unit='J/mol'):
     TS_dict = dict()
+    # TODO Make the scannable property to be included in the if-else logic
+    scannable = False
     for line in TS_lines:
         items = line.strip().split() 
         if len(items) == 3: 
@@ -105,7 +113,7 @@ def create_TS_dict(TS_lines,energy_unit='J/mol'):
             unit = energy_unit
         else:
             raise RuntimeError(f"Unexpected number of items in \n '{line}' ")
-        TS_dict[label] = Energy(energy,unit)
+        TS_dict[label] = (Energy(energy,unit),scannable)
     
     try: # Check if there is any duplicates
         assert len(TS_dict) == len(TS_lines)
@@ -113,23 +121,23 @@ def create_TS_dict(TS_lines,energy_unit='J/mol'):
         raise ValueError("Inconsistent number of TSs at the end of the file. " \
                          "Check for duplicates")
     return TS_dict
-def prepare_inline_TS(TS_text,mark,TS_dict):
+def prepare_inline_TS(TS_text,mark,TS_dict,energy_unit='J/mol'):
     scannable = False
     # Prepare the TS data
-    TS_text = TS_text.strip().split()
-    if len(TS_text) == 1 and not is_energy(TS_text):
-        label = TS_text
-        energy = TS_dict[label]
+    TS_text = TS_text.split()
+    if len(TS_text) == 1 and not is_energy(TS_text[0]):
+        label = TS_text[0]
+        energy,scannable = TS_dict[label]
     elif len(TS_text) == 1: 
         label = None
-        energy = Energy(TS_text,energy_unit)
+        energy = Energy(TS_text[0],energy_unit)
     elif len(TS_text) == 2:
         label = None
         number, unit = TS_text
         energy = Energy(number,unit)
-    elif len(TS_text) == 3 and TS_text == 'scan':
+    elif len(TS_text) == 3 and TS_text[-1] == 'scan':
         label = None
-        number, unit = TS_text
+        number, unit = TS_text[:2]
         energy = Energy(number,unit)
         scannable = True
     else: 
@@ -139,15 +147,15 @@ def prepare_inline_TS(TS_text,mark,TS_dict):
 
 def split_reaction_line(reaction_text): 
     for mark in MARKERS: 
-        match = MARKERS[mark]['matcher'].match(reaction_text)
+        match = MARKERS[mark]['matcher'].findall(reaction_text)
         if match:
             break
     else:
         raise ValueError('the reaction does not contain a known marker')
 
-    reactants_text, products_text, TS_text = match
+    reactants_text, products_text, TS_text = match[0]
     reactants = [r.strip() for r in reactants_text.split(' + ')]
     products  = [p.strip() for p in products_text.split(' + ')]
     
-    return  reactants, mark, products, TS_text
+    return  reactants, mark, products, TS_text.strip()
     
