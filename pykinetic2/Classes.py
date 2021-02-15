@@ -11,15 +11,6 @@ import warnings
 
 import numpy
 
-from .InputParse import ReactionTypes
-
-class OperationError(RuntimeError):
-    def __init__(self,action,*args,**kwargs):
-        msg = """
-              Attempted to {} in a ChemicalSystem that is not updated. Run
-              the rupdate or the cupdate methods before.
-              """
-        super(OperationError,self).__init__(msg.format(action),*args,**kwargs)
 class ParseError(AttributeError):
     pass
 
@@ -375,7 +366,7 @@ class TransitionState(object):
     def __hash__(self):
         return hash(self.label)
     def __repr__(self):
-        cls = self.__class__
+        cls = self.__class__.__name__
         return f"{cls} <'{self.label}'>"
     
     @property
@@ -583,7 +574,6 @@ class Reaction(object):
     T
 
     """
-    Models = {}
 
     def __init__(self,reactants,products,TS=None,T=298.15):
         self.reactants = Counter(reactants)
@@ -599,10 +589,7 @@ class Reaction(object):
     def __str__(self):
         reactants = ' + '.join([r.label for r in self.reactants.elements()])
         products = ' + '.join([p.label for p in self.products.elements()])
-        RType = self.RType
-        if RType is None:
-            RType = '?'
-        out = '{}    {}    {}'.format(reactants,RType,products)
+        out = '{}    {}    {}'.format(reactants,'=>',products)
         return out
     def __repr__(self):
         n = len(self.reactants)
@@ -610,13 +597,13 @@ class Reaction(object):
         i = self.key
         cls = type(self).__name__
         Rformat = '< {} {} of Type {} with {} reacts and {} products >'.format
-        return Rformat(cls,i,self.RType,n,m)
+        return Rformat(cls,i,'=>',n,m)
     def __eq__(self,other):
         return str(self) == str(other)
     def __contains__(self,item):
         return item in self.compounds
 
-    def Coefficient(self,compound):
+    def coefficient(self,compound):
         """
         Returns the global coefficient of the compound in the reaction if
         the compound is in the reaction, otherwise returns a 0
@@ -635,16 +622,21 @@ class Reaction(object):
     @AE.setter
     def AE(self,other):
         reactants_energy = sum([c.energy for c in self.reactants.elements()])
-        self.TS.energy = reactants_energy + other
+        try:
+            self.TS.energy = reactants_energy + other
+        except AttributeError as e:
+            raise RuntimeError('Attempting to set the activation energy to '\
+                                 'a TSless reaction.')
 
     @property
     def k(self):
         try:
-            self.k = self.ActE2k(self.T,self.AE)
+            k = self.ActE2k(self.T,self.AE)
         except ValueError as e:
             msg = str(e) + ' in reaction:\n\t{}'.format(str(self))
             e.args = (msg,)
             raise e
+        return k
 
     @staticmethod
     def ActE2k(T,AE):
@@ -938,7 +930,7 @@ class ChemicalSystem(object):
         MB = MassBalance(compound)
         n = len(self.reactions)
         for reaction in self.reactions:
-            coef = reaction.Coefficient(compound)
+            coef = reaction.coefficient(compound)
             # compound in reaction and does not appear as reactant and product
             if abs(coef) > 0:
                 MB.items.append((coef,reaction))

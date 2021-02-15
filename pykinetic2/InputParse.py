@@ -2,6 +2,17 @@ import re
 
 from .Classes import *
 
+# GLOBALS 
+MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
+           '=>' : {'TS':TransitionState,},  # Direct reaction
+           '<=' : {'TS':TransitionState,},  # Backwards reaction
+           '<d>': {'TS':DiffusionTS,}}      # Reversible diffusion
+
+for mark in MARKERS: 
+    MARKERS['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
+
+is_energy = re.compile('([0-9]*\.[0-9]*)\s*?([^\s]*?)').findall
+
 def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=False):
     chemicalsystem = cls()
 
@@ -31,7 +42,7 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
         if mark != '<=>' and relativeE: 
             energy = energy + reactants_energy
         # Create the TS
-        ts_cls = markers[mark]['TS']
+        ts_cls = MARKERS[mark]['TS']
         TS = ts_cls(energy,reactions=reactions,label=label,
                     scannable=scannable)
         # Add the reactions to the chemical system
@@ -39,7 +50,6 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
             reaction.TS = TS
             chemicalsystem.radd(reaction)
     return chemicalsystem
-
 
 def read_compounds(file):
     raw_compounds = []
@@ -127,19 +137,9 @@ def prepare_inline_TS(TS_text,mark,TS_dict):
         raise ValueError(f'Wrong TS definition at "{ts}"')
     return label,energy,scannable
 
-is_energy = re.compile('([0-9]*\.[0-9]*)\s*?([^\s]*?)').findall
-
-markers = {'<=>': {'TS':TransitionState,},  # Reversible
-           '=>' : {'TS':TransitionState,},  # Direct reaction
-           '<=' : {'TS':TransitionState,},  # Backwards reaction
-           '<d>': {'TS':DiffusionTS,}}      # Reversible diffusion
-
-for mark in markers: 
-    markers['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
-
 def split_reaction_line(reaction_text): 
-    for mark in markers: 
-        match = markers[mark]['matcher'].match(reaction_text)
+    for mark in MARKERS: 
+        match = MARKERS[mark]['matcher'].match(reaction_text)
         if match:
             break
     else:
