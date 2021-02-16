@@ -7,9 +7,38 @@ class InputTest(unittest.TestCase):
     def test_chemicalsystem_fromfiles(self):
         pass
     def test_read_compounds(self):
-        pass
+        module_name = 'pykinetic2.InputParse'
+        raw_compounds = """
+        A   20      kcal/mol
+        B   10      hartree
+        C   1   
+        D   0.5     eV
+        """
+        solutions = [['A','20','kcal/mol'],
+                     ['B','10','hartree'],
+                     ['C','1'],
+                     ['D','0.5','eV']]
+        with patch(f'{module_name}.open', mock_open(read_data=raw_compounds), 
+                    create=True) as m:
+            tests = read_compounds('mock_file')
+        for i,(test,solution) in enumerate(zip(tests,solutions)):
+            with self.subTest(compound='reactions'):
+                self.assertEqual(test,solution)
     def test_create_compounds(self):
-        pass
+        default_unit = 'kcal/mol'
+        compounds = [['A','20','kcal/mol'],
+                     ['B','10','hartree'],
+                     ['C','1'],
+                     ['D','0.5','eV']]
+        solutions = [Compound('A',Energy('20','kcal/mol')),
+                     Compound('B',Energy('10','hartree')),
+                     Compound('C',Energy('1',default_unit)),
+                     Compound('D',Energy('0.5','eV'))]
+        tests = create_compounds(compounds,default_unit)
+        for test,solution in zip(tests,solutions):
+            with self.subTest(compound=solution.label): 
+                self.assertEqual(test,solution)
+                self.assertEqual(test.energy,solution.energy)
     def test_read_reactions(self):
         module_name = 'pykinetic2.InputParse'
         reactions = """

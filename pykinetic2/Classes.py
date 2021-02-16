@@ -325,8 +325,8 @@ class Compound(object):
     def __int__(self):
         return int(self.key)
     def __repr__(self):
-        cls = self.__class__
-        return f"{cls} <'{self.label}'>"
+        cls = self.__class__.__name__
+        return f"{cls}('{self.label}','{self.energy}')"
     def copy(self):
         """
         Creates a copy of the object with the key set as None.
