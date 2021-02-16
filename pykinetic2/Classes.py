@@ -47,10 +47,10 @@ class Energy(object):
         self.unit = unit
         self.value = float(value)
     def __repr__(self):
-        cls = type(self).__name__
-        return '<{0}:{1},{2}>'.format(cls,self.Val,self._unit)
+        cls = self.__class__.__name__
+        return f'<{cls}:{self.value},{self.unit}>'
     def __str__(self):
-        return ' '.join([str(self.value),self.unit])
+        return f'{self.value} {self.unit}'
     def __format__(self,format_spec):
         return ' '.join([self.value.__format__(format_spec),self.unit])
     def __bool__(self):
