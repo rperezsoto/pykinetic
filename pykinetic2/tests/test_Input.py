@@ -1,6 +1,7 @@
 from pykinetic2.Classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic2.InputParse import *
 import unittest
+from unittest.mock import mock_open, patch
 
 class InputTest(unittest.TestCase):
     def test_chemicalsystem_fromfiles(self):
@@ -10,7 +11,30 @@ class InputTest(unittest.TestCase):
     def test_create_compounds(self):
         pass
     def test_read_reactions(self):
-        pass
+        module_name = 'pykinetic2.InputParse'
+        reactions = """
+                    A  +  B    <=>   C    +   D    !25.0 kcal/mol 
+                    A  +  B    <=>   C    +   D    !25.0 
+                    A  +  B    <=>   C    +   D    !TS1 
+                    A          <=>   C             !TS1 
+                    TS1     25
+                    TS2     72      J/mol
+                    TS3     1.2     eV      scan
+                    """
+        solutions = [[(['A','B'],'<=>',['C','D'],'25.0 kcal/mol'), 
+                      (['A','B'],'<=>',['C','D'],'25.0'),
+                      (['A','B'],'<=>',['C','D'],'TS1'), 
+                      (['A',   ],'<=>',['C',   ],'TS1')],
+                      ['TS1     25',
+                       'TS2     72      J/mol',
+                       'TS3     1.2     eV      scan']]
+        with patch(f'{module_name}.open', mock_open(read_data=reactions), 
+                    create=True) as m:
+            test = read_reactions('mock_file')
+        with self.subTest(block='reactions'):
+            self.assertEqual(test[0],solutions[0])
+        with self.subTest(block='TSs'):
+            self.assertEqual(test[1],solutions[1])
     def test_create_TS_dict(self):
         default_unit = 'kcal/mol'
         lines = ['TS1    -22 ',

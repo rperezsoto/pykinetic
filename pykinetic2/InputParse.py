@@ -89,14 +89,14 @@ def create_compounds(raw_compounds,energy_unit='J/mol'):
 def read_reactions(file):
     reaction_lines = []
     TS_lines = [] 
-    with open(FilePath,'r') as F:
+    with open(file,'r') as F:
         for line in F:
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
             elif '!' in line:                  # [A-]  +  [B+] => C  !TS1 
                 reaction_lines.append(line)
-            elif len(line.split()) in [2,3]:   # TSNAME    Number   (Unit)
+            elif '!' not in line:   # TSNAME    Number   (Unit)
                 TS_lines.append(line)
     raw_reactions = [split_reaction_line(line) for line in reaction_lines]
     return raw_reactions,TS_lines
