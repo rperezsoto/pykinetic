@@ -2,7 +2,6 @@ import re
 
 from .Classes import *
 
-__all__ = (chemicalsystem_fromfiles,)
 
 # Custom errors
 class MissingCompounds(ValueError):
@@ -43,7 +42,7 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
         TS_dict = create_TS_dict(TS_lines,energy_unit)
     else:
         TS_dict = None
-    
+
     check_missing_compounds(chemicalsystem,raw_reactions)
     check_missing_TS(raw_reactions,TS_dict)
 
