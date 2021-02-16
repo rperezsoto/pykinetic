@@ -2,16 +2,26 @@ import re
 
 from .Classes import *
 
+__all__ = (chemicalsystem_fromfiles,)
+
+# Custom errors
+class MissingCompounds(ValueError):
+    pass
+class MissingTransitionStates(ValueError):
+    pass
+
 # GLOBALS 
 MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
            '=>' : {'TS':TransitionState,},  # Direct reaction
            '<=' : {'TS':TransitionState,},  # Backwards reaction
            '<d>': {'TS':DiffusionTS,}}      # Reversible diffusion
 
+REVERSIBLE = ['<=>','<d>'] # reactions modeled as 2 elemental steps
+
 for mark in MARKERS: 
     MARKERS[mark]['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
 
-re_is_energy = re.compile('(-?[0-9]*\.[0-9]*)\s*?([^\s]*?)')
+re_is_energy = re.compile('(-?[0-9]*\.+[0-9]*)\s*?([^\s]*?)')
 def is_energy(text):
     test = re_is_energy.findall(text)
     if test:
@@ -24,37 +34,47 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
 
     # Process the Compound File
     raw_compounds = read_compounds(file_c)
-    compounds = create_compounds(raw_compounds)
+    compounds = create_compounds(raw_compounds,energy_unit)
     chemicalsystem.cextend(compounds)
 
     # Process the reaction File
     raw_reactions, TS_lines = read_reactions(file_r)
     if TS_lines: 
-        TS_dict = create_TS_dict(TS_lines)
+        TS_dict = create_TS_dict(TS_lines,energy_unit)
     else:
         TS_dict = None
+    
+    check_missing_compounds(chemicalsystem,raw_reactions)
+    check_missing_TS(raw_reactions,TS_dict)
+
+    # Parse the reactions and create the reaction and ts instances
     for reactants,mark,products,TS_text in raw_reactions: 
-        reactants = [chemicalsystem.Name2Compound[r.label] for r in reactants]
-        products  = [chemicalsystem.Name2Compound[p.label] for p in products]
+        reactants = [chemicalsystem.Name2Compound[r] for r in reactants]
+        products  = [chemicalsystem.Name2Compound[p] for p in products]
         reactants_energy = sum([r.energy for r in reactants])
         if mark == '<=':
             reactants, products = products, reactants
-        label,energy,scannable = prepare_inline_TS(TS_text,mark,TS_dict)
+        label,energy,scannable = prepare_inline_TS(TS_text,TS_dict,energy_unit)
         # Create the reaction/s
         reactions = [Reaction(reactants,products),]
-        if mark in ['<=>','<d>']:
+        if mark in REVERSIBLE:
             reactions.append(Reaction(products,reactants))
         # Handle relative energy specification
         if mark != '<=>' and relativeE: 
             energy = energy + reactants_energy
         # Create the TS
         ts_cls = MARKERS[mark]['TS']
-        TS = ts_cls(energy,reactions=reactions,label=label,
-                    scannable=scannable)
+        if label not in chemicalsystem.Name2TS: 
+            TS = ts_cls(energy,reactions=reactions,label=label,
+                        scannable=scannable)
+        else:
+            TS = chemicalsystem.Name2TS[label]
+            TS.reactions.extend(reactions)
         # Add the reactions to the chemical system
         for reaction in reactions: 
             reaction.TS = TS
-            chemicalsystem.radd(reaction)
+            chemicalsystem.radd(reaction,False)
+        chemicalsystem.rupdate()
     return chemicalsystem
 
 def read_compounds(file):
@@ -125,30 +145,29 @@ def create_TS_dict(TS_lines,energy_unit='J/mol'):
         raise ValueError("Inconsistent number of TSs at the end of the file. " \
                          "Check for duplicates")
     return TS_dict
-def prepare_inline_TS(TS_text,mark,TS_dict,energy_unit='J/mol'):
+def prepare_inline_TS(TS_text,TS_dict,energy_unit='J/mol'):
     scannable = False
     # Prepare the TS data
-    TS_text = TS_text.split()
-    if len(TS_text) == 1 and not is_energy(TS_text[0]):
-        label = TS_text[0]
+    TS_items = TS_text.split()
+    if len(TS_items) == 1 and not is_energy(TS_text):
+        label = TS_items[0]
         energy,scannable = TS_dict[label]
-    elif len(TS_text) == 1: 
+    elif len(TS_items) == 1: 
         label = None
-        energy = Energy(TS_text[0],energy_unit)
-    elif len(TS_text) == 2:
+        energy = Energy(TS_items[0],energy_unit)
+    elif len(TS_items) == 2:
         label = None
-        number, unit = TS_text
+        number, unit = TS_items
         energy = Energy(number,unit)
-    elif len(TS_text) == 3 and TS_text[-1] == 'scan':
+    elif len(TS_items) == 3 and TS_items[-1] == 'scan':
         label = None
-        number, unit = TS_text[:2]
+        number, unit = TS_items[:2]
         energy = Energy(number,unit)
         scannable = True
     else: 
-        ts = ' '.join(TS_text)
+        ts = ' '.join(TS_items)
         raise ValueError(f'Wrong TS definition at "{ts}"')
     return label,energy,scannable
-
 def split_reaction_line(reaction_text): 
     for mark in MARKERS: 
         match = MARKERS[mark]['matcher'].findall(reaction_text)
@@ -162,4 +181,44 @@ def split_reaction_line(reaction_text):
     products  = [p.strip() for p in products_text.split(' + ')]
     
     return  reactants, mark, products, TS_text.strip()
-    
+
+def check_missing_compounds(chemicalsystem,raw_reactions):
+    """
+    Checks if all the compounds in the chemicalsystem are 'defined' 
+    within the ChemicalSystem instance.
+
+    Raises
+    ------
+    MissingCompounds
+
+    """
+    defined_compounds = set(chemicalsystem.Name2Compound)
+    reactants,mark,products,TS_text = zip(*raw_reactions)
+    reaction_compounds = set(list(chain(*reactants)) + list(chain(*products)))
+    missing_compounds = reaction_compounds - defined_compounds
+    if missing_compounds:
+        msg = 'The following compounds are not defined: \n{}\n'
+        items = [f'{item}\tNUMBER\tUNIT?' for item in sorted(missing_compounds)]
+        raise MissingCompounds(msg.format('\n'.join(items)))
+def check_missing_TS(raw_reactions,TS_dict):
+    """
+    Checks if all the labeled transition states of the reactions are 'defined' 
+    are defined.
+
+    Raises
+    ------
+    MissingTransitionStates
+
+    """
+    defined_TS = set(TS_dict)
+    reactants,mark,products,TS_text = zip(*raw_reactions)
+    reaction_TS = []
+    for item in TS_text :
+        if not is_energy(item): 
+            reaction_TS.append(item.split()[0])
+    missing_TS = set(reaction_TS) - defined_TS
+    if missing_TS:
+        msg = 'The following labeled TS are not defined: \n{}\n'
+        items = [f'{item}\tNUMBER\tUNIT?\tSCAN?' 
+                 for item in sorted(missing_TS)]
+        raise MissingTransitionStates(msg.format('\n'.join(items)))

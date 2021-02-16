@@ -1,11 +1,83 @@
 from pykinetic2.Classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic2.InputParse import *
 import unittest
-from unittest.mock import mock_open, patch
+from unittest.mock import mock_open, patch, MagicMock
 
 class InputTest(unittest.TestCase):
     def test_chemicalsystem_fromfiles(self):
-        pass
+        module_name = 'pykinetic2.InputParse'
+        default_unit = 'kcal/mol'
+        # Prepare the outputs of the mocks
+        compounds = [['A','0.0',default_unit],
+                     ['B','0.0',default_unit],
+                     ['C','1.0'],
+                     ['D','-2.0',default_unit]]
+        reactions1 = [[(['A','B'],'<=>',['C',],f'10.0 {default_unit}'), 
+                      (['C',],'=>',['D',],'TSa')],
+                     ['TSa     20',]]
+        reactions2 = [[(['A','B'],'<=>',['C',],f'10.0 {default_unit}'), 
+                      (['C',],'=>',['D',],'TSa')],
+                     ['TSa     18',]]
+        # Prepare the solution
+        chemsys = ChemicalSystem()
+        A = Compound('A',Energy('0.0',default_unit))
+        B = Compound('B',Energy('0.0',default_unit))
+        C = Compound('C',Energy('1.0',default_unit))
+        D = Compound('D',Energy('-2.0',default_unit))
+        TS00 = TransitionState(Energy('10.0',default_unit),label='TS00')
+        TS01 = TransitionState(Energy('10.0',default_unit),label='TS01')
+        TSa = TransitionState(Energy('20.0',default_unit),label='TSa')
+        r1 = Reaction((A,B),(C,),TS=TS00)
+        r2 = Reaction((C,),(A,B),TS=TS00)
+        r3 = Reaction((C,),(D,),TS=TSa)
+        for compound in [A,B,C,D]: 
+            chemsys.cadd(compound)
+        for reaction in [r1,r2,r3]: 
+            chemsys.radd(reaction,False)
+        chemsys.rupdate()
+        
+        # run the function with the mocks
+        with patch(f'{module_name}.read_compounds',return_value=compounds):
+            with patch(f'{module_name}.read_reactions',return_value=reactions1):
+                chemicalsystem1 = chemicalsystem_fromfiles(ChemicalSystem,
+                                                           'file_compounds',
+                                                           'file_reactions',
+                                                           default_unit,
+                                                           False)
+            with patch(f'{module_name}.read_reactions',return_value=reactions2):
+                chemicalsystem2 = chemicalsystem_fromfiles(ChemicalSystem,
+                                                           'file_compounds',
+                                                           'file_reactions',
+                                                           default_unit,
+                                                           False)
+        attributes =['compounds','reactions','Name2Compound','transitionstates']
+        for attr in attributes: 
+            with self.subTest(energy_parse='absolute',attribute=attr):
+                test = getattr(chemicalsystem1,attr)
+                sol = getattr(chemsys,attr)
+                self.assertEqual(test, sol)
+        _ = attributes.pop(-1)
+        for attr in attributes: 
+            with self.subTest(energy_parse='relative',attribute=attr):
+                test = getattr(chemicalsystem2,attr)
+                sol = getattr(chemsys,attr)
+                self.assertEqual(test, sol)
+        with self.subTest(energy_parse='relative',attribute='transitionstates'):
+            test = chemicalsystem2.transitionstates
+            sol = [TS01,TSa]
+            self.assertEqual(test,sol)
+        for compound in chemicalsystem1.compounds:
+            compound2 = chemicalsystem2.Name2Compound[compound.label] 
+            with self.subTest(test='energy consistency',compound=compound.label):
+                self.assertEqual(compound.energy,compound2.energy)
+        ts = chemicalsystem1.Name2TS['TS00']
+        ts2 = chemicalsystem2.Name2TS['TS01']
+        with self.subTest(test='energy consistency',TS='defaultname'):
+            self.assertTrue(ts.energy,ts2.energy)
+        with self.subTest(test='energy consistency',TS='TSa'):
+            ts = chemicalsystem1.Name2TS['TSa']
+            ts2 = chemicalsystem2.Name2TS['TSa']
+            self.assertTrue(ts.energy,ts2.energy)
     def test_read_compounds(self):
         module_name = 'pykinetic2.InputParse'
         raw_compounds = """
@@ -39,6 +111,9 @@ class InputTest(unittest.TestCase):
             with self.subTest(compound=solution.label): 
                 self.assertEqual(test,solution)
                 self.assertEqual(test.energy,solution.energy)
+        with self.subTest(test='raises error'):
+            with self.assertRaises(ValueError):
+                _ = create_compounds(compounds + compounds)
     def test_read_reactions(self):
         module_name = 'pykinetic2.InputParse'
         reactions = """
@@ -104,7 +179,7 @@ class InputTest(unittest.TestCase):
                      (None,Energy(2,'kcal/mol'),True)]
         for arg,sol in zip(raw_data,solutions):
             with self.subTest(arg=arg): 
-                test = prepare_inline_TS(arg,'fakemark',TSdict,default_unit)
+                test = prepare_inline_TS(arg,TSdict,default_unit)
                 self.assertEqual(test,sol)
     def test_split_reaction_line(self):
         reactions = """

@@ -42,8 +42,8 @@ class Energy(object):
 
     def __init__(self,value=0.0,unit='hartree'):
         # Assume that value is in the specified unit
-        self._conversion = type(self)._ConversionFactors[unit]
-        self._SI = type(self)._ConversionFactors['J/mol']
+        self._conversion = self._ConversionFactors[unit]
+        self._SI = self._ConversionFactors['J/mol']
         self.unit = unit
         self.value = float(value)
     def __repr__(self):
@@ -587,8 +587,8 @@ class ChemicalSystem(object):
         self.Name2TS = dict()
 
     def __repr__(self):
-        n,m = self._shape()
-        cls = type(self)
+        n,m = self.shape
+        cls = self.__class__.__name__
         return '<{} with {} compounds and {} reactions>'.format(cls,n,m)
     def __contains__(self,item):
         return item in self.compounds or item in self.reactions
@@ -674,23 +674,6 @@ class ChemicalSystem(object):
             if UpdateDict:
                 self.Name2Compound[C.label] = C
 
-    def check_compounds(self):
-        """
-        Checks if all the compounds in the sreactions are 'defined' in the
-        within the ChemicalSystem instance.
-
-        Returns
-        -------
-        set
-            set with the labels of the compounds not 'defined'
-        """
-        missing_compounds = set()
-        for reaction in self.reactions:
-            for compound in reaction.compounds:
-                if compound not in self.Name2Compound: # Is this if overhead ?
-                     missing_compounds.add(compound)
-        return missing_compounds
-
     # Methods related with the (r)eactions attribute
     def radd(self,reaction,update=True):
         """
@@ -706,9 +689,15 @@ class ChemicalSystem(object):
         """
         if reaction not in self:
             if update:
-                reaction.key = self.reactions[-1].key + 1
+                if not self.reactions:
+                    key = 0 + 1
+                else:
+                    key = self.reactions[-1].key +1
+                reaction.key = key
                 reaction.T = self.T
             self.reactions.append(reaction)
+        if reaction.TS not in self.transitionstates: 
+            self.transitionstates.append(reaction.TS)
     def rextend(self,reactions):
         """
         Lazy Addition, it first adds all the reactions and then
@@ -733,41 +722,13 @@ class ChemicalSystem(object):
             Initial index (the default is 0).
         """
         reactions = self.reactions
+        self.transitionstates = []
         for i,R in enumerate(reactions):
             R.key = i + start
             R.T = self.T
-
-    def reactions_fromFile(self,FilePath,EParse,Model='ElementalStep'):
-        """
-        Reads the reactions from the file and enforces that the
-        Energy Parsing mode is either 'relative' or 'absolute'.
-
-        Parameters
-        ----------
-        FilePath : str
-            A valid to a file that follows the specifications of the `README`.
-        EParse : str
-            How the energy provided with the reaction should be considered
-            either 'relative' to reactants or the TS 'absolute' energy
-        """
-        assert EParse.lower() == 'absolute' or EParse.lower() == 'relative'
-        sreactions = []
-        with open(FilePath,'r') as F:
-            for line in F:
-                line = line.strip()
-                if not line or line.startswith('#'):
-                    continue
-                sreactions.append(SymbReaction(line,EParse))
-        self.srextend(sreactions)
-
-        reactions = []
-        # Use self.sreactions to avoid the presence of duplicates in sreactions
-        for SR in self.sreactions:
-            new_reactions = ElementalStep.from_sreaction(SR,Model)
-            for R in new_reactions:
-                reactions.append(R)
-                SR.child(R)
-        self.rextend(reactions)
+            if R.TS not in self.transitionstates: 
+                self.transitionstates.append(R.TS)
+        self.Name2TS = {ts.label:ts for ts in self.transitionstates}
 
     # Utilities
     def RxCMatrix(self):
@@ -796,7 +757,8 @@ class ChemicalSystem(object):
     # Main API
     def massbalance(self,compound):
         """
-        returns the mass balance of the compound for the chemical system.
+        Creates a MassBalance instance from the mass balance of the compound 
+        provided in the chemical system.
 
         Parameters
         ----------
