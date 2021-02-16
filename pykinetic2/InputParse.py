@@ -11,7 +11,7 @@ MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
 for mark in MARKERS: 
     MARKERS[mark]['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
 
-re_is_energy = re.compile('([0-9]*\.[0-9]*)\s*?([^\s]*?)')
+re_is_energy = re.compile('(-?[0-9]*\.[0-9]*)\s*?([^\s]*?)')
 def is_energy(text):
     test = re_is_energy.findall(text)
     if test:
@@ -102,13 +102,17 @@ def read_reactions(file):
     return raw_reactions,TS_lines
 def create_TS_dict(TS_lines,energy_unit='J/mol'):
     TS_dict = dict()
-    # TODO Make the scannable property to be included in the if-else logic
-    scannable = False
     for line in TS_lines:
-        items = line.strip().split() 
-        if len(items) == 3: 
+        scannable = False
+        items = line.strip().split()
+        # Guess if it is a scannable TS
+        if items[-1] == 'scan':
+            scannable = True
+            _ = items.pop(-1)
+        # now only two cases are possible
+        if len(items) == 3:  # Energy unit is specified
             label,energy,unit = items
-        elif len(items) == 2: 
+        elif len(items) == 2: # energy unit is not specified
             label, energy = items
             unit = energy_unit
         else:

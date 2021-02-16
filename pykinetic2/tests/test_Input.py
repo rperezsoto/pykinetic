@@ -12,7 +12,25 @@ class InputTest(unittest.TestCase):
     def test_read_reactions(self):
         pass
     def test_create_TS_dict(self):
-        pass
+        default_unit = 'kcal/mol'
+        lines = ['TS1    -22 ',
+                 'TS2    1.2    eV',
+                 'TS3    25.0',
+                 'TS4    -10.0  scan',
+                 'TS5    23.0   kcal/mol',
+                 'TS6    0.01   hartree',
+                 'TS7    2  kcal/mol    scan']
+        solution = {'TS1':(Energy(-22,'kcal/mol'),False),
+                    'TS2':(Energy(1.2,'eV'),False),
+                    'TS3':(Energy(25.0,'kcal/mol'),False),
+                    'TS4':(Energy(-10.0,'kcal/mol'),True),
+                    'TS5':(Energy(23.0,'kcal/mol'),False),
+                    'TS6':(Energy(0.01,'hartree'),False),
+                    'TS7':(Energy(2,'kcal/mol'),True)}
+        TS_dict = create_TS_dict(lines,default_unit)
+        for key,item in TS_dict.items():
+            with self.subTest(key=key):
+                self.assertEqual(item,solution.get(key,None))
     def test_prepare_inline_TS(self): 
         default_unit = 'kcal/mol'
         raw_data = ['TS1',
