@@ -1,0 +1,26 @@
+#### compounds ####
+0)	LR	-1071.630849 kcal/mol
+1)	LS	-1071.630849 kcal/mol
+2)	Cu	-193.851222 kcal/mol
+3)	LRCu	-1267.484165 kcal/mol
+4)	LSCu	-1267.484165 kcal/mol
+5)	LRLRCu	-2341.084677 kcal/mol
+6)	LRLSCu	-2341.088169 kcal/mol
+7)	LSLSCu	-2341.084677 kcal/mol
+#### reactions ####
+0)	LR + Cu	=>	LRCu	!2.0
+1)	LRCu	=>	LR + Cu	!4.0
+2)	LS + Cu	=>	LSCu	!2.0
+3)	LSCu	=>	LS + Cu	!4.0
+4)	LRCu + LR	=>	LRLRCu	!2.0
+5)	LRLRCu	=>	LRCu + LR	!4.0
+6)	LRCu + LS	=>	LRLSCu	!2.0
+7)	LRLSCu	=>	LRCu + LS	!4.0
+8)	LSCu + LR	=>	LRLSCu	!2.0
+9)	LRLSCu	=>	LSCu + LR	!4.0
+10)	LSCu + LS	=>	LSLSCu	!2.0
+11)	LSLSCu	=>	LSCu + LS	!4.0
+12)	LRLRCu + LS	=>	LRLSCu + LR	!2.0
+13)	LRLSCu + LR	=>	LRLRCu + LS	!2.0
+14)	LSLSCu + LR	=>	LRLSCu + LS	!2.0
+15)	LRLSCu + LS	=>	LSLSCu + LR	!2.0

@@ -1,0 +1,8 @@
+LR              -1073.5246378 hartree
+LS              -1073.5246378 hartree
+Cu              -195.74501058 hartree
+LRCu            -1269.37795421 hartree
+LSCu            -1269.37795421 hartree
+LRLRCu          -2342.97846601 hartree
+LRLSCu          -2342.98195827 hartree
+LSLSCu          -2342.97846601 hartree

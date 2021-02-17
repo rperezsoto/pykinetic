@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from pathlib import Path
-from collections import Counter
+from collections import Counter, defaultdict
 from pkg_resources import resource_filename
 
 TEMPLATES_PATH = Path(resource_filename('pykinetic2','templates'))
@@ -26,17 +26,17 @@ class Writer(object):
         if header is None:
             self._load_default_header()
         elif header:
-            self._header = header.format
+            self._header = header
         else:
-            self._header = ''.format
+            self._header = ''
         if tail is None:
             self._load_default_tail()
         elif header:
-            self._tail = tail.format
+            self._tail = tail
         else:
-            self._tail = ''.format
+            self._tail = ''
         self.clear()
-
+        self.parameters = defaultdict(lambda : 'MISSING')
 
     # Defaults Load
     @abstractmethod
@@ -45,6 +45,13 @@ class Writer(object):
     @abstractmethod
     def _load_default_header(self):
         pass
+
+    # methods for parameter reading
+    def set_parameters(self,simulation=None,convergence=None):
+        if simulation is not None:
+            self.parameters.update(simulation)
+        if convergence is not None:
+            self.get_parameters.update(convergence)
 
     # methods for object -> str transformations
     def constant(self,reaction,value_format):
@@ -155,14 +162,19 @@ class Writer(object):
         """
         pass
 
-    # methods for writing
+    # main methods for writing
+    def fill_header(self,chemicalsys):
+        self.header = self._header.format_map(self.parameters)
+    def fill_tail(self,chemicalsys):
+        self.tail = self._tail.format_map(kwargs)
+
     def fill(self,chemicalsys):
         """
         Reads the information of the chemical system and updates the values
         needed for writing.
         """
-        self.header = self._header(chemicalsys)
-        self.tail = self._tail(chemicalsys)
+        self.fill_header(chemicalsys)
+        self.fill_tail(chemicalsys)
         self.function = self._function(chemicalsys)
         self.jacobian = self._jacobian(chemicalsys)
     def clear(self):
@@ -184,11 +196,20 @@ class PythonWriter(Writer):
     def _load_default_header(self):
         with open(TEMPLATES_PATH.joinpath('python_header.default'),'r') as F:
             txt = F.read()
-        self._header = txt.format
+        self._header = txt
     def _load_default_tail(self):
         with open(TEMPLATES_PATH.joinpath('python_tail.default'),'r') as F:
             txt = F.read()
-        self._tail = txt.format
+        self._tail = txt
+
+    def set_parameters(self,simulation=None,convergence=None):
+        if simulation is not None:
+            for key in ['tfin','report_t','dt']: 
+                self.parameters[key] = simulation.get(key,'')
+            concentrations = self._initial_concentrations(simulation)
+            self.parameters['concentrations'] = concentrations
+        if convergence is not None:
+            self.parameters['convergence'] = convergence.as_str(sep=',')
 
     # methods for object -> str transformations
     def ratelaw(self,reaction): # Currently only for Elemental Steps
@@ -256,7 +277,7 @@ class PythonWriter(Writer):
             return var ,'0'
         return var, ''.join(expr)
 
-    # Writing methods
+    # auxiliary writing methods
     def _kinetic_constants(self,chemicalsys):
         constants = ['#Constants',]
         for reaction in chemicalsys.reactions:
@@ -353,7 +374,20 @@ class PythonWriter(Writer):
         lines = Indent(lines,tab='    ',level=level)
 
         return '\n'.join(lines)
+    def _initial_concentrations(self,simulation):
+        concentrations = []
+        for key,val in simulation['concentrations'].items():
+            concentrations.append(f'xini[{key}] = {val}')
+        return '\n'.join(Indent(concentrations,level=0))
 
+    # main writing methods
+    def fill_header(self,chemicalsys):
+        self.parameters['out_filename'] = 'data.txt'
+        self.parameters['species'] = chemicalsys.species
+        self.parameters['T'] = chemicalsys.T
+        self.header = self._header.format_map(self.parameters)
+    def fill_tail(self,chemicalsys):
+        self.tail = self._tail.format_map(self.parameters)
     def write(self,chemicalsys,filepath):
         self.fill(chemicalsys)
         # Write the constants block
@@ -375,6 +409,19 @@ class CplusplusWriter(Writer):
         with open(TEMPLATES_PATH.joinpath('cplusplus_tail.default'),'r') as F:
             txt = F.read()
         self._tail = txt.format
+
+    def set_parameters(self,simulation=None,convergence=None):
+        if simulation is not None:
+            for key in ['tfin','report_t','dt']: 
+                self.parameters[key] = simulation.get(key,'')
+            concentrations = self._initial_concentrations(simulation)
+            self.parameters['concentrations'] = concentrations
+        if convergence is not None:
+            variables = ','.join(convergence.variables)
+            values = convergence.as_str(sep=';')
+            lines = [f'double {variables};',
+                     f"\t{values};"]
+            self.parameters['convergence'] = '\n'.join(Indent(lines,level=0))
 
     # methods for object -> str transformations
     def ratelaw(self,reaction): # Currently only for Elemental Steps
@@ -442,7 +489,7 @@ class CplusplusWriter(Writer):
             return var ,'0'
         return var, ''.join(expr)
 
-    # Writing methods
+    # auxiliary writing methods
     def _kinetic_constants(self,chemicalsys):
         constants = ['// Kinetic Constants',]
         for reaction in chemicalsys.reactions:
@@ -467,9 +514,6 @@ class CplusplusWriter(Writer):
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law};')
         return MBs
-    def _jacobian(self,chemicalsys):
-        return None
-
     def _function(self,chemicalsys,level=0):
         """
         Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
@@ -507,7 +551,23 @@ class CplusplusWriter(Writer):
         lines = Indent(lines,tab='    ',level=level)
 
         return '\n'.join(lines)
+    def _jacobian(self,chemicalsys):
+        return None
+    def _initial_concentrations(self,simulation):
+        concentrations = []
+        for key,val in simulation['concentrations'].items():
+            concentrations.append(f'{self.x}[{key}] = {val};')
+        concentrations[1:] = Indent(concentrations[1:],level=1)
+        return '\n'.join(concentrations)
 
+    # main writing methods
+    def fill_header(self,chemicalsys):
+        self.header = self._header()
+    def fill_tail(self,chemicalsys):
+        self.parameters['out_filename'] = 'data.txt',
+        self.parameters['species'] = chemicalsys.species
+        self.parameters['T'] = chemicalsys.T
+        self.tail = self._tail(**self.parameters)
     def fill(self,chemicalsys):
         super().fill(chemicalsys)
         constants = self._kinetic_constants(chemicalsys)

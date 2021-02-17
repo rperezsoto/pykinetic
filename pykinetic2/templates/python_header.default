@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import scipy.integrate
 
-OFile = '{0.OFileName}'
+OFile = '{out_filename}'
 
 # alias for ode function
 odeint = scipy.integrate.odeint
@@ -11,10 +11,10 @@ odeint = scipy.integrate.odeint
 MaxMem = 28*1E6
 
 # Parameters
-species = {0.species}
-dt = {0.Sim_Params[dt]} # Timestep s
-report_t = {0.Sim_Params[report_t]} # s
-tfin = {0.Sim_Params[tfin]} # Final Time
+species = {species}
+dt = {dt} # Timestep s
+report_t = {report_t} # s
+tfin = {tfin} # Final Time
 xini = np.zeros(species)
-{0.Sim_Params[Conc_ini]}
-# Model at T={0.T} K
+{concentrations}
+# Model at T={T} K

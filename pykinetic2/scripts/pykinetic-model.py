@@ -3,10 +3,12 @@ import os
 import math
 import argparse
 
-from pykinetic.Classes import Compound, ElementalStep, Energy
-from pykinetic.Utils import *
+from pykinetic2.Classes import ChemicalSystem, Energy
+from pykinetic2.Writers import PythonWriter,CplusplusWriter
+from pykinetic2.Utils import BiasedChemicalSystem, SimulationParameters, ConvergenceParameters
+from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
-__version__ = "1.2.0"
+__version__ = "0.0.0"
 
 def CreateParser():
     """ Create a Command line argument parser """
@@ -88,27 +90,24 @@ def main():
     parser = CreateParser()
     args = ParseArguments(parser)
     # Initialize the ChemicalSystem
-    T, Corr, Unit = args.Temperature, args.Correction, args.Unit
-    ChemSys = CorrChemSys(Corr,T,Unit)
-    ChemSys.compounds_fromFile(args.compounds)
-    ChemSys.reactions_fromFile(args.reactions,args.EParse)
-    # Check and print for the user to correct the compounds.txt
-    missing_compounds = ChemSys.check_compounds()
-    if missing_compounds:
-        print("The Following compounds are not defined in the compounds.txt")
-        for item in sorted(missing_compounds):
-            print('{}\tNUMBER'.format(item))
-        raise SystemExit("Aborting program, Not all species properly specified")
-
-    Template = FileTemplate(Sim_Params=args.Sim_Params,
-                            Conv_Params=args.Conv_Params,
-                            Header=args.Header,
-                            Function=args.Function,
-                            Jacobian=args.Jacobian,
-                            Tail=args.Tail)
-    Template.update_with(ChemSys)
-    Template.Fill()
-    Template.write_to(args.OFile)
+    T, bias, unit = args.Temperature, args.Correction, args.Unit
+    writer = CplusplusWriter(conc_var='x',mb_var='dxdt',fun_var='model',
+                          jac_var='Jac',jac_fun_var='Jacobian',
+                          header=args.Header,tail=args.Tail)
+    sim_params = SimulationParameters.read_from(args.Sim_Params)
+    if args.Conv_Params is None:
+        conv_params = ConvergenceParameters()
+    else:
+        conv_params = ConvergenceParameters.read_from(args.Conv_Params)
+    writer.set_parameters(simulation=sim_params,convergence=conv_params)
+    chemsys = BiasedChemicalSystem(bias=bias,T=T,unit=unit)
+    is_relativeE = args.EParse == 'relative'
+    populate_chemicalsystem_fromfiles(chemsys,
+                                      file_c=args.compounds,
+                                      file_r=args.reactions,
+                                      energy_unit=unit,
+                                      relativeE=is_relativeE)
+    writer.write(chemsys,args.OFile)
 
     if args.dot:
         Name = args.OFile[:-3]+'.dot'

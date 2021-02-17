@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import mock_open, patch, MagicMock
 
 class InputTest(unittest.TestCase):
-    def test_chemicalsystem_fromfiles(self):
+    def test_populate_chemicalsystem_fromfiles(self):
         module_name = 'pykinetic2.InputParse'
         default_unit = 'kcal/mol'
         # Prepare the outputs of the mocks
@@ -35,21 +35,22 @@ class InputTest(unittest.TestCase):
         for reaction in [r1,r2,r3]: 
             chemsys.radd(reaction,False)
         chemsys.rupdate()
-        
+        chemicalsystem1 = ChemicalSystem()
+        chemicalsystem2 = ChemicalSystem()
         # run the function with the mocks
         with patch(f'{module_name}.read_compounds',return_value=compounds):
             with patch(f'{module_name}.read_reactions',return_value=reactions1):
-                chemicalsystem1 = chemicalsystem_fromfiles(ChemicalSystem,
-                                                           'file_compounds',
-                                                           'file_reactions',
-                                                           default_unit,
-                                                           False)
+                populate_chemicalsystem_fromfiles(chemicalsystem1,
+                                                  'file_compounds',
+                                                  'file_reactions',
+                                                  default_unit,
+                                                  False)
             with patch(f'{module_name}.read_reactions',return_value=reactions2):
-                chemicalsystem2 = chemicalsystem_fromfiles(ChemicalSystem,
-                                                           'file_compounds',
-                                                           'file_reactions',
-                                                           default_unit,
-                                                           False)
+                populate_chemicalsystem_fromfiles(chemicalsystem2,
+                                                  'file_compounds',
+                                                  'file_reactions',
+                                                  default_unit,
+                                                  False)
         attributes =['compounds','reactions','Name2Compound','transitionstates']
         for attr in attributes: 
             with self.subTest(energy_parse='absolute',attribute=attr):

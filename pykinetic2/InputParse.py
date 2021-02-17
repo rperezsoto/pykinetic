@@ -9,13 +9,15 @@ class MissingCompounds(ValueError):
 class MissingTransitionStates(ValueError):
     pass
 
-# GLOBALS 
+# GLOBALS
+DIFFUSION = '<d>'
+BACKWARDS = '<='
 MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
            '=>' : {'TS':TransitionState,},  # Direct reaction
-           '<=' : {'TS':TransitionState,},  # Backwards reaction
-           '<d>': {'TS':DiffusionTS,}}      # Reversible diffusion
+           BACKWARDS : {'TS':TransitionState,},  # Backwards reaction
+           DIFFUSION: {'TS':DiffusionTS,}}      # Reversible diffusion
 
-REVERSIBLE = ['<=>','<d>'] # reactions modeled as 2 elemental steps
+REVERSIBLE = ['<=>',DIFFUSION] # reactions modeled as 2 elemental steps
 
 for mark in MARKERS: 
     MARKERS[mark]['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
@@ -28,8 +30,8 @@ def is_energy(text):
     else:
         return False
 
-def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=False):
-    chemicalsystem = cls()
+def populate_chemicalsystem_fromfiles(chemicalsystem,file_c,file_r,
+                                      energy_unit='J/mol',relativeE=False):
 
     # Process the Compound File
     raw_compounds = read_compounds(file_c)
@@ -41,7 +43,7 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
     if TS_lines: 
         TS_dict = create_TS_dict(TS_lines,energy_unit)
     else:
-        TS_dict = None
+        TS_dict = dict()
 
     check_missing_compounds(chemicalsystem,raw_reactions)
     check_missing_TS(raw_reactions,TS_dict)
@@ -51,7 +53,7 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
         reactants = [chemicalsystem.Name2Compound[r] for r in reactants]
         products  = [chemicalsystem.Name2Compound[p] for p in products]
         reactants_energy = sum([r.energy for r in reactants])
-        if mark == '<=':
+        if mark == BACKWARDS:
             reactants, products = products, reactants
         label,energy,scannable = prepare_inline_TS(TS_text,TS_dict,energy_unit)
         # Create the reaction/s
@@ -59,7 +61,7 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
         if mark in REVERSIBLE:
             reactions.append(Reaction(products,reactants))
         # Handle relative energy specification
-        if mark != '<=>' and relativeE: 
+        if mark != DIFFUSION and relativeE: 
             energy = energy + reactants_energy
         # Create the TS
         ts_cls = MARKERS[mark]['TS']
@@ -74,7 +76,6 @@ def chemicalsystem_fromfiles(cls,file_c,file_r,energy_unit='J/mol',relativeE=Fal
             reaction.TS = TS
             chemicalsystem.radd(reaction,False)
         chemicalsystem.rupdate()
-    return chemicalsystem
 
 def read_compounds(file):
     raw_compounds = []
