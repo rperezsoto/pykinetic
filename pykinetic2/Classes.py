@@ -76,7 +76,7 @@ class Energy(object):
 
     # Emulate Numeric Type
     def __add__(self,other):
-        ''' Implements the "self + other" operation '''
+        """ Implements the 'self + other' operation """
         Out = Energy(unit=self.unit)
         try:
             Out._value =  self._value + other._value
@@ -85,20 +85,20 @@ class Energy(object):
         finally:
             return Out
     def __sub__(self,other):
-        ''' Implements the "self - other" operation '''
+        """ Implements the 'self - other' operation """
         return self.__add__(-other)
     def __mul__(self,other):
-        ''' Implements the "self * other" operation '''
+        """ Implements the 'self * other' operation """
         if isinstance(other,type(self)):
             raise NotImplementedError('Energy*Energy not implemented')
         Out = Energy(self.value*other,unit=self.unit)
         return Out
     def __div__(self,other):
-        ''' Defined for compatibility with Python2.7, Implements the
-        "self/other" behaviour in python 2 '''
+        """ Defined for compatibility with Python2.7, Implements the
+        'self/other' behaviour in python 2 """
         return self.__truediv__(other)
     def __truediv__(self,other):
-        ''' Implements the "self / other" operation '''
+        """ Implements the 'self / other' operation """
         Out = Energy(unit=self.unit)
         try:
             _ = other._value
@@ -108,30 +108,30 @@ class Energy(object):
             Out = self._value/other._value
         return Out
     def __radd__(self,other):
-        ''' Implements the "other + self" operation '''
+        """ Implements the 'other + self' operation """
         return self + other
     def __rsub__(self,other):
-        ''' Implements the "self - other" operation '''
+        """ Implements the 'self - other' operation """
         return self.__add__(-other)
     def __rmul__(self,other):
         return self * other
     def __iadd__(self,other):
-        ''' Implements the "+= other" operation '''
+        """ Implements the '+= other' operation """
         try:
             self._value = self._value + other._value
         except AttributeError:
             self.value = self.value + other
         return self
     def __isub__(self,other):
-        ''' Implements the "-= other" operation '''
+        """ Implements the '-= other' operation """
         self.__iadd__(-other)
         return self
     def __imul__(self,other):
-        ''' Implements the "*= other" operation '''
+        """ Implements the '*= other' operation """
         self._value = self._value * other
         return self
     def __itruediv__(self,other):
-        ''' Implements the "/= other" operation '''
+        """ Implements the '/= other' operation """
         Out = self
         try:
             _ = other._value
@@ -143,24 +143,24 @@ class Energy(object):
             return Out
 
     def __neg__(self):
-        ''' Implements the "- self" operation '''
+        """ Implements the '- self' operation """
         return Energy(-self.value,self.unit)
     def __abs__(self):
-        ''' Implements the abs() function behaviour '''
+        """ Implements the abs() function behaviour """
         return Energy(abs(self.value),self.unit)
     def __int__(self):
-        ''' Implements the int() function behaviour '''
+        """ Implements the int() function behaviour """
         return int(self.value)
     def __float__(self):
-        ''' Implements the float() function behaviour '''
+        """ Implements the float() function behaviour """
         return float(self.value)
     def __round__(self,ndigits):
-        ''' Implements the round() function behaviour,
-        Must return an integrer '''
+        """ Implements the round() function behaviour,
+        Must return an integrer """
         return round(self.value,ndigits)
     # Comparison methods
     def __eq__(self,other):
-        ''' Implements the "self == other" behaviour'''
+        """ Implements the 'self == other' behaviour"""
         # Implementation of equality test extracted from math.isclose
         atol = 1E-6
         rtol = 1E-9
@@ -173,23 +173,23 @@ class Energy(object):
             warnings.warn('Difference between numbers is close to tolerance')
         return abs(A - B) <= test
     def __ne__(self,other):
-        ''' Implements the "self != other" behaviour'''
+        """ Implements the 'self != other' behaviour"""
         return not(self == other)
     def __lt__(self,other):
-        ''' Implements the "self < other" behaviour'''
+        """ Implements the 'self < other' behaviour"""
         try:
             Out = self._value < other._value
         except AttributeError:
             Out = self.value < other
         return Out
     def __gt__(self,other):
-        ''' Implements the "self > other" behaviour'''
+        """ Implements the 'self > other' behaviour"""
         return not ((self < other) or (self == other))
     def __le__(self,other):
-        ''' Implements the "self <= other" behaviour'''
+        """ Implements the 'self <= other' behaviour"""
         return not self > other
     def __ge__(self,other):
-        ''' Implements the "self >= other" behaviour'''
+        """ Implements the 'self >= other' behaviour"""
         return not self < other
 
 
