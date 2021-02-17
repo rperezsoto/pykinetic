@@ -468,8 +468,8 @@ class Reaction(object):
         self.T = T # Temperature in K
         self.TS = TS # Transition state associated, may be shared
     def __str__(self):
-        reactants = ' + '.join([r.label for r in self.reactants.elements()])
-        products = ' + '.join([p.label for p in self.products.elements()])
+        reactants = '  +  '.join([r.label for r in self.reactants.elements()])
+        products = '  +  '.join([p.label for p in self.products.elements()])
         out = '{}    {}    {}'.format(reactants,'=>',products)
         return out
     def __repr__(self):

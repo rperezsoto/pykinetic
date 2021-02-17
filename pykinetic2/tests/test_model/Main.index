@@ -1,26 +1,26 @@
 #### compounds ####
-0)	LR	-1071.630849 kcal/mol
-1)	LS	-1071.630849 kcal/mol
-2)	Cu	-193.851222 kcal/mol
-3)	LRCu	-1267.484165 kcal/mol
-4)	LSCu	-1267.484165 kcal/mol
-5)	LRLRCu	-2341.084677 kcal/mol
-6)	LRLSCu	-2341.088169 kcal/mol
-7)	LSLSCu	-2341.084677 kcal/mol
+0)    LR    -1073.5246378 hartree
+1)    LS    -1073.5246378 hartree
+2)    Cu    -195.74501058 hartree
+3)    LRCu    -1269.37795421 hartree
+4)    LSCu    -1269.37795421 hartree
+5)    LRLRCu    -2342.97846601 hartree
+6)    LRLSCu    -2342.98195827 hartree
+7)    LSLSCu    -2342.97846601 hartree
 #### reactions ####
-0)	LR + Cu	=>	LRCu	!2.0
-1)	LRCu	=>	LR + Cu	!4.0
-2)	LS + Cu	=>	LSCu	!2.0
-3)	LSCu	=>	LS + Cu	!4.0
-4)	LRCu + LR	=>	LRLRCu	!2.0
-5)	LRLRCu	=>	LRCu + LR	!4.0
-6)	LRCu + LS	=>	LRLSCu	!2.0
-7)	LRLSCu	=>	LRCu + LS	!4.0
-8)	LSCu + LR	=>	LRLSCu	!2.0
-9)	LRLSCu	=>	LSCu + LR	!4.0
-10)	LSCu + LS	=>	LSLSCu	!2.0
-11)	LSLSCu	=>	LSCu + LS	!4.0
-12)	LRLRCu + LS	=>	LRLSCu + LR	!2.0
-13)	LRLSCu + LR	=>	LRLRCu + LS	!2.0
-14)	LSLSCu + LR	=>	LRLSCu + LS	!2.0
-15)	LRLSCu + LS	=>	LSLSCu + LR	!2.0
+0)    LR  +  Cu    =>    LRCu    !2.0000000000608957 kcal/mol
+1)    LRCu    =>    LR  +  Cu    !69.96223324259043 kcal/mol
+2)    LS  +  Cu    =>    LSCu    !2.0000000000608957 kcal/mol
+3)    LSCu    =>    LS  +  Cu    !69.96223324259043 kcal/mol
+4)    LRCu  +  LR    =>    LRLRCu    !1.9999999999182179 kcal/mol
+5)    LRLRCu    =>    LRCu  +  LR    !49.61116262170351 kcal/mol
+6)    LRCu  +  LS    =>    LRLSCu    !1.9999999999182179 kcal/mol
+7)    LRLSCu    =>    LRCu  +  LS    !51.80256624864501 kcal/mol
+8)    LSCu  +  LR    =>    LRLSCu    !1.9999999999182179 kcal/mol
+9)    LRLSCu    =>    LSCu  +  LR    !51.80256624864501 kcal/mol
+10)    LSCu  +  LS    =>    LSLSCu    !1.9999999999182179 kcal/mol
+11)    LSLSCu    =>    LSCu  +  LS    !49.61116262170351 kcal/mol
+12)    LRLRCu  +  LS    =>    LRLSCu  +  LR    !1.9999999999182179 kcal/mol
+13)    LRLSCu  +  LR    =>    LRLRCu  +  LS    !4.1914036271450765 kcal/mol
+14)    LSLSCu  +  LR    =>    LRLSCu  +  LS    !1.9999999999182179 kcal/mol
+15)    LRLSCu  +  LS    =>    LSLSCu  +  LR    !4.1914036271450765 kcal/mol

@@ -5,7 +5,8 @@ import argparse
 
 from pykinetic2.Classes import ChemicalSystem, Energy
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import BiasedChemicalSystem, SimulationParameters, ConvergenceParameters
+from pykinetic2.Utils import (BiasedChemicalSystem, SimulationParameters,
+                             ConvergenceParameters, write_indexfile)
 from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.0"
@@ -113,10 +114,10 @@ def main():
     if args.dot:
         Name = args.OFile[:-3]+'.dot'
         with open(Name,'w') as F :
-            F.write('\n'.join(DotFile(ChemSys)))
+            F.write('\n'.join(DotFile(chemsys)))
     if args.IndexFile:
-        IdxFile = args.OFile[:-3]+'.index'
-        Write_IndexFile(ChemSys,IdxFile)
+        IdxFile = args.OFile.split('/')[-1].split('.')[0] + '.index'
+        write_indexfile(chemsys,IdxFile,isrelative=is_relativeE)
 
 if __name__ == '__main__':
     main()

@@ -1,9 +1,8 @@
-LR   +  Cu     <=>     LRCu               !2.0 kcal/mol
+LR   +  Cu     <d>     LRCu               !2.0 kcal/mol
 LS   +  Cu     <=>     LSCu               !2.0 kcal/mol
 LRCu   +  LR   <=>     LRLRCu             !2.0 kcal/mol
-LRCu   +  LS   <=>     LRLSCu             !2.0 kcal/mol
+LRCu   +  LS   <d>     LRLSCu             !2.0 kcal/mol
 LSCu   +  LR   <=>     LRLSCu             !2.0 kcal/mol
 LSCu   +  LS   <=>     LSLSCu             !2.0 kcal/mol
-LRCu   +  LR   <=>     LRLRCu             !2.0 kcal/mol
 LRLRCu +  LS   <=>   LRLSCu     +   LR    !2.0 kcal/mol
 LSLSCu +  LR   <=>   LRLSCu     +   LS    !2.0 kcal/mol

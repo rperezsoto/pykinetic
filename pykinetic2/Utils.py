@@ -99,7 +99,7 @@ class ConvergenceParameters(Parameters):
         parameters = [f'{key}={val}' for key,val in self.items()] 
         return sep.join(parameters)
 
-def Write_IndexFile(ChemSys,FilePath):
+def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
     """
     Writes a File that summarizes both Compounds and Reactions Files as
     they were modeled. Simple division of this file should lead to two files
@@ -107,24 +107,32 @@ def Write_IndexFile(ChemSys,FilePath):
 
     Parameters
     ----------
-    ChemSys : ChemicalSystem
+    chemsys : ChemicalSystem
         A ChemicalSystem or subclass to output
     FilePath : str
         A valid filepath for the IndexFile
     """
-    Name = FilePath
     Out = []
     Out.append('#### compounds ####')
-    for i in ChemSys.compounds:
-        Out.append('{0.key})\t{0.label}\t{0.energy: 0.6f}'.format(i))
+    for compound in chemsys.compounds:
+        key, label, energy = compound.key, compound.label, compound.energy
+        Out.append(f'{key})    {label}    {energy}')
     Out.append('#### reactions ####')
-    oformat = '{0:})\t{1:}\t!{2:0.1f}'
-    #riformat = '{0:})\t{3:}\t{2:}\t{1:}\t!{4:}'
-    for i,reaction in enumerate(ChemSys.reactions):
-        reaction.AE.to_unit('kcal/mol')
-        AE = float(reaction.AE)
-        Out.append(oformat.format(i,reaction,AE))
-    with open(Name,"w") as F :
+    if withoutTS:
+        for reaction in chemsys.reactions:
+            key = reaction.key
+            if isrelative:
+                energy = reaction.AE.as_unit(chemsys.unit)
+            else:
+                energy = reaction.TS.energy.as_unit(chemsys.unit)
+            Out.append(f'{key})    {reaction}    !{energy}')
+    else:
+        for reaction in chemsys.reactions:
+            key = reaction.key
+            Out.append(f'{key})    {reaction}    !{reaction.TS.label}')
+        for TS in chemsys.transitionstates: 
+            Out.append(f'{TS.label}    {TS.energy.as_unit(chemsys.unit)}')
+    with open(file,'w') as F :
         F.write('\n'.join(Out))
         F.write('\n')
 
