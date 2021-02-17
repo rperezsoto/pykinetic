@@ -78,13 +78,13 @@ void model( const state_type &x , state_type &dxdt , const double t)
 //[ublas_main
 int main()
 {
-    outfile.open("('data.txt',)", ofstream::out);
+    outfile.open("Main.data", ofstream::out);
 	// time parameters
     double tini,tend,tstep,trep;
     tini = 0.0;
     tend = 1E-9; // Final time, s
     tstep = 1E-12; // Timestep, s
-	trep = 1E-11; // s
+	trep = 1E-11; // Timestep to report, s
 
 	// Convergence Parameters
 	double rtol,atol;
@@ -97,9 +97,8 @@ int main()
 	x[0] = 0.5;
 	x[1] = 0.5;
 	x[2] = 1;
-    typedef runge_kutta_dopri5< state_type > stepper_type;
-    integrate_adaptive(make_controlled(atol, rtol, stepper_type()), model , x ,
-                     tini , tend , tstep , write_cout );
+    typedef dense_output_runge_kutta<controlled_runge_kutta<runge_kutta_dopri5<state_type> > > stepper_type;
+    integrate_const(stepper_type(), model, x, tini, tend, trep, write_cout);
     outfile.close();
     return 0;
 }

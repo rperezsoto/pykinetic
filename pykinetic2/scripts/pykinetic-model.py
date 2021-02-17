@@ -100,6 +100,7 @@ def main():
     else:
         conv_params = ConvergenceParameters.read_from(args.Conv_Params)
     writer.set_parameters(simulation=sim_params,convergence=conv_params)
+    writer.parameters['out_filename'] =  args.OFile.split('/')[-1].split('.')[0] + '.data'
     chemsys = BiasedChemicalSystem(bias=bias,T=T,unit=unit)
     is_relativeE = args.EParse == 'relative'
     populate_chemicalsystem_fromfiles(chemsys,

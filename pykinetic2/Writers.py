@@ -56,8 +56,8 @@ class Writer(object):
     # methods for object -> str transformations
     def constant(self,reaction,value_format):
         """
-        Takes in a reaction and returns 2 expressions, the string of the variable
-        and the string with the value of the constant. I.e.
+        Takes in a reaction and returns 2 expressions, the string of the 
+        variable and the string with the value of the constant. I.e.
         # Reaction(1 => 2)
         A = <ElementalStep 1 of Type '=>' with reacts=(1,) products(2,)>
         'k01', '1.00000000' = PythonWriter.constant(A)
@@ -77,8 +77,8 @@ class Writer(object):
     @abstractmethod
     def ratelaw(self,reaction):
         """
-        Takes in a reaction and returns 2 expressions, the string of the variable
-        and the string of the ratelaw expression. I.e.
+        Takes in a reaction and returns 2 expressions, the string of the 
+        variable and the string of the ratelaw expression. I.e.
         # Reaction(1 => 2)
         A = <ElementalStep 1 of Type '=>' with reacts=(1,) products(2,)>
         'r01', 'k01*x[1]' = PythonWriter.ratelaw(A)
@@ -564,7 +564,6 @@ class CplusplusWriter(Writer):
     def fill_header(self,chemicalsys):
         self.header = self._header()
     def fill_tail(self,chemicalsys):
-        self.parameters['out_filename'] = 'data.txt',
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
         self.tail = self._tail(**self.parameters)
