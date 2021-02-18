@@ -4,9 +4,9 @@ import unittest
 
 class IndentTest(unittest.TestCase):
     def test_default(self):
-        items =  [(['Test',]        ,['\tTest',]),
-                  (['Test1','Test2'],['\tTest1','\tTest2']),
-                  ( 'Test'          ,['\tT','\te','\ts','\tt']),
+        items =  [(['Test',]        ,['    Test',]),
+                  (['Test1','Test2'],['    Test1','    Test2']),
+                  ( 'Test'          ,['    T','    e','    s','    t']),
                   (   ''            ,[]),
                   (   []            ,[]),]
         for t,s in items:
@@ -20,7 +20,7 @@ class IndentTest(unittest.TestCase):
                   (4,    []            ,[]),]
         for i,t,s in items:
             with self.subTest(t=t):
-                self.assertEqual(Indent(t,level=i),s)
+                self.assertEqual(Indent(t,'\t',level=i),s)
     def test_level_consistency(self):
         test = 'line0 line1 line2 line3 line4 line-1'.split()
         for i,j in zip(range(4),range(1,5)):

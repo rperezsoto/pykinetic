@@ -5,7 +5,7 @@ from pkg_resources import resource_filename
 
 TEMPLATES_PATH = Path(resource_filename('pykinetic2','templates'))
 
-def Indent(lines,tab='\t',level=1):
+def Indent(lines,tab='    ',level=1):
     """
     Takes an iterable of strings, each representing a line and returns them with
     the indentation level and character specified.
@@ -31,7 +31,7 @@ class Writer(object):
             self._header = ''
         if tail is None:
             self._load_default_tail()
-        elif header:
+        elif tail:
             self._tail = tail
         else:
             self._tail = ''
@@ -404,11 +404,11 @@ class CplusplusWriter(Writer):
     def _load_default_header(self):
         with open(TEMPLATES_PATH.joinpath('cplusplus_header.default'),'r') as F:
             txt = F.read()
-        self._header = txt.format
+        self._header = txt
     def _load_default_tail(self):
         with open(TEMPLATES_PATH.joinpath('cplusplus_tail.default'),'r') as F:
             txt = F.read()
-        self._tail = txt.format
+        self._tail = txt
 
     def set_parameters(self,simulation=None,convergence=None):
         if simulation is not None:
@@ -562,11 +562,11 @@ class CplusplusWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        self.header = self._header()
+        self.header = self._header.format_map(self.parameters)
     def fill_tail(self,chemicalsys):
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
-        self.tail = self._tail(**self.parameters)
+        self.tail = self._tail.format_map(self.parameters)
     def fill(self,chemicalsys):
         super().fill(chemicalsys)
         constants = self._kinetic_constants(chemicalsys)

@@ -70,18 +70,20 @@ class SimulationParameters(Parameters):
         self['tfin'] = self.get('tfin','')
         self['dt'] = self.get('dt','')
         self['report_t'] = self.get('report_t','')
+        self['concentrations'] = {'index':'value'}
     def read_concentrations(self):
         compounds_mark = ';'
         values_mark  = ','
-        text = self.get('concentrations','')
+        text = self.get('concentrations','index')
         self['concentrations'] = dict()
-        if text:
+        if text != 'index':
             for compound in text.strip().split(compounds_mark): 
                 key,val = compound.split(values_mark)
                 self['concentrations'][key.strip()] = val.strip()
     @classmethod
     def read_from(cls,file):
-        parameters = super().read_from(file)
+        parameters = super().read_from(file) 
+        # The default 'concentrations' has been overridden 
         parameters.read_concentrations()
         return parameters
 class ConvergenceParameters(Parameters):
@@ -135,34 +137,6 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
     with open(file,'w') as F :
         F.write('\n'.join(Out))
         F.write('\n')
-
-def DotFile(ChemSys,Rank=False):
-    """
-    Returns a list of lines with a graph that relates reactants with
-    reactions and reactions with products for each elemental step in .dot format
-
-    Parameters
-    ----------
-    ChemSys : ChemicalSystem
-        An updated ChemicalSystem instance
-    Rank : bool
-        Wether to align or not the different initial reactants
-        (the default is False).
-    """
-    Out = []
-    Out.append('strict Digraph {')
-    Out.append('\tconcentrate=true')
-    for reaction in ChemSys.reactions:
-        Rs = ';'.join(['"{}"'.format(i.label) for i in reaction.reactants])
-        Rs = '{'+ Rs + '}'
-        Ps = ';'.join(['"{}"'.format(i.label) for i in reaction.products])
-        Ps = '{'+ Ps + '}'
-        Out.append('\t{}-> "{}" -> {};'.format(Rs,reaction,Ps))
-    rs = ';'.join(['"{}"'.format(i) for i in ChemSys.reactions])
-    if Rank:
-        Out.append('\t{rank = same;'+'{}'.format(rs)+'}')
-    Out.append("}")
-    return Out
 
 ###################### Specializations of Classes ##############################
 class BiasedChemicalSystem(ChemicalSystem):

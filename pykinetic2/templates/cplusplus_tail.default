@@ -2,21 +2,25 @@
 int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
-	// time parameters
+    // time parameters
     double tini,tend,tstep,trep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
     tstep = {dt}; // Timestep, s
-	trep = {report_t}; // Timestep to report, s
+    trep = {report_t}; // Timestep to report, s
 
-	// Convergence Parameters
-	{convergence}
+    // Convergence Parameters
+    {convergence}
 
-	state_type x({species});
-	for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){{
+    state_type x({species});
+    for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){{
         x[*i] = 0.0;
     }}
-	{concentrations}
+    
+    // Initial concentrations: 
+    {concentrations}
+
+    // Run the solver
     typedef dense_output_runge_kutta<controlled_runge_kutta<runge_kutta_dopri5<state_type> > > stepper_type;
     integrate_const(stepper_type(), model, x, tini, tend, trep, write_cout);
     outfile.close();

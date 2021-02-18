@@ -332,13 +332,6 @@ class Compound(object):
         Creates a copy of the object with the key set as None.
         """
         return self.__class___(self.label,self.energy,key=None)
-    def DotGraphRepr(self):
-        """
-        Returns a string for the construction of a .dot file
-        """
-        F0 = '"{}"'
-        F1 = '"{0:}" [label="{0:}"]'.format(self.label)
-        return F0.format(self.label)
 
 class TransitionState(object):
     """
