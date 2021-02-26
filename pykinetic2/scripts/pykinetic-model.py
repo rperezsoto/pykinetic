@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 import math
 import argparse
@@ -7,7 +7,8 @@ from pathlib import Path
 
 from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import BiasedChemicalSystem,write_indexfile
+from pykinetic2.Utils import (BiasedChemicalSystem, write_indexfile, 
+                              calc_standard_state_correction)
 from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.0"
@@ -130,25 +131,20 @@ def parse_arguments(parser):
 
     return args
 
-def calc_standard_state_correction(T):
-    # constants from "The NIST Reference on Constants, Units, and Uncertainty"
-    R_SI = 8.314462618    # J/(mol K)
-    R_atm = 0.0820573661  # atm L / (mol K)
-    return Energy(R_SI*T*math.log(R_atm*T),'J/mol')
 
 def main():
     parser = create_parser()
     args = parse_arguments(parser)
     unit = args.unit
     T = args.Temperature
+    # Initialize the Writer
     writer_cls = WRITERS[args.writer]
-    # Initialize the ChemicalSystem 
     writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
                         jac_var='Jac',jac_fun_var='Jacobian',
                         header=args.header,tail=args.tail)
     writer.set_parameters(simulation=args.simulation,
                           convergence=args.convergence)
-    writer.parameters['out_filename'] = args.outfile.stem + '.data'
+    # Initialize the ChemicalSystem 
     chemsys = BiasedChemicalSystem(bias=args.bias,T=args.Temperature,unit=unit)
     populate_chemicalsystem_fromfiles(chemsys,
                                       file_c=args.compounds,

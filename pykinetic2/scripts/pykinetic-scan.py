@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 import math
 import argparse
@@ -8,26 +8,45 @@ from pathlib import Path
 
 from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import ScannableChemicalSystem,write_indexfile
+from pykinetic2.Utils import (ScannableChemicalSystem, write_indexfile
+                              calc_standard_state_correction)
 from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
-def CreateParser():
+__version__ = "0.0.0"
+
+WRITERS = {'python':PythonWriter,
+           'c++':CplusplusWriter}
+COMMANDS = {}
+COMMANDS['python'] = lambda x: ['python3',x ]
+COMMANDS['c++'] = lambda x: ['g++',str(x),';',f'./{x}']
+
+def create_parser():
     """ Create a Command line argument parser """
     description =""" Creates a python script that contains a
     system of differential equations that represent a Chemical System
     and the tools to solve it numerically"""
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("compounds",type=Path,
+    parser.add_argument("compounds",
+                        type=Path,
                         help="File with the compounds and Energies")
-    parser.add_argument("reactions",type=Path, 
+    parser.add_argument("reactions",
+                        type=Path, 
                         help="File with the reactions, energies and/or TSs")
-    parser.add_argument("start",help="Starting value for the correction scan")
-    parser.add_argument("stop",help="Final value for the correction scan")
-    parser.add_argument("steps",help="Number of steps in between")
-    parser.add_argument("--scanunit",help="Unit of Start and Stop parameters",
+    parser.add_argument("start",
+                        type=float,
+                        help="Starting value for the correction scan")
+    parser.add_argument("stop",
+                        type=float,
+                        help="Final value for the correction scan")
+    parser.add_argument("steps",type=int,
+                        help="Number of steps in between")
+    parser.add_argument("--scanunit",
                         default='kcal/mol',
-                        choices=Energy._units)
-    parser.add_argument("outfile", type=Path, help="Output script")
+                        choices=Energy._units,
+                        help="Unit of Start and Stop parameters")
+    parser.add_argument("outfile", # No deberia existir a priori
+                        type=Path, 
+                        help="Output script")
     parser.add_argument("--relative",
                         action='store_true',
                         default=False,
@@ -40,8 +59,7 @@ def CreateParser():
                         default=False,
                         help="""If Enabled creates a txt file named 
                         'OutFile'.index with the indices used for reactions,
-                        compounds and TSs""",
-                        )
+                        compounds and TSs""")
     parser.add_argument("-T","--Temperature", 
                         nargs=2,
                         metavar=("Temp","Unit"),
@@ -81,33 +99,33 @@ def CreateParser():
                         choices=['python','c++'],
                         default='python',
                         help="format for the output model")
-    parser.add_argument("--ScriptFiles",help="""If Enabled retains the generated
-                        .py files""",default=False,action="store_true")
-    parser.add_argument("--dryrun",default=False,action="store_true",
+    parser.add_argument("--ScriptFiles",
+                        default=False,
+                        action="store_true",
+                        help="""If Enabled retains the generated scripts""")
+    parser.add_argument("--dryrun",
+                        default=False,
+                        action="store_true",
                         help="""If enabled it will generate the scripts but wont
                         run them""")
                         
     return parser
-def ParseArguments(parser):
+def parse_arguments(parser):
     """ Check the arguments of the parser and prepare them for their use """
     args = parser.parse_args()
-    args.compounds = os.path.abspath(args.compounds)
-    args.reactions = os.path.abspath(args.reactions)
-    args.Start = float(args.Start)
-    args.Stop = float(args.Stop)
-    args.Steps = int(args.Steps)
-    if args.Conv_Params is not None:
-        args.Conv_Params = os.path.abspath(args.Conv_Params)
-    if args.Sim_Params is not None:
-        args.Sim_Params = os.path.abspath(args.Sim_Params)
-    if args.Header is not None:
-        args.Header = os.path.abspath(args.Header)
-    if args.Tail is not None:
-        args.Tail = os.path.abspath(args.Tail)
-    if args.Function is not None:
-        args.Function = os.path.abspath(args.Function)
-    if args.Jacobian is not None:
-        args.Jacobian = os.path.abspath(args.Jacobian)
+
+    # Read the header if it has been specified
+    if args.header is not None: 
+        with open(args.header) as F:
+            txt = F.read()
+        args.header = txt
+    # Read the tail if it has been specified
+    if args.tail is not None: 
+        with open(args.tail) as F:
+            txt = F.read()
+        args.tail = txt
+
+    # Handle Temperature
     if args.Temperature[1] == 'C':
         T = float(args.Temperature[0]) + 273.15
     elif args.Temperature[1] == 'K':
@@ -116,16 +134,47 @@ def ParseArguments(parser):
         msg = "Temperature in {} not implemented".format(args.Temperature[1])
         raise NotImplementedError(msg)
     args.Temperature = T
-    if args.Std_State:
-        args.Std_State = Energy(8.314*T*math.log(0.082*T),'J/mol')
+
+    # Handle bias
+    if args.bias == 'Standard State':
+        bias = calc_standard_state_correction(T)
+        bias.to_unit(args.unit)
+    else:
+        bias = Energy(args.bias,args.unit)
+    args.bias = bias
+
+    # Handle simulation parameters
+    if args.simulation is None: 
+        sim_params = SimulationParameters()
+    else:
+        sim_params = SimulationParameters.read_from(args.simulation)
+    args.simulation = sim_params
+
+    # Handle convergence parameters
+    if args.convergence is None:
+        conv_params = ConvergenceParameters()
+    else:
+        conv_params = ConvergenceParameters.read_from(args.convergence)
+    args.convergence = conv_params
+
     if args.dryrun:
         args.ScriptFiles = True
+
     return args
 
-
 def main():
-    parser = CreateParser()
-    args = ParseArguments(parser)
+    parser = create_parser()
+    args = parse_arguments(parser)
+    unit = args.unit
+    scan_unit = args.scanunit
+    # Initialize the Writer
+    writer_cls = WRITERS[args.writer]
+    writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
+                        jac_var='Jac',jac_fun_var='Jacobian',
+                        header=args.header,tail=args.tail)
+    writer.set_parameters(simulation=args.simulation,
+                          convergence=args.convergence)
+
     # Initialize the ChemicalSystem
     T, Std_State, Unit = args.Temperature, args.Std_State, args.Unit
     SUnit, Start, Stop, Steps = args.SUnit, args.Start, args.Stop, args.Steps
@@ -147,27 +196,31 @@ def main():
     energy_f = lambda x: str(x).split()[0]
     with open('Scan_Params.out.txt','w') as F:
         F.write('Scan Step\tEnergy({})\n'.format(args.SUnit))
-    # Create ChemSys
-    ChemSys = MutableSystem(E_ini,T,Unit)
-    ChemSys.compounds_fromFile(args.compounds)
-    ChemSys.reactions_fromFile(args.reactions,args.EParse)
-    Template = FileTemplate(Sim_Params=args.Sim_Params,
-                            Conv_Params=args.Conv_Params,
-                            Header=args.Header,
-                            Function=args.Function,
-                            Jacobian=args.Jacobian,
-                            Tail=args.Tail)
+
+    
+    # Initialize the ChemicalSystem 
+    chemsys = ScannableChemicalSystem(scan_unit=scan_unit,unit=unit,
+                                      bias=args.bias,T=args.Temperature)
+    populate_chemicalsystem_fromfiles(chemsys,
+                                      file_c=args.compounds,
+                                      file_r=args.reactions,
+                                      energy_unit=unit,
+                                      relativeE=args.relative)
+    chemsys.apply_bias()
+    chemsys.apply_scan()
+
     for i in range(Steps):
         Template.update_with(ChemSys)
         # Create Name of Script and OutFile
         Name = 'Outputs/Scan_{:03d}.out'.format(i)
+        writer.parameters['out_filename'] = args.outfile.stem + '.data'
         print(Name)
         Template.OFileName = Name
         Template.Fill()
         Template.write_to(tmp_file)
         if not args.dryrun:
             # Run Script as subprocess
-            cmd = ['python', tmp_file]
+            cmd = COMMANDS[args.writer](tmp_file)
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
             #for line in p.stdout:
             #    print(line)

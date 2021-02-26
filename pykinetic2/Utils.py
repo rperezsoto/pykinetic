@@ -51,6 +51,11 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
     with open(file,'w') as F :
         F.write('\n'.join(Out))
         F.write('\n')
+def calc_standard_state_correction(T):
+    # constants from "The NIST Reference on Constants, Units, and Uncertainty"
+    R_SI = 8.314462618    # J/(mol K)
+    R_atm = 0.0820573661  # atm L / (mol K)
+    return Energy(R_SI*T*math.log(R_atm*T),'J/mol')
 
 ###################### Specializations of Classes ##############################
 class BiasedChemicalSystem(ChemicalSystem):
