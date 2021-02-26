@@ -5,102 +5,16 @@ This module contains several utilities grouped by usage:
    *   The pykinetic Utilities are Classes and functions without chemical
        meaning but necessary to write out the classes of the 'pyKinetic' module.
    *   Class Specializations. Subclasses of the ChemicalSystem used for the
-       scripts pykinetic-scan and pykinetic-scanTS. Note that New Models should
+       scripts pykinetic-model and pykinetic-scan. Note that New Models should
        not be place here.
 """
 
-import os
-import errno
-from pkg_resources import resource_filename
-from collections import UserDict
+import warnings
+from itertools import chain
 
 from .Classes import ChemicalSystem, Reaction, Energy, DiffusionTS
 
-############################ General Utilities #################################
-
-def mkdir_p(path):
-    """
-    Same functionality as mkdir -p in bash console
-    """
-    # Copied from stackoverflow:
-    # stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
-            raise
-
 ########################## Pykinetic Utilities #################################
-class Parameters(UserDict):
-
-    @classmethod
-    def read_from(cls,file):
-        """
-        Reads a file line by line and transforms it into a dictionary.
-
-        Parameters
-        ----------
-        File : str
-            filepath
-
-        Returns
-        -------
-        dict
-            dictionary containing first column as key and an empty string or
-            the rest of columns as a string
-        """
-        parameters = cls()
-        with open(file,'r') as F:
-            for line in F:
-                if line.strip():
-                    Aux = line.strip().split(maxsplit=1)
-                    key = Aux[0]
-                    try:
-                        item = Aux[1]
-                    except ValueError:
-                        item = ''
-                    finally:
-                        parameters[Aux[0]] = Aux[1]
-        return parameters
-class SimulationParameters(Parameters):
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        self['tfin'] = self.get('tfin','')
-        self['dt'] = self.get('dt','')
-        self['report_t'] = self.get('report_t','')
-        self['concentrations'] = {'index':'value'}
-    def read_concentrations(self):
-        compounds_mark = ';'
-        values_mark  = ','
-        text = self.get('concentrations','index')
-        self['concentrations'] = dict()
-        if text != 'index':
-            for compound in text.strip().split(compounds_mark): 
-                key,val = compound.split(values_mark)
-                self['concentrations'][key.strip()] = val.strip()
-    @classmethod
-    def read_from(cls,file):
-        parameters = super().read_from(file) 
-        # The default 'concentrations' has been overridden 
-        parameters.read_concentrations()
-        return parameters
-class ConvergenceParameters(Parameters):
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        # default values
-        self['rtol'] = self.get('rtol','1E-6')
-        self['atol'] = self.get('atol','1E-12')
-
-    @property
-    def variables(self):
-        return [key for key in self]
-    
-    def as_str(self,sep=','):
-        parameters = [f'{key}={val}' for key,val in self.items()] 
-        return sep.join(parameters)
-
 def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
     """
     Writes a File that summarizes both Compounds and Reactions Files as
@@ -157,14 +71,11 @@ class BiasedChemicalSystem(ChemicalSystem):
         (the default is 'kcal/mol').
     """
     def __init__(self,bias=0.0,bias_unit='kcal/mol',T=298.15,unit='kcal/mol'):
-        super().__init__(T)
-        try:
-            bias.to_unit(bias_unit)
-        except AttributeError:
-            bias = Energy(bias,bias_unit)
-        finally:
+        super().__init__(T,unit)
+        if isinstance(bias,Energy):
             self._bias = bias
-        self.unit = unit
+        else: 
+            self._bias = Energy(bias,bias_unit)
     def apply_bias(self):
         for compound in self.compounds: 
             compound.energy = compound.energy + self.bias
@@ -174,12 +85,16 @@ class BiasedChemicalSystem(ChemicalSystem):
     def remove_bias(self):
         for compound in self.compounds: 
             compound.energy = compound.energy - self.bias
-        for TS in self.transitionstates: 
-            if not isinstance(TS,DiffusionTS):
+        for TS in self.transitionstates:
+            if not hasattribute(TS,'barrier'): 
                 TS.energy = TS.energy - self.bias
     def change_bias(self,bias):
         self.remove_bias()
-        self._bias = bias
+        if isinstance(bias,Energy):
+            self._bias = bias
+        else:
+            warnings.warn("Guessing energy unit from previous bias' unit")
+            self._bias = Energy(bias,self._bias.unit)
         self.apply_bias()
     
     @property
@@ -187,45 +102,65 @@ class BiasedChemicalSystem(ChemicalSystem):
         return self._bias
     @bias.setter
     def bias(self,other):
-        self.remove_bias()
-        self._bias = bias
-        self.apply_bias()
+        self.change_bias(other)
+class ScannableChemicalSystem(BiasedChemicalSystem):
+    """
+    A specialization of BiasedChemicalSystem that provides the methods to apply
+    dinamically change the energy of all the compounds and TS flagged as 
+    scannable.
 
-class MutableSystem(BiasedChemicalSystem):
+    Parameters
+    ----------
+    scan : float, Energy
+        bias to the energy of each species (the default is 0.0).
+    T : float
+        Temperature in K (the default is 298.15).
+    bias : float, Energy
+        bias to the energy of each species (the default is 0.0).
+    T : float
+        Temperature in K (the default is 298.15).
+    unit : str
+        (the default is 'kcal/mol').
+    CorrUnit: str
+        (the default is 'kcal/mol').
+
     """
-    A specialization of a CorrChemSys used to mutate the energy of the
-    species, minima and/or TS, a fixed amount.
-    """
-    def MutateEnergy(self,Value,Model='ElementalStep'):
-        for Comp in self.compounds:
-            Comp.energy += Value
-        reactions = []
-        for SR in self.sreactions:
-            # Recalculate the TS energy
-            if SR.RType != '<d>':
-                SR.energy += Value
-            SR.calc_TS()
-            # Calculate the Barriers for the child reactions
-            NewData = SR.to_Reaction(Model)
-            for child,data in zip(SR.child_reactions,NewData):
-                child.set_AE_from(data)
-    def MutateTSs(self,Value,Model='ElementalStep'):
-        for SR in self.sreactions:
-            # Only Apply mutation to indicated reactions
-            if SR.RType != '<s>':
-                continue
-            E_Ps = sum(P.energy for P in SR.products)
-            E_Rs = sum(R.energy for R in SR.reactants)
-            MaxVal = max([E_Ps,E_Rs])
-            if SR.TS - MaxVal < Value:
-                NewVal = SR.TS - MaxVal
-            else:
-                NewVal = Value
-            if abs(NewVal) - 1E-14 < 0 :
-                NewVal = Energy(0.0,NewVal._unit)
-            SR.energy -= NewVal
-            SR.calc_TS()
-            # Reduce the barriers of the childs the same amount
-            for child in SR.child_reactions:
-                child.AE -= NewVal
-                child.Calc_k()
+    def __init__(self,scan=0.0,scan_unit='kcal/mol',
+                 bias=0.0,bias_unit='kcal/mol',T=298.15,unit='kcal/mol'):
+        super().__init__(bias,bias_unit,T,unit)
+        if isinstance(scan,Energy):
+            self._scan = scan
+            self._scan_unit = scan.unit
+        else: 
+            self._scan = Energy(scan,scan_unit)
+            self._scan_unit = scan_unit
+
+    def apply_scan(self):
+        for item in chain(self.compounds,self.transitionstates): 
+            if item.scannable:
+                if not hasattr(item,barrier): 
+                    item.energy = compound.energy + self.scan
+                else: 
+                    item.barrier = item.barrier + self.scan
+    def remove_scan(self):
+        for item in chain(self.compounds,self.transitionstates): 
+            if item.scannable:
+                if not hasattr(item,barrier): 
+                    item.energy = compound.energy - self.scan
+                else: 
+                    item.barrier = item.barrier - self.scan
+    def change_scan(self,scan):
+        self.remove_scan()
+        if isinstance(scan,Energy):
+            self._scan = scan
+        else:
+            self._scan = Energy(scan,self._scan_unit)
+        self.apply_scan()
+    
+    @property
+    def scan(self):
+        return self._scan
+    @scan.setter
+    def scan(self,other):
+        self.change_scan(other)
+

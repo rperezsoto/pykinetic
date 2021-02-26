@@ -5,7 +5,7 @@ for reactions: ElementalStep.
 """
 
 from itertools import chain
-from collections import Counter
+from collections import Counter, UserDict
 from abc import abstractmethod
 import warnings
 
@@ -574,13 +574,14 @@ class ChemicalSystem(object):
     T
 
     """
-    def __init__(self,T=298.15):
+    def __init__(self,T=298.15,unit='kcal/mol'):
         self._T = T # K
         self.compounds = []
         self.reactions = []
         self.transitionstates = []
         self.Name2Compound = dict()
         self.Name2TS = dict()
+        self.unit = unit
 
     def __repr__(self):
         n,m = self.shape
@@ -790,3 +791,73 @@ class ChemicalSystem(object):
             for compound2 in self.compounds:
                 Out.append(MB.partial(compound2))
         return Out
+
+
+# Parameter clases
+class Parameters(UserDict):
+
+    @classmethod
+    def read_from(cls,file):
+        """
+        Reads a file line by line and transforms it into a dictionary.
+
+        Parameters
+        ----------
+        File : str
+            filepath
+
+        Returns
+        -------
+        dict
+            dictionary containing first column as key and an empty string or
+            the rest of columns as a string
+        """
+        parameters = cls()
+        with open(file,'r') as F:
+            for line in F:
+                if line.strip():
+                    Aux = line.strip().split(maxsplit=1)
+                    key = Aux[0]
+                    try:
+                        item = Aux[1]
+                    except ValueError:
+                        item = ''
+                    finally:
+                        parameters[Aux[0]] = Aux[1]
+        return parameters
+class SimulationParameters(Parameters):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self['tfin'] = self.get('tfin','')
+        self['dt'] = self.get('dt','')
+        self['report_t'] = self.get('report_t','')
+        self['concentrations'] = {'index':'value'}
+    def read_concentrations(self):
+        compounds_mark = ';'
+        values_mark  = ','
+        text = self.get('concentrations','index')
+        self['concentrations'] = dict()
+        if text != 'index':
+            for compound in text.strip().split(compounds_mark): 
+                key,val = compound.split(values_mark)
+                self['concentrations'][key.strip()] = val.strip()
+    @classmethod
+    def read_from(cls,file):
+        parameters = super().read_from(file) 
+        # The default 'concentrations' has been overridden 
+        parameters.read_concentrations()
+        return parameters
+class ConvergenceParameters(Parameters):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        # default values
+        self['rtol'] = self.get('rtol','1E-6')
+        self['atol'] = self.get('atol','1E-12')
+
+    @property
+    def variables(self):
+        return [key for key in self]
+    
+    def as_str(self,sep=','):
+        parameters = [f'{key}={val}' for key,val in self.items()] 
+        return sep.join(parameters)
