@@ -1,14 +1,13 @@
-import sys
+#!/usr/bin/python
 import os
 import math
 import argparse
 
 from pathlib import Path
 
-from pykinetic2.Classes import ChemicalSystem, Energy
+from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import (BiasedChemicalSystem, SimulationParameters,
-                             ConvergenceParameters, write_indexfile)
+from pykinetic2.Utils import BiasedChemicalSystem,write_indexfile
 from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.0"
@@ -156,6 +155,7 @@ def main():
                                       file_r=args.reactions,
                                       energy_unit=unit,
                                       relativeE=args.relative)
+    chemsys.apply_bias()
     writer.write(chemsys,args.outfile)
 
     if args.IndexFile:

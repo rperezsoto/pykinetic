@@ -1,61 +1,92 @@
 #!/usr/bin/python
 import os
-import subprocess
-import argparse
 import math
+import argparse
+import subprocess
 
-from pykinetic.Classes import Compound, ElementalStep, Energy
-from pykinetic.Utils import *
+from pathlib import Path
+
+from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
+from pykinetic2.Writers import PythonWriter,CplusplusWriter
+from pykinetic2.Utils import ScannableChemicalSystem,write_indexfile
+from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
 def CreateParser():
     """ Create a Command line argument parser """
-    Description =""" Creates a python script that contains a
+    description =""" Creates a python script that contains a
     system of differential equations that represent a Chemical System
     and the tools to solve it numerically"""
-    parser = argparse.ArgumentParser(description=Description)
-    parser.add_argument("compounds",help="File with the compounds and Energies")
-    parser.add_argument("reactions",help="File with the reactions and Energies")
-    parser.add_argument("Start",help="Starting value for the correction scan")
-    parser.add_argument("Stop",help="Final value for the correction scan")
-    parser.add_argument("Steps",help="Number of steps in between")
-    parser.add_argument("--SUnit",help="Unit of Start and Stop parameters",
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("compounds",type=Path,
+                        help="File with the compounds and Energies")
+    parser.add_argument("reactions",type=Path, 
+                        help="File with the reactions, energies and/or TSs")
+    parser.add_argument("start",help="Starting value for the correction scan")
+    parser.add_argument("stop",help="Final value for the correction scan")
+    parser.add_argument("steps",help="Number of steps in between")
+    parser.add_argument("--scanunit",help="Unit of Start and Stop parameters",
                         default='kcal/mol',
-                        choices='hartree eV cm-1 kcal/mol kJ/mol J/mol K J Hz'.split())
-    parser.add_argument("-E","--EParse",choices=["absolute","relative"],
-                type=lambda s:s.lower(),default='absolute',
-                help="""Whether the energy in the reactions file is relative to
-                reactants or the absolute value of the TS structure""")
-    parser.add_argument("-I","--IndexFile",help="""If Enabled creates a txt file
-                        named 'OutFile'.index with the indices used for
-                        reactions and compounds """,
-                        default=False,action="store_true")
-    parser.add_argument("-T","--Temperature", nargs=2,metavar=("Temp","Unit"),
-                        default=(25.0,'C'),help="""Temperature and unit
-                        ('C'=Celsius and 'K'=Kelvin) """)
-    parser.add_argument("--Unit",help="""Energy unit used in the Input Files
-                        Diffusion reactions '<d>' are treated differently and always
-                        assumed to be given in kcal/mol""", default='kcal/mol',
-                        choices='hartree eV cm-1 kcal/mol kJ/mol J/mol K J Hz'.split())
-    parser.add_argument("--Std_State",help="""Applies standard state correction
-                        on top of the corr being scanned""",action="store_true",
-                        default=0.0)
-    parser.add_argument("--Conv_Params", help="""Path to the file with the
-                        Convergence parameters""", default=None)
-    parser.add_argument("--Sim_Params", help="""Path to the file with the
-                        Simulation parameters""", default=None)
-    parser.add_argument("--Tail",help="""Path to the non-standard Template for
-                        the ending part of the generated script""",default=None)
-    parser.add_argument("--Header",help="""Path to the non-standard Template for
-                        the head of the generated script""",default=None)
-    parser.add_argument("--Function",help="""Path to the non-standard function
-                        structure for the generated script""",default=None)
-    parser.add_argument("--Jacobian",help="""Path to the non-standard Jacobian
-                        structure for the generated script""",default=None)
+                        choices=Energy._units)
+    parser.add_argument("outfile", type=Path, help="Output script")
+    parser.add_argument("--relative",
+                        action='store_true',
+                        default=False,
+                        help="""Whether the energy in the reactions file is 
+                        relative to reactants. Otherwise the absolute value of 
+                        the TS structure is assumed to correspond to the 
+                        provided energy""")
+    parser.add_argument("-I","--IndexFile",
+                        action="store_true",
+                        default=False,
+                        help="""If Enabled creates a txt file named 
+                        'OutFile'.index with the indices used for reactions,
+                        compounds and TSs""",
+                        )
+    parser.add_argument("-T","--Temperature", 
+                        nargs=2,
+                        metavar=("Temp","Unit"),
+                        default=(25.0,'C'),
+                        help="Temperature and unit ('C'=Celsius and 'K'=Kelvin)")
+    parser.add_argument("--unit",
+                        default='kcal/mol',
+                        help="""Energy unit used in all the energy values whose 
+                        unit is not specified""", 
+                        choices=Energy._units)
+    parser.add_argument("--bias",
+                        nargs='?',
+                        default=0.0,
+                        const='Standard State',
+                        help="""Applies a bias to all energies. If no argument 
+                        is provided it applies Standard State correction. 
+                        Otherwise, uses the specified value """)
+    parser.add_argument("--convergence", 
+                        type=Path,
+                        default=None,
+                        help="Path to the file with the Convergence parameters")
+    parser.add_argument("--simulation",
+                        type=Path,
+                        default=None,
+                        help="Path to the file with the Simulation parameters")
+    parser.add_argument("--tail",
+                        type=Path,
+                        default=None,
+                        help="""Path to the non-standard Template for the ending
+                         part of the generated script""")
+    parser.add_argument("--header",
+                        type=Path,
+                        default=None,
+                        help=""" Path to the non-standard Template for the head 
+                        of the generated script""")
+    parser.add_argument("--writer",
+                        choices=['python','c++'],
+                        default='python',
+                        help="format for the output model")
     parser.add_argument("--ScriptFiles",help="""If Enabled retains the generated
                         .py files""",default=False,action="store_true")
     parser.add_argument("--dryrun",default=False,action="store_true",
                         help="""If enabled it will generate the scripts but wont
                         run them""")
+                        
     return parser
 def ParseArguments(parser):
     """ Check the arguments of the parser and prepare them for their use """
