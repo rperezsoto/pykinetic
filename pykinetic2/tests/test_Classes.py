@@ -12,12 +12,14 @@ class CompoundTest(unittest.TestCase):
         self.key2 = 'Key2'
 
     def test_init(self):
-        C0 = Compound(self.label1,self.energy1,self.key1)
+        C0 = Compound(self.label1,self.energy1,self.key1,True)
         C1 = Compound(self.label2,self.energy2)
         self.assertEqual(C0.label, self.label1,'Error constructing object')
         self.assertEqual(C0.energy,self.energy1,'Error constructing object')
         self.assertEqual(C0.key,self.key1,'Error constructing object')
         self.assertEqual(C1.key,None,'Error constructing object')
+        self.assertTrue(C0.scannable,'Error constructing object')
+        self.assertFalse(C1.scannable,'Error constructing object')
 
     # Test Logic
     def test_equal(self):
@@ -53,11 +55,6 @@ class CompoundTest(unittest.TestCase):
             _ = int(C2)
         with self.assertRaises(TypeError):
             _ = int(C1)
-
-    # Test Methods
-    def test_DotGraphRepr(self):
-        C0 = Compound(self.label1,self.energy1,self.key1)
-        self.assertIn(self.label1,C0.DotGraphRepr())
 
 class ReactionTest(unittest.TestCase):
     def setUp(self):

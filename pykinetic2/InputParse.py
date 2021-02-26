@@ -89,15 +89,19 @@ def read_compounds(file):
 def create_compounds(raw_compounds,energy_unit='J/mol'):
     err_msg = "Unexpected number of items in \n '{}' "
     compounds = []
-    for compound in raw_compounds:
-        if len(compound) == 3:
-            label,energy,unit = compound
-        elif len(compound) == 2: 
-            label,energy = compound
+    for items in raw_compounds:
+        scannable = 'scan' in items[-1]
+        if scannable:
+            _ = items.pop(-1)
+        if len(items) == 3:
+            label,energy,unit = items
+        elif len(items) == 2: 
+            label,energy = items
             unit = energy_unit
         else:
-            raise RuntimeError(err_msg.format('  '.join(compound)))
-        compounds.append(Compound(label,Energy(energy,unit)))
+            raise RuntimeError(err_msg.format('  '.join(items)))
+        compound = Compound(label,Energy(energy,unit),scannable=scannable)
+        compounds.append(compound)
     
     try: # Check if there is any duplicates
         assert len(set(compounds)) == len(compounds)

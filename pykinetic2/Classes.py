@@ -304,15 +304,18 @@ class Compound(object):
     key : int
         integrer used to represent the species in the overall chemical system
         see `ChemicalSystem` (the default is None).
+    scannable : bool
+        Flag to identify if this compound's energy is to be modified.
 
     """
 
-    __slots__ = ("label","energy","key")
+    __slots__ = ('label','energy','key','scannable')
 
-    def __init__(self,label,energy,key=None):
+    def __init__(self,label,energy,key=None,scannable=False):
         self.label = label
         self.energy = energy
         self.key = key
+        self.scannable = scannable
     def __eq__(self,other):
         try:
             out = self.label == other.label
@@ -331,7 +334,7 @@ class Compound(object):
         """
         Creates a copy of the object with the key set as None.
         """
-        return self.__class___(self.label,self.energy,key=None)
+        return self.__class___(self.label,self.energy,None,self.scannable)
 
 class TransitionState(object):
     """

@@ -82,12 +82,12 @@ class InputTest(unittest.TestCase):
     def test_read_compounds(self):
         module_name = 'pykinetic2.InputParse'
         raw_compounds = """
-        A   20      kcal/mol
+        A   20      kcal/mol    scan
         B   10      hartree
         C   1   
         D   0.5     eV
         """
-        solutions = [['A','20','kcal/mol'],
+        solutions = [['A','20','kcal/mol','scan'],
                      ['B','10','hartree'],
                      ['C','1'],
                      ['D','0.5','eV']]
@@ -99,11 +99,11 @@ class InputTest(unittest.TestCase):
                 self.assertEqual(test,solution)
     def test_create_compounds(self):
         default_unit = 'kcal/mol'
-        compounds = [['A','20','kcal/mol'],
+        compounds = [['A','20','kcal/mol','scan'],
                      ['B','10','hartree'],
                      ['C','1'],
                      ['D','0.5','eV']]
-        solutions = [Compound('A',Energy('20','kcal/mol')),
+        solutions = [Compound('A',Energy('20','kcal/mol'),scannable=True),
                      Compound('B',Energy('10','hartree')),
                      Compound('C',Energy('1',default_unit)),
                      Compound('D',Energy('0.5','eV'))]
@@ -112,6 +112,7 @@ class InputTest(unittest.TestCase):
             with self.subTest(compound=solution.label): 
                 self.assertEqual(test,solution)
                 self.assertEqual(test.energy,solution.energy)
+                self.assertEqual(test.scannable,solution.scannable)
         with self.subTest(test='raises error'):
             with self.assertRaises(ValueError):
                 _ = create_compounds(compounds + compounds)
