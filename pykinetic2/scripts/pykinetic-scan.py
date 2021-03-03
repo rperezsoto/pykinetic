@@ -167,6 +167,24 @@ def main():
     args = parse_arguments(parser)
     unit = args.unit
     scan_unit = args.scanunit
+    # Prepare Filesystem
+    outputs_folder = Path('Outputs')
+    indices_folder = Path('IndexFiles')
+    scripts_folder = Path('ScriptFiles')
+    scan_parameters_file = Path('Scan_Params.out.txt')
+    tmp_name = 'Temp'
+    if args.writer == 'python':
+        ext = 'py'
+    elif args.writer == 'c++':
+        ext = 'cpp'
+    tmp_file = Path(f'{tmp_name}.{ext}')
+     if not args.dryrun:
+        outputs_folder.mkdir(exist_ok=True)
+    if args.IndexFile:
+        indices_folder.mkdir(exist_ok=True)
+    if args.ScriptFiles:
+        scripts_folder.mkdir(exist_ok=True)
+
     # Initialize the Writer
     writer_cls = WRITERS[args.writer]
     writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
@@ -176,27 +194,15 @@ def main():
                           convergence=args.convergence)
 
     # Initialize the ChemicalSystem
-    T, Std_State, Unit = args.Temperature, args.Std_State, args.Unit
-    SUnit, Start, Stop, Steps = args.SUnit, args.Start, args.Stop, args.Steps
-    step = (Stop - Start)/Steps
-    Steps += 1 # in order to include the final point.
-    E_step = Energy(step,SUnit)
-    E_ini = Energy(Start,SUnit)
-    tmp_file = 'Temp.py'
-    if not args.dryrun:
-        mkdir_p('Outputs')
-    if args.IndexFile:
-        mkdir_p('IndexFiles')
-    if args.ScriptFiles:
-        mkdir_p('ScriptFiles')
-    if Std_State:
-        E_ini = E_ini + Std_State
+    step = (args.stop - args.start)/args.steps
+    steps = args.steps + 1 # in order to include the final point.
+    energies = [Energy(args.start + step*i,args.scanunit) for i in range(steps)]
+
     # Record in a file the value of the correction of each step
     int_f = '{:03d}'.format
     energy_f = lambda x: str(x).split()[0]
-    with open('Scan_Params.out.txt','w') as F:
-        F.write('Scan Step\tEnergy({})\n'.format(args.SUnit))
-
+    with open(scan_parameters_file,'w') as F:
+        F.write(f'Scan Step    Energy({args.scanunit})\n')
     
     # Initialize the ChemicalSystem 
     chemsys = ScannableChemicalSystem(scan_unit=scan_unit,unit=unit,
@@ -209,15 +215,18 @@ def main():
     chemsys.apply_bias()
     chemsys.apply_scan()
 
-    for i in range(Steps):
-        Template.update_with(ChemSys)
+    for i,energy in enumerate(energies): # Keep going
+        stem = f'scan_{i:03d}' # stem of the produced files
+        chemsys.scan = energy
+
         # Create Name of Script and OutFile
-        Name = 'Outputs/Scan_{:03d}.out'.format(i)
-        writer.parameters['out_filename'] = args.outfile.stem + '.data'
-        print(Name)
-        Template.OFileName = Name
-        Template.Fill()
-        Template.write_to(tmp_file)
+        out_data_file = outputs_folder.joinpath(f'{stem}.data')
+        writer.parameters['out_filename'] = out_data_file
+        print(stem)
+
+        # Write the script
+        writer.write(chemsys,tmp_file)
+
         if not args.dryrun:
             # Run Script as subprocess
             cmd = COMMANDS[args.writer](tmp_file)
@@ -226,15 +235,17 @@ def main():
             #    print(line)
             # Wait for it to finish
             p.wait()
+
         if args.IndexFile:
-            IdxFile = 'IndexFiles/Scan_{:03d}.index'.format(i)
-            Write_IndexFile(ChemSys,IdxFile)
+            index_file = indices_folder.joinpath(f'{stem}.index')
+            write_indexfile(chemsys,index_file, isrelative=args.relative)
+        
         if args.ScriptFiles:
-            os.rename(tmp_file,'ScriptFiles/Scan_{:03d}.py'.format(i))
-        with open('Scan_Params.out.txt','a') as F:
-            F.write('{: ^9}\t{: ^16}\n'.format(int_f(i),energy_f(E_step*i + Start)))
-        # Update Energy
-        ChemSys.MutateEnergy(E_step)
+            script = scripts_folder.joinpath(f'{stem}.{tmp_file.ext}')
+            tmp_file.rename(script)
+
+        with open(scan_parameters_file,'a') as F:
+            F.write('{: ^9}\t{: ^16}\n'.format(f'{i:03d}',str(energy)))
 
 if __name__ == "__main__":
     main()
