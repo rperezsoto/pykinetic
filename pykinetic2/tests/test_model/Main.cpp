@@ -28,21 +28,21 @@ void write_cout(const state_type &x, const double t)
 
 // Kinetic Constants
 const double k00 = 2.1243982516e+11;
-const double k01 = 3.2362038820e-39;
-const double k02 = 2.1243982516e+11;
+const double k01 = 5.9844312284e-40;
+const double k02 = 1.1488119098e+12;
 const double k03 = 3.2362038820e-39;
-const double k04 = 2.1243982521e+11;
+const double k04 = 1.1488119101e+12;
 const double k05 = 2.6769180696e-24;
 const double k06 = 2.1243982521e+11;
-const double k07 = 6.6268592390e-26;
-const double k08 = 2.1243982521e+11;
+const double k07 = 1.2254476177e-26;
+const double k08 = 1.1488119101e+12;
 const double k09 = 6.6268592390e-26;
-const double k10 = 2.1243982521e+11;
+const double k10 = 1.1488119101e+12;
 const double k11 = 2.6769180696e-24;
-const double k12 = 2.1243982521e+11;
-const double k13 = 5.2590657658e+09;
-const double k14 = 2.1243982521e+11;
-const double k15 = 5.2590657658e+09;
+const double k12 = 1.1488119095e+12;
+const double k13 = 2.8439476364e+10;
+const double k14 = 1.1488119095e+12;
+const double k15 = 2.8439476364e+10;
 
 void model( const state_type &x , state_type &dxdt , const double t)
 {
@@ -79,24 +79,28 @@ void model( const state_type &x , state_type &dxdt , const double t)
 int main()
 {
     outfile.open("Main.data", ofstream::out);
-	// time parameters
+    // time parameters
     double tini,tend,tstep,trep;
     tini = 0.0;
     tend = 1E-9; // Final time, s
     tstep = 1E-12; // Timestep, s
-	trep = 1E-11; // Timestep to report, s
+    trep = 1E-11; // Timestep to report, s
 
-	// Convergence Parameters
-	double rtol,atol;
+    // Convergence Parameters
+    double rtol,atol;
 	rtol=1E-6;atol=1E-12;
 
-	state_type x(8);
-	for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){
+    state_type x(8);
+    for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){
         x[*i] = 0.0;
     }
-	x[0] = 0.5;
-	x[1] = 0.5;
-	x[2] = 1;
+    
+    // Initial concentrations: 
+    x[0] = 0.5;
+    x[1] = 0.5;
+    x[2] = 1;
+
+    // Run the solver
     typedef dense_output_runge_kutta<controlled_runge_kutta<runge_kutta_dopri5<state_type> > > stepper_type;
     integrate_const(stepper_type(), model, x, tini, tend, trep, write_cout);
     outfile.close();

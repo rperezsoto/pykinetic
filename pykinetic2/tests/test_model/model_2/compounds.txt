@@ -1,0 +1,7 @@
+A                0.0 kcal/mol
+B                0.0 kcal/mol
+Cat              0.0 kcal/mol
+[A···B]          2.0 kcal/mol
+[A···B···Cat]    4.0 kcal/mol
+[C···Cat]        3.0 kcal/mol
+C               -2.0 kcal/mol

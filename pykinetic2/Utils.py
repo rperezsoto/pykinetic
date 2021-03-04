@@ -10,6 +10,7 @@ This module contains several utilities grouped by usage:
 """
 
 import warnings
+import math
 from itertools import chain
 
 from .Classes import ChemicalSystem, Reaction, Energy, DiffusionTS
@@ -85,13 +86,13 @@ class BiasedChemicalSystem(ChemicalSystem):
         for compound in self.compounds: 
             compound.energy = compound.energy + self.bias
         for TS in self.transitionstates: 
-            if not hasattribute(TS,'barrier'):
+            if not hasattr(TS,'barrier'):
                 TS.energy = TS.energy + self.bias
     def remove_bias(self):
         for compound in self.compounds: 
             compound.energy = compound.energy - self.bias
         for TS in self.transitionstates:
-            if not hasattribute(TS,'barrier'): 
+            if not hasattr(TS,'barrier'): 
                 TS.energy = TS.energy - self.bias
     def change_bias(self,bias):
         self.remove_bias()
@@ -143,15 +144,15 @@ class ScannableChemicalSystem(BiasedChemicalSystem):
     def apply_scan(self):
         for item in chain(self.compounds,self.transitionstates): 
             if item.scannable:
-                if not hasattr(item,barrier): 
-                    item.energy = compound.energy + self.scan
+                if not hasattr(item,'barrier'): 
+                    item.energy = item.energy + self.scan
                 else: 
                     item.barrier = item.barrier + self.scan
     def remove_scan(self):
         for item in chain(self.compounds,self.transitionstates): 
             if item.scannable:
-                if not hasattr(item,barrier): 
-                    item.energy = compound.energy - self.scan
+                if not hasattr(item,'barrier'): 
+                    item.energy = item.energy - self.scan
                 else: 
                     item.barrier = item.barrier - self.scan
     def change_scan(self,scan):

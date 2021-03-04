@@ -152,6 +152,9 @@ def main():
                                       energy_unit=unit,
                                       relativeE=args.relative)
     chemsys.apply_bias()
+
+    data_file_name = f'{args.outfile.stem}.data' 
+    writer.parameters['out_filename'] = data_file_name
     writer.write(chemsys,args.outfile)
 
     if args.IndexFile:

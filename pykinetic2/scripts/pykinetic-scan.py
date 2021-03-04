@@ -8,7 +8,7 @@ from pathlib import Path
 
 from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import (ScannableChemicalSystem, write_indexfile
+from pykinetic2.Utils import (ScannableChemicalSystem, write_indexfile,
                               calc_standard_state_correction)
 from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
 
@@ -174,11 +174,11 @@ def main():
     scan_parameters_file = Path('Scan_Params.out.txt')
     tmp_name = 'Temp'
     if args.writer == 'python':
-        ext = 'py'
+        suffix = 'py'
     elif args.writer == 'c++':
-        ext = 'cpp'
-    tmp_file = Path(f'{tmp_name}.{ext}')
-     if not args.dryrun:
+        suffix = 'cpp'
+    tmp_file = Path(f'{tmp_name}.{suffix}')
+    if not args.dryrun:
         outputs_folder.mkdir(exist_ok=True)
     if args.IndexFile:
         indices_folder.mkdir(exist_ok=True)
@@ -220,7 +220,7 @@ def main():
         chemsys.scan = energy
 
         # Create Name of Script and OutFile
-        out_data_file = outputs_folder.joinpath(f'{stem}.data')
+        out_data_file = f'{stem}.data'
         writer.parameters['out_filename'] = out_data_file
         print(stem)
 
@@ -241,7 +241,7 @@ def main():
             write_indexfile(chemsys,index_file, isrelative=args.relative)
         
         if args.ScriptFiles:
-            script = scripts_folder.joinpath(f'{stem}.{tmp_file.ext}')
+            script = scripts_folder.joinpath(f'{stem}{tmp_file.suffix}')
             tmp_file.rename(script)
 
         with open(scan_parameters_file,'a') as F:

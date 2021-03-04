@@ -1,0 +1,21 @@
+#### compounds ####
+0)    A    0.0 kcal/mol
+1)    B    0.0 kcal/mol
+2)    Cat    0.0 kcal/mol
+3)    [A···B]    2.0 kcal/mol
+4)    [A···B···Cat]    4.0 kcal/mol
+5)    [C···Cat]    3.0 kcal/mol
+6)    C    -2.0 kcal/mol
+#### reactions ####
+0)    A  +  B    =>    [A···B]    !4.0 kcal/mol
+1)    [A···B]    =>    A  +  B    !4.0 kcal/mol
+2)    [A···B]  +  Cat    =>    [A···B···Cat]    !6.0 kcal/mol
+3)    [A···B···Cat]    =>    [A···B]  +  Cat    !6.0 kcal/mol
+4)    A  +  B    =>    C    !24.0 kcal/mol
+5)    C    =>    A  +  B    !24.0 kcal/mol
+6)    [A···B]    =>    C    !24.0 kcal/mol
+7)    C    =>    [A···B]    !24.0 kcal/mol
+8)    [A···B···Cat]    =>    [C···Cat]    !14.0 kcal/mol
+9)    [C···Cat]    =>    [A···B···Cat]    !14.0 kcal/mol
+10)    [C···Cat]    =>    C  +  Cat    !4.999999999999999 kcal/mol
+11)    C  +  Cat    =>    [C···Cat]    !4.999999999999999 kcal/mol

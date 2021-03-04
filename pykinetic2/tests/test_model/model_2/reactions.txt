@@ -1,0 +1,18 @@
+# Adduct Formation
+ A         +    B     <d>    [A···B]                     !2.0 kcal/mol
+[A···B]    +    Cat   <d>    [A···B···Cat]               !2.0 kcal/mol
+
+# Uncatalyzed reaction upon collision
+ A         +    B     <=>     C                          !TS1
+
+# Uncatalyzed reaction with preformation of adduct
+[A···B]               <=>     C                          !TS1
+
+# Catalyzed reaction
+[A···B···Cat]         <=>    [C···Cat]                   !10.0 kcal/mol scan
+
+# Product Diffusion
+[C···Cat]             <d>     C      +     Cat      !2.0 kcal/mol
+
+TS1     20.0 kcal/mol    scan
+

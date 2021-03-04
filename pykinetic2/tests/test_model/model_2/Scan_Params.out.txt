@@ -1,0 +1,7 @@
+Scan Step    Energy(kcal/mol)
+   000   	  0.0 kcal/mol  
+   001   	  1.0 kcal/mol  
+   002   	  2.0 kcal/mol  
+   003   	  3.0 kcal/mol  
+   004   	  4.0 kcal/mol  
+   005   	4.999999999999999 kcal/mol
