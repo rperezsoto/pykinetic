@@ -1,7 +1,7 @@
 """
-This module contains the core classes of the library: Energy, Compound,
-SymbReaction, Reaction and Chemical System. It also contains the default model
-for reactions: ElementalStep.
+This module contains the core classes of the library: Energy, 
+MassBalance, JacobianElement, Compound, TransitionState, DiffusionTS, Reaction, 
+Chemical System and SimulationParameters and ConvergenceParameters. 
 """
 
 from itertools import chain

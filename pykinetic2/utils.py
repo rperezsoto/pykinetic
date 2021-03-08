@@ -1,12 +1,10 @@
 """
 This module contains several utilities grouped by usage:
 
-   *   General utilities.
-   *   The pykinetic Utilities are Classes and functions without chemical
-       meaning but necessary to write out the classes of the 'pyKinetic' module.
+   *   The 'Pykinetic Utilities' are functions with usage in the scripts that 
+       accompany this library.
    *   Class Specializations. Subclasses of the ChemicalSystem used for the
-       scripts pykinetic-model and pykinetic-scan. Note that New Models should
-       not be place here.
+       scripts pykinetic-model and pykinetic-scan.
 """
 
 import warnings
@@ -58,7 +56,7 @@ def calc_standard_state_correction(T):
     R_atm = 0.0820573661  # atm L / (mol K)
     return Energy(R_SI*T*math.log(R_atm*T),'J/mol')
 
-###################### Specializations of Classes ##############################
+######################### Class Specializations ################################
 class BiasedChemicalSystem(ChemicalSystem):
     """
     A specialization used to directly apply a constant bias to the energy of

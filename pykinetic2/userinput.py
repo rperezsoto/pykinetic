@@ -1,3 +1,9 @@
+"""
+This module contains the basic functions to read the user provided files and 
+populate a ChemicalSystem class from them. The core function of this module is
+'populate_chemicalsystem_fromfiles'.
+"""
+
 import re 
 from itertools import chain
 
