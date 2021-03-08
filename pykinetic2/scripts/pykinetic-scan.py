@@ -6,7 +6,7 @@ import subprocess
 
 from pathlib import Path
 
-from pykinetic2.Classes import Energy,SimulationParameters,ConvergenceParameters
+from pykinetic2.classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
 from pykinetic2.Utils import (ScannableChemicalSystem, write_indexfile,
                               calc_standard_state_correction)

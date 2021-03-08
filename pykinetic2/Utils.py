@@ -13,7 +13,7 @@ import warnings
 import math
 from itertools import chain
 
-from .Classes import ChemicalSystem, Reaction, Energy, DiffusionTS
+from .classes import ChemicalSystem, Reaction, Energy, DiffusionTS
 
 ########################## Pykinetic Utilities #################################
 def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):

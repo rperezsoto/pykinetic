@@ -1,7 +1,7 @@
 import re 
 from itertools import chain
 
-from .Classes import Compound,Energy,Reaction,TransitionState,DiffusionTS
+from .classes import Compound,Energy,Reaction,TransitionState,DiffusionTS
 
 
 # Custom errors

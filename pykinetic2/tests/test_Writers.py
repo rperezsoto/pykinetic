@@ -1,4 +1,4 @@
-from pykinetic2.Classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
+from pykinetic2.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic2.Writers import Indent, PythonWriter, CplusplusWriter
 import unittest
 

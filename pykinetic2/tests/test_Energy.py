@@ -1,4 +1,4 @@
-from pykinetic2.Classes import Energy
+from pykinetic2.classes import Energy
 import unittest
 
 class EnergyTest(unittest.TestCase):

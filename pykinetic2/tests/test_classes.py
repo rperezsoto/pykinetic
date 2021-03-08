@@ -1,4 +1,4 @@
-from pykinetic2.Classes import *
+from pykinetic2.classes import *
 import unittest
 
 class CompoundTest(unittest.TestCase):
