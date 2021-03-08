@@ -99,7 +99,7 @@ def create_parser():
                         choices=['python','c++'],
                         default='python',
                         help="format for the output model")
-    parser.add_argument("--ScriptFiles",
+    parser.add_argument("--scripts",
                         default=False,
                         action="store_true",
                         help="""If Enabled retains the generated scripts""")
@@ -158,7 +158,7 @@ def parse_arguments(parser):
     args.convergence = conv_params
 
     if args.dryrun:
-        args.ScriptFiles = True
+        args.scripts = True
 
     return args
 
@@ -182,7 +182,7 @@ def main():
         outputs_folder.mkdir(exist_ok=True)
     if args.IndexFile:
         indices_folder.mkdir(exist_ok=True)
-    if args.ScriptFiles:
+    if args.scripts:
         scripts_folder.mkdir(exist_ok=True)
 
     # Initialize the Writer
@@ -240,7 +240,7 @@ def main():
             index_file = indices_folder.joinpath(f'{stem}.index')
             write_indexfile(chemsys,index_file, isrelative=args.relative)
         
-        if args.ScriptFiles:
+        if args.scripts:
             script = scripts_folder.joinpath(f'{stem}{tmp_file.suffix}')
             tmp_file.rename(script)
 
