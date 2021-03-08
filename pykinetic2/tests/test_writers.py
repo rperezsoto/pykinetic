@@ -1,5 +1,5 @@
 from pykinetic2.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
-from pykinetic2.Writers import Indent, PythonWriter, CplusplusWriter
+from pykinetic2.writers import Indent, PythonWriter, CplusplusWriter
 import unittest
 
 class IndentTest(unittest.TestCase):
