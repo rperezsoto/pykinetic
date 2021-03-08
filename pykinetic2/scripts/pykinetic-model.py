@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pykinetic2.classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
-from pykinetic2.Utils import (BiasedChemicalSystem, write_indexfile, 
+from pykinetic2.utils import (BiasedChemicalSystem, write_indexfile, 
                               calc_standard_state_correction)
 from pykinetic2.userinput import populate_chemicalsystem_fromfiles
 
