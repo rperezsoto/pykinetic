@@ -10,7 +10,7 @@ from pykinetic2.classes import Energy,SimulationParameters,ConvergenceParameters
 from pykinetic2.Writers import PythonWriter,CplusplusWriter
 from pykinetic2.Utils import (ScannableChemicalSystem, write_indexfile,
                               calc_standard_state_correction)
-from pykinetic2.InputParse import populate_chemicalsystem_fromfiles
+from pykinetic2.userinput import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.0"
 

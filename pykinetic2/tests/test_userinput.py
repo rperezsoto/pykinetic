@@ -1,5 +1,5 @@
 from pykinetic2.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
-from pykinetic2.InputParse import *
+from pykinetic2.userinput import *
 import unittest
 from unittest.mock import mock_open, patch, MagicMock
 
