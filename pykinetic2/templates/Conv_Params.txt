@@ -1,2 +1,0 @@
-atol 1E-12
-rtol 1E-6

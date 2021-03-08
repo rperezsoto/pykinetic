@@ -1,4 +1,0 @@
-dt          1E-8
-tfin        250
-report_t    1E-1
-concentrations    i,# TODO include initial concentrations
