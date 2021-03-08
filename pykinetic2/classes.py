@@ -20,9 +20,8 @@ class Energy(object):
     value : float
         Number or object with a __float__ (the default is 0.0).
     unit : str
-        Energy unit in which the value parameter is provided see class variable
-        _units for the different currently supported units
-        (the default is 'hartree').
+        Energy unit in which the value parameter is provided. See class variable
+        _units for the different implemented units (the default is 'hartree').
 
     Attributes
     ----------
@@ -448,7 +447,12 @@ class Reaction(object):
         number that identifies the reaction in a `ChemicalSystem` instance.
     products
     TS
-    T
+    T : float
+        Temperature in K. 
+    AE : Energy
+        Activation energy defined as AE = energy(TS)-energy(reactants) 
+    k : float 
+        kinetic constant calculated at the Temperature T.
 
     """
 
@@ -559,19 +563,26 @@ class ChemicalSystem(object):
     ----------
     T : float
         Temperature in K (the default is 298.15).
+    unit : str
+        Default unit to assume when any conflict arises. It is
+        also the default unit to report all energies.
 
     Attributes
     ----------
     shape : tuple
         (n_reactions, n_compounds)
+    species : int
+        n_compounds
     Name2Compound : dict
         Mapping used for accesing the compounds by name
+    Name2TS : dict
+        Mapping used for accesing the Transition States by name
     compounds : list
     reactions : list
-    sreactions : list
-        List of human-ish representations of the reactions. Rules and types
-        are established in InputParse.py
-    T
+    transitionstates : list
+    T : float
+        Temperature in K. Setting this attribute will set the same T for all the
+        reactions in the system.
 
     """
     def __init__(self,T=298.15,unit='kcal/mol'):
@@ -607,7 +618,6 @@ class ChemicalSystem(object):
         for reaction in self.reactions:
             reaction.T = T
 
-
     # Methods related with the (c)ompounds attribute
     def cadd(self,compound,update=False):
         """
@@ -633,19 +643,19 @@ class ChemicalSystem(object):
             self.cupdate()
     def cextend(self,compounds):
         """
-        Extends the self.compounds attr without overwriting.
+        Lazy Addition, it first adds all the reactions and then
+        it updates them.
 
         Parameters
         ----------
-        new_compounds : list
+        compounds : list
             list of `Compound` instances
 
         """
         for compound in compounds:
-            if compound not in self:
-                self.cadd(compound)
+            self.cadd(compound,update=False)
         self.cupdate()
-    def cupdate(self,start=0,UpdateDict=False):
+    def cupdate(self,start=0,update_keys=False):
         """
         Updates the `compounds` attr reinitializing the indices.
 
@@ -656,9 +666,9 @@ class ChemicalSystem(object):
             represent compounds. This parameter should only be changed when
             writing programs for non-python languages or for including the T
             and/or V in the differential equations.(the default is 0)
-        UpdateDict : bool
-            if True it will update the `Name2Compound` attr
-            (the default is False).
+        update_keys : bool
+            if True it will update the `Name2Compound` attr as well as the 
+            keys of each compound in it. (the default is False).
         Raises
         -------
         AssertionError
@@ -668,13 +678,14 @@ class ChemicalSystem(object):
         compounds = self.compounds
         for i,C in enumerate(compounds):
             C.key = i + start
-            if UpdateDict:
+            if update_keys:
                 self.Name2Compound[C.label] = C
 
     # Methods related with the (r)eactions attribute
     def radd(self,reaction,update=True):
         """
-        Adds and updates a Reaction Instance avoiding duplicates.
+        Adds and updates a Reaction Instance avoiding duplicates of it within 
+        the ChemicalSystem.
 
         Parameters
         ----------
@@ -698,25 +709,25 @@ class ChemicalSystem(object):
     def rextend(self,reactions):
         """
         Lazy Addition, it first adds all the reactions and then
-        it updates them
+        it updates them.
 
         Parameters
         ----------
         reactions : list
             list of Reaction instances
         """
-        for R in reactions:
-            self.radd(R,update=False)
+        for reaction in reactions:
+            self.radd(reaction,update=False)
         self.rupdate()
     def rupdate(self,start=0):
         """
-        Updates the `reactions` attr updating the key, T and k of each
+        Updates the `reactions` attr ensuring appropiate key and T of each
         Reaction Instance.
 
         Parameters
         ----------
         start : int
-            Initial index (the default is 0).
+            Initial value for the key in the reactions (the default is 0).
         """
         reactions = self.reactions
         self.transitionstates = []
@@ -795,7 +806,11 @@ class ChemicalSystem(object):
 
 # Parameter clases
 class Parameters(UserDict):
-
+    """
+    Base class for the Convergence and Simulation Parameters. 
+    Provides a construction method from a file. The class should behave like a 
+    dictionary.
+    """
     @classmethod
     def read_from(cls,file):
         """
@@ -803,8 +818,8 @@ class Parameters(UserDict):
 
         Parameters
         ----------
-        File : str
-            filepath
+        file : str
+            A valid filepath to a file.
 
         Returns
         -------
@@ -826,6 +841,10 @@ class Parameters(UserDict):
                         parameters[Aux[0]] = Aux[1]
         return parameters
 class SimulationParameters(Parameters):
+    """
+    Dictionary with default values for simulations. It includes the keys:
+    {tfin, dt, report_t, concentrations}.
+    """
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self['tfin'] = self.get('tfin','')
@@ -848,6 +867,11 @@ class SimulationParameters(Parameters):
         parameters.read_concentrations()
         return parameters
 class ConvergenceParameters(Parameters):
+    """
+    Dictionary with default values for the parameters needed for the convergence
+    of the differential equation solvers to proceed. It includes the keys:
+    {rtol, atol}.
+    """
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         # default values
@@ -859,5 +883,6 @@ class ConvergenceParameters(Parameters):
         return [key for key in self]
     
     def as_str(self,sep=','):
+        """ Joins all the key=val pairs by the selected 'sep' string """
         parameters = [f'{key}={val}' for key,val in self.items()] 
         return sep.join(parameters)
