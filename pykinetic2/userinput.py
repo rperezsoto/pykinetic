@@ -123,14 +123,15 @@ def read_reactions(file):
     reaction_lines = []
     TS_lines = [] 
     with open(file,'r') as F:
-        for line in F:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            elif '!' in line:   # [A-]  +  [B+] => C  !TS1 
-                reaction_lines.append(line)
-            else:               # TSNAME    Number   (Unit)
-                TS_lines.append(line)
+        lines = F.readlines()
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            pass
+        elif '!' in line:   # [A-]  +  [B+] => C  !TS1 
+            reaction_lines.append(line)
+        else:               # TSNAME    Number   (Unit)
+            TS_lines.append(line)
     raw_reactions = [split_reaction_line(line) for line in reaction_lines]
     return raw_reactions,TS_lines
 def create_TS_dict(TS_lines,energy_unit='J/mol'):
