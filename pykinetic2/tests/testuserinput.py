@@ -1,5 +1,5 @@
-from pykinetic2.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
-from pykinetic2.userinput import *
+from pykinetic.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
+from pykinetic.userinput import *
 import unittest
 from unittest.mock import mock_open, patch, MagicMock
 
@@ -8,7 +8,7 @@ class InputTest(unittest.TestCase):
         TransitionState.defaultname = 0
         DiffusionTS.defaultname = 0
     def test_populate_chemicalsystem_fromfiles(self):
-        module_name = 'pykinetic2.userinput'
+        module_name = 'pykinetic.userinput'
         default_unit = 'kcal/mol'
         # Prepare the outputs of the mocks
         compounds = [['A','0.0',default_unit],
@@ -83,7 +83,7 @@ class InputTest(unittest.TestCase):
             ts2 = chemicalsystem2.Name2TS['TSa']
             self.assertTrue(ts.energy,ts2.energy)
     def test_read_compounds(self):
-        module_name = 'pykinetic2.userinput'
+        module_name = 'pykinetic.userinput'
         raw_compounds = """
         A   20      kcal/mol    scan
         B   10      hartree
@@ -120,7 +120,7 @@ class InputTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _ = create_compounds(compounds + compounds)
     def test_read_reactions(self):
-        module_name = 'pykinetic2.userinput'
+        module_name = 'pykinetic.userinput'
         reactions = """
                     A  +  B    <=>   C    +   D    !25.0 kcal/mol 
                     A  +  B    <=>   C    +   D    !25.0 

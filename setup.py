@@ -4,8 +4,8 @@ with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name = 'pykinetic2',
-    packages = ['pykinetic2',],
+    name = 'pykinetic',
+    packages = ['pykinetic',],
     description = """A python library and command line apps to write 
                      microkinetic models for """,
     keywords = ['compchem', 'microkinetics'],
@@ -18,8 +18,8 @@ setup(
     install_requires=['setuptools','pathlib','numpy'],
     extras_requires=['numpy','scipy'],
     include_package_data=True,
-    package_data = {'templates': ['pykinetic2/templates/*'],
-                    'tests'    : ['pykinetic2/tests/*.py']},
-    scripts = ['pykinetic2/scripts/pykinetic-model.py',
-               'pykinetic2/scripts/pykinetic-scan.py'],
+    package_data = {'templates': ['pykinetic/templates/*'],
+                    'tests'    : ['pykinetic/tests/*.py']},
+    scripts = ['pykinetic/scripts/pykinetic-model.py',
+               'pykinetic/scripts/pykinetic-scan.py'],
 )

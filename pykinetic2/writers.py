@@ -11,7 +11,7 @@ from pathlib import Path
 from collections import Counter, defaultdict
 from pkg_resources import resource_filename
 
-TEMPLATES_PATH = Path(resource_filename('pykinetic2','templates'))
+TEMPLATES_PATH = Path(resource_filename('pykinetic','templates'))
 
 def Indent(lines,tab='    ',level=1):
     """

@@ -5,11 +5,11 @@ import argparse
 
 from pathlib import Path
 
-from pykinetic2.classes import Energy,SimulationParameters,ConvergenceParameters
-from pykinetic2.writers import PythonWriter,CplusplusWriter
-from pykinetic2.utils import (BiasedChemicalSystem, write_indexfile, 
+from pykinetic.classes import Energy,SimulationParameters,ConvergenceParameters
+from pykinetic.writers import PythonWriter,CplusplusWriter
+from pykinetic.utils import (BiasedChemicalSystem, write_indexfile, 
                               calc_standard_state_correction)
-from pykinetic2.userinput import populate_chemicalsystem_fromfiles
+from pykinetic.userinput import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.0"
 
