@@ -111,7 +111,7 @@ Symbols:
 +---------+--------------------------------------------------+
 | **<=**  |   Reverse reaction (When the --relative          |
 |         |   flag is specified it uses as reference         |
-|         |   the left side.                                 |
+|         |   the left side).                                |
 +---------+--------------------------------------------------+
 | **<=>** |   Forward and reverse reaction sharing           |
 |         |   the same TS.                                   |
@@ -136,7 +136,7 @@ important when setting up scans since: ::
 
 Does not behave as: ::
 
-   A + B <=> C !2.0 scan
+   A <=> B !2.0 scan
 
 However, the following reactions do have the same behaviour: :: 
 
