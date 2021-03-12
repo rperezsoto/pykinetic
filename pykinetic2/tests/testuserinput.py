@@ -4,6 +4,9 @@ import unittest
 from unittest.mock import mock_open, patch, MagicMock
 
 class InputTest(unittest.TestCase):
+    def setUp(self):
+        TransitionState.defaultname = 0
+        DiffusionTS.defaultname = 0
     def test_populate_chemicalsystem_fromfiles(self):
         module_name = 'pykinetic2.userinput'
         default_unit = 'kcal/mol'

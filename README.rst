@@ -30,7 +30,7 @@ local machine.
 Prerequisites
 .............
 
-- python >= 3.7
+- python >= 3.6 (3.7.3 or higher recommended)
 - python library: setuptools
 - python library: numpy (optional, needed to run the generated python scripts)
 - python library: scipy (optional, needed to run the generated python scripts)
