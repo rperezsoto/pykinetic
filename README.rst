@@ -114,12 +114,11 @@ the package.
 Running the tests
 .................
 
-After installing the simplest way to run the tests is go to the tests folder and
-run: 
+After installing you should be able to run the tests: 
 
 .. code:: shell-session
 
-   $ python -m unittest -v test_*.py
+   $ python -m unittest -v pykinetic.tests
 
 Uninstalling pykinetic
 ......................
