@@ -19,12 +19,14 @@ class MissingTransitionStates(ValueError):
 # GLOBALS
 DIFFUSION = '<d>'
 BACKWARDS = '<='
-MARKERS = {'<=>': {'TS':TransitionState,},  # Reversible
-           '=>' : {'TS':TransitionState,},  # Direct reaction
+FORWARD = '=>'
+EQUILIBRIUM = '<=>'
+MARKERS = {EQUILIBRIUM: {'TS':TransitionState,},  # Reversible
+           FORWARD : {'TS':TransitionState,},  # Direct reaction
            BACKWARDS : {'TS':TransitionState,},  # Backwards reaction
            DIFFUSION: {'TS':DiffusionTS,}}      # Reversible diffusion
 
-REVERSIBLE = ['<=>',DIFFUSION] # reactions modeled as 2 elemental steps
+REVERSIBLE = [EQUILIBRIUM,DIFFUSION] # reactions modeled as 2 elemental steps
 
 for mark in MARKERS: 
     MARKERS[mark]['matcher'] = re.compile(f'(.*)\s{mark}\s(.*)\s!(.*)')
@@ -125,9 +127,9 @@ def read_reactions(file):
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
-            elif '!' in line:                  # [A-]  +  [B+] => C  !TS1 
+            elif '!' in line:   # [A-]  +  [B+] => C  !TS1 
                 reaction_lines.append(line)
-            else:   # TSNAME    Number   (Unit)
+            else:               # TSNAME    Number   (Unit)
                 TS_lines.append(line)
     raw_reactions = [split_reaction_line(line) for line in reaction_lines]
     return raw_reactions,TS_lines
