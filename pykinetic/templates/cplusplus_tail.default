@@ -7,7 +7,7 @@ int main()
     tini = 0.0;
     tend = {tfin}; // Final time, s
     tstep = {dt}; // Timestep, s
-    trep = {report_t}; // Timestep to report, s
+    trep = {trep}; // Timestep to report, s
 
     // Convergence Parameters
     {convergence}

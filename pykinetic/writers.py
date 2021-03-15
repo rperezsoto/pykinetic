@@ -218,7 +218,7 @@ class PythonWriter(Writer):
 
     def set_parameters(self,simulation=None,convergence=None):
         if simulation is not None:
-            for key in ['tfin','report_t','dt']: 
+            for key in ['tfin','trep','dt']: 
                 self.parameters[key] = simulation.get(key,'')
             concentrations = self._initial_concentrations(simulation)
             self.parameters['concentrations'] = concentrations
@@ -426,7 +426,7 @@ class CplusplusWriter(Writer):
 
     def set_parameters(self,simulation=None,convergence=None):
         if simulation is not None:
-            for key in ['tfin','report_t','dt']: 
+            for key in ['tfin','trep','dt']: 
                 self.parameters[key] = simulation.get(key,'')
             concentrations = self._initial_concentrations(simulation)
             self.parameters['concentrations'] = concentrations
@@ -538,10 +538,6 @@ class CplusplusWriter(Writer):
                      f'state_type &{self.dxdt} , const double t)'
 
         lines = []
-        # Write the constants block ## NOT IN C++
-        #lines.append('#Constants')
-        #constants = self._kinetic_constants(chemicalsys)
-        #lines.append(constants)
 
         # Write the ratelaws block
         ratelaws = self._ratelaws(chemicalsys)
