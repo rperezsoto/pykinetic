@@ -201,6 +201,12 @@ class Writer(object):
 
 class PythonWriter(Writer):
 
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        for var in ['x', 'dxdt', 'f', 'jac','jac_f']:
+            self.parameters[var] = getattr(self,var)
+        self.parameters['method'] = 'LSODA'
+
     def _load_default_header(self):
         with open(TEMPLATES_PATH.joinpath('python_header.default'),'r') as F:
             txt = F.read()
@@ -320,7 +326,7 @@ class PythonWriter(Writer):
         are vectors. This function corresponds to the system of diferential
         equations for the mass balances of the system.
         """
-        definition = f'def {self.f}({self.x},t):'
+        definition = f'def {self.f}(t,{self.x}):'
 
         lines = [ f'{self.dxdt} = np.zeros({chemicalsys.species})',]
         # Write the constants block
@@ -356,9 +362,9 @@ class PythonWriter(Writer):
         and t are vectors. This function corresponds to the Jacobian of the
         system of differential equations for the mass balances of the system.
         """
-        definition = f'def {self.jac_f}({self.x},t):'
+        definition = f'def {self.jac_f}(t,{self.x}):'
         n = chemicalsys.species
-        lines = [ f'{self.dxdt} = np.zeros(shape=({n},{n}))',]
+        lines = [ f'{self.jac} = np.zeros(shape=({n},{n}))',]
         # Write the constants block
         lines.append('')
         constants = self._kinetic_constants(chemicalsys)
@@ -369,7 +375,7 @@ class PythonWriter(Writer):
         lines.extend(elements)
         # Function end
         lines.append('')
-        lines.append(f'return {self.dxdt}')
+        lines.append(f'return {self.jac}')
         lines.append('\n')
 
         # Add one indentation level

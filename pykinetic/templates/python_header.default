@@ -4,17 +4,11 @@ import scipy.integrate
 
 OFile = '{out_filename}'
 
-# alias for ode function
-odeint = scipy.integrate.odeint
-
-# Calculations Memory Constraint
-MaxMem = 28*1E6
-
 # Parameters
 species = {species}
-dt = {dt} # Timestep s
-report_t = {report_t} # s
+trep = {report_t} # s
+dt = {dt} # maximum timestep for solving the system
 tfin = {tfin} # Final Time
-xini = np.zeros(species)
+{x}ini = np.zeros(species)
 {concentrations}
 # Model at T={T} K
