@@ -396,7 +396,7 @@ class PythonWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        self.parameters['out_filename'] = 'data.txt'
+        self.parameters['out_filename'] = self.get('out_filename','data.txt')
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
         self.header = self._header.format_map(self.parameters)
