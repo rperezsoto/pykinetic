@@ -24,8 +24,8 @@ def Indent(lines,tab='    ',level=1):
     return Out
 
 class Writer(object):
-    def __init__(self, conc_var='x', mb_var='dxdt', fun_var='Model',
-                 jac_var='Jac',jac_fun_var='Jacobian',header=None,tail=None):
+    def __init__(self, conc_var='x', mb_var='dxdt', fun_var='model',
+                 jac_var='Jac',jac_fun_var='jacobian',header=None,tail=None):
         self.x = conc_var
         self.dxdt = mb_var
         self.f = fun_var
@@ -498,7 +498,7 @@ class CplusplusWriter(Writer):
         C1,C2 = Jac_ij.compound1, Jac_ij.compound2
         if not Jac_ij.items:
             return '', '0'
-        var = f'{self.jac}[{C1.key},{C2.key}]'
+        var = f'{self.jac}({C1.key},{C2.key})'
         expr = []
         for coef,reaction in Jac_ij.items:
             if coef == 1:
@@ -540,13 +540,21 @@ class CplusplusWriter(Writer):
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law};')
         return MBs
+    def _jacobian_elements(self,chemicalsys):
+        Jac = []
+        jac_elements = chemicalsys.jacobian()
+        for jac_ij in jac_elements: 
+            var,expr = self.jacobian_element(jac_ij)
+            if expr and expr != '0':
+                Jac.append(f'{var} = {expr};')
+        return Jac
     def _function(self,chemicalsys,level=0):
         """
         Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
         are vectors. This function corresponds to the system of diferential
         equations for the mass balances of the system.
         """
-        definition = f'void {self.f}( const state_type &{self.x} , '\
+        definition = f'void operator()( const state_type &{self.x} , '\
                      f'state_type &{self.dxdt} , const double t)'
 
         lines = []
@@ -569,12 +577,64 @@ class CplusplusWriter(Writer):
         # Add function definition
         lines.insert(0,definition)
 
+        # indent once
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('};')
+        # Add structure name
+        lines.insert(0,f'struct {self.f}')
+
         # Add the indentation level of the function
         lines = Indent(lines,tab='    ',level=level)
 
         return '\n'.join(lines)
-    def _jacobian(self,chemicalsys):
-        return None
+    def _jacobian(self,chemicalsys,level=0):
+        """
+        Generates the code of the jacobian of the function 'f' in dxdt = f(x,t) 
+        where x, dxdt and t are vectors.
+        """
+        definition = f'void operator()( const state_type &{self.x} , '\
+                     f'matrix_type &{self.jac_f} , const double t, '\
+                     f'state_type &dfdt)'
+
+        lines = []
+
+        # Write the constants block
+        lines.append('')
+        constants = self._kinetic_constants(chemicalsys)
+        lines.extend(constants)
+        # Write the jacobian elements
+        lines.append('')
+        elements = self._jacobian_elements(chemicalsys)
+        lines.extend(elements)
+        # Function end
+        for i in range(chemicalsys.species): 
+            lines.append(f'dfdt[{i}] = 0;')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('}')
+        # Add function definition
+        lines.insert(0,definition)
+
+        # indent once
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('};')
+        # Add structure name
+        lines.insert(0,f'struct {self.jac_f}')
+
+        # Ensure the final indentation level
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
     def _initial_concentrations(self,simulation):
         concentrations = []
         for key,val in simulation['concentrations'].items():
@@ -603,6 +663,8 @@ class CplusplusWriter(Writer):
                  self.constants,
                  '',
                  self.function,
+                 '',
+                 self.jacobian,
                  '',
                  self.tail]
         with open(filepath,'w') as F:
