@@ -5,15 +5,8 @@
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
-#include <boost/phoenix/core.hpp>
-
-#include <boost/phoenix/core.hpp>
-#include <boost/phoenix/operator.hpp>
-
-
 using namespace std;
 using namespace boost::numeric::odeint;
-namespace phoenix = boost::phoenix;
 
 typedef boost::numeric::ublas::vector< double > state_type;
 typedef boost::numeric::ublas::matrix< double > matrix_type;
@@ -175,7 +168,6 @@ int main()
                                           make_pair(model(), jacobian()),
                                           x, tini, tend, trep, 
                                           write_cout);
-                                          //cout << phoenix::arg_names::arg2 << " " << phoenix::arg_names::arg1[0] << "\n"); //, write_cout);
     outfile.close();
     return 0;
 }
