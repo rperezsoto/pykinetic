@@ -59,7 +59,7 @@ class Writer(object):
         if simulation is not None:
             self.parameters.update(simulation)
         if convergence is not None:
-            self.get_parameters.update(convergence)
+            self.parameters.update(convergence)
 
     # methods for object -> str transformations
     def constant(self,reaction,value_format):
@@ -170,10 +170,21 @@ class Writer(object):
         """
         pass
 
+    @abstractmethod
+    def _function(self,chemicalsys):
+        pass
+    @abstractmethod
+    def _jacobian(self,chemicalsys):
+        pass
+
     # main methods for writing
     def fill_header(self,chemicalsys):
         self.header = self._header.format_map(self.parameters)
     def fill_tail(self,chemicalsys):
+        kwargs = dict()
+        kwargs.update(self.parameters)
+        for attr in ['dxdt','f','jac', 'jac_f']:
+            kwargs[attr] = getattr(self,attr)
         self.tail = self._tail.format_map(kwargs)
 
     def fill(self,chemicalsys):
@@ -236,7 +247,7 @@ class PythonWriter(Writer):
         expr += '*'.join(Aux)
         return  var, expr
     def ratelaw_partial(self,reaction,compound): # Currently only for Elemental Steps
-        var = f'r{reaction.key:02.0f}'
+        #var = f'r{reaction.key:02.0f}' Legacy code, to remove
         if compound not in reaction.reactants:
             return ''
         Aux = []
@@ -396,7 +407,8 @@ class PythonWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        self.parameters['out_filename'] = self.get('out_filename','data.txt')
+        out_filename = self.parameters.get('out_filename','data.txt')
+        self.parameters['out_filename'] = out_filename
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
         self.header = self._header.format_map(self.parameters)
@@ -448,7 +460,7 @@ class CplusplusWriter(Writer):
         expr += '*'.join(Aux)
         return  var, expr
     def ratelaw_partial(self,reaction,compound): # Currently only for Elemental Steps
-        var = f'r{reaction.key:02.0f}'
+        #var = f'r{reaction.key:02.0f}' Legacy code, to remove
         if compound not in reaction.reactants:
             return ''
         Aux = []
