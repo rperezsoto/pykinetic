@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <utility>
+
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -163,11 +163,10 @@ int main()
 
     // Run the solver
     typedef rosenbrock4< double > stepper_type;
-    //make_controlled(atol, rtol, stepper_type());
-    size_t num_of_steps = integrate_const(make_controlled(atol, rtol, stepper_type()),
-                                          make_pair(model(), jacobian()),
-                                          x, tini, tend, trep, 
-                                          write_cout);
+    integrate_const(make_controlled(atol, rtol, stepper_type()),
+                    make_pair(model(), jacobian()),
+                    x, tini, tend, trep, 
+                    write_cout);
     outfile.close();
     return 0;
 }

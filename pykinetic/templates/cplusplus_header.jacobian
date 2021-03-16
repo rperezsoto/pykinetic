@@ -1,0 +1,29 @@
+#include <iostream>
+#include <fstream>
+
+#include <boost/numeric/odeint.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+
+using namespace std;
+using namespace boost::numeric::odeint;
+
+typedef boost::numeric::ublas::vector< double > state_type;
+typedef boost::numeric::ublas::matrix< double > matrix_type;
+
+
+ofstream outfile;
+
+string State2string(const state_type &v ,double t)
+{{
+    string s = boost::lexical_cast<std::string>(t);
+    s += '\t';
+    for (boost::numeric::ublas::vector<double>::const_iterator i = v.begin(); i != v.end(); ++i)
+        s += boost::lexical_cast<std::string>(*i) + '\t';
+    return s;
+}}
+
+void write_cout(const state_type &x, const double t)
+{{
+    string MyVector = State2string(x,t);
+    outfile <<  MyVector << '\n';
+}}
