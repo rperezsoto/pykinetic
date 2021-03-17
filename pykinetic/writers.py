@@ -179,7 +179,11 @@ class Writer(object):
 
     # main methods for writing
     def fill_header(self,chemicalsys):
-        self.header = self._header.format_map(self.parameters)
+        kwargs = dict()
+        kwargs.update(self.parameters)
+        for attr in ['dxdt','f','jac', 'jac_f']:
+            kwargs[attr] = getattr(self,attr)
+        self.header = self._header.format_map(kwargs)
     def fill_tail(self,chemicalsys):
         kwargs = dict()
         kwargs.update(self.parameters)
@@ -407,13 +411,12 @@ class PythonWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        out_filename = self.parameters.get('out_filename','data.txt')
-        self.parameters['out_filename'] = out_filename
-        self.parameters['species'] = chemicalsys.species
-        self.parameters['T'] = chemicalsys.T
-        self.header = self._header.format_map(self.parameters)
-    def fill_tail(self,chemicalsys):
-        self.tail = self._tail.format_map(self.parameters)
+        kwargs = dict()
+        kwargs.update(self.parameters)
+        kwargs['out_filename'] = self.parameters.get('out_filename','data.txt')
+        kwargs['species'] = chemicalsys.species
+        kwargs['T'] = chemicalsys.T
+        self.header = self._header.format_map(kwargs)
     def write(self,chemicalsys,filepath):
         self.fill(chemicalsys)
         # Write the constants block

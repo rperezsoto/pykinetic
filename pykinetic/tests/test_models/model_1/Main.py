@@ -13,7 +13,7 @@ MaxMem = 28*1E6
 # Parameters
 species = 8
 dt = 1E-12 # Timestep s
-report_t = 1E-11 # s
+trep = 1E-11 # s
 tfin = 1E-9 # Final Time
 xini = np.zeros(species)
 xini[0] = 0.5
@@ -157,9 +157,9 @@ t = np.arange(0,tfin2+dt,dt)
 xini2 = xini
 # Time indexes and Out predefinition
 Out_index = []
-t_old = -(report_t+1.0)
+t_old = -(trep+1.0)
 for i in range(len(t)):
-	if t[i] - t_old >= report_t:
+	if t[i] - t_old >= trep:
 		Out_index.append(i)
 		t_old = t[i]
 Out = ['' for i in Out_index]

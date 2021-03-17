@@ -6,7 +6,7 @@ OFile = '{out_filename}'
 
 # Parameters
 species = {species}
-trep = {report_t} # s
+trep = {trep} # s
 dt = {dt} # maximum timestep for solving the system
 tfin = {tfin} # Final Time
 {x}ini = np.zeros(species)

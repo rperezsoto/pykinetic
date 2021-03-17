@@ -843,7 +843,7 @@ class Parameters(UserDict):
 class SimulationParameters(Parameters):
     """
     Dictionary with default values for simulations. It includes the keys:
-    {tfin, dt, report_t, concentrations}.
+    {tfin, dt, trep, concentrations}.
     """
     def __init__(self,**kwargs):
         super().__init__(**kwargs)

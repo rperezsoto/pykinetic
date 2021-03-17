@@ -1,4 +1,4 @@
-t = np.arange(0,tfin,report_t)
+t = np.arange(0,tfin,trep)
 # Time indexes and Out predefinition
 solution = scipy.integrate.solve_ivp(fun={f}, jac={jac_f}, y0={x}ini,
                                      t_span=(0,tfin), t_eval=t,
