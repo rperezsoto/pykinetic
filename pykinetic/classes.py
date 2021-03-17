@@ -843,13 +843,13 @@ class Parameters(UserDict):
 class SimulationParameters(Parameters):
     """
     Dictionary with default values for simulations. It includes the keys:
-    {tfin, dt, report_t, concentrations}.
+    {tfin, dt, trep, concentrations}.
     """
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self['tfin'] = self.get('tfin','')
-        self['dt'] = self.get('dt','')
-        self['report_t'] = self.get('report_t','')
+        self['tfin'] = self.get('tfin',0)
+        self['trep'] = self.get('trep',0)
+        self['dt'] = self.get('dt',0)
         self['concentrations'] = {'index':'value'}
     def read_concentrations(self):
         compounds_mark = ';'

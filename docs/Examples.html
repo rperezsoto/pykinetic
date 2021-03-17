@@ -569,7 +569,7 @@ to keep the tedious task of re-writing these parameters onto the generated file.
 <pre class="literal-block">
 dt          1E-12
 tfin        1E+02
-report_t    0.1
+trep    0.1
 concentrations    0,1.0 ; 1,1.0 ; 2,0.1
 </pre>
 <ul class="simple">
@@ -577,10 +577,10 @@ concentrations    0,1.0 ; 1,1.0 ; 2,0.1
 <li>Not all the parameters need to be specified in this file.</li>
 <li>dt is the solver timestep for calculating the solution. Some solvers require
 it and others no.</li>
-<li>report_t  corresponds to the time step for reporting the concentrations of
+<li>trep  corresponds to the time step for reporting the concentrations of
 all the species.</li>
 <li>tfin is the final time. Both number notations, 1E+02 and 100, are valid.</li>
-<li>dt, report_t and tfin are specified in seconds.</li>
+<li>dt, trep and tfin are specified in seconds.</li>
 <li>In the concentrations keyword only the non-zero initial concentrations in
 M need to be included. In this example, the compounds 0 and 1 start with 1M
 and compound 2 with 0.1 M. (The number that corresponds to each compound

@@ -3,11 +3,10 @@ int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
     // time parameters
-    double tini,tend,tstep,trep;
+    double tini,tend,tstep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
     tstep = {dt}; // Timestep, s
-    trep = {report_t}; // s
 
     // Convergence Parameters
     {convergence}
@@ -22,7 +21,7 @@ int main()
 
     // Run the solver
     typedef runge_kutta_dopri5< state_type > stepper_type;
-    integrate_adaptive(make_controlled(atol, rtol, stepper_type()), model , x ,
+    integrate_adaptive(make_controlled(atol, rtol, stepper_type()), model() , x ,
                      tini , tend , tstep , write_cout );
     outfile.close();
     return 0;

@@ -59,8 +59,9 @@ If for any reason it is not reachable:
    $ sudo apt-get install python3.7 python3.7-dev
 
 Now you can skip the next step if you don't want to set up a virtual environment
-(Remember to change "my_venv" for the actual path of the directory where you
-want the virtual environment)
+the lines below correspond to python3.7 but can be also applied to python3.6 or 
+higher (Remember to change "my_venv" for the actual path of the directory where 
+you want the virtual environment)
 
 .. code:: shell-session
 
@@ -68,6 +69,14 @@ want the virtual environment)
    $ python3.7 -m venv my_venv
    $ source my_venv/bin/activate
 
+In the case of creating a virtual environment and running the 
+previous "source" command the anytime you write "python" it is acting as alias 
+for "python3.7" or whichever python executable you used for the virtual environment.
+(To leave the virtual environment run the "deactivate" command at anytime)
+
+If you have not created a virtual environment, all the following commands must 
+explicitly use the python executable in which you are going to install the 
+the package. 
 Now we install the python default installer pip in our virtual environment
 
 .. code:: shell-session
@@ -92,24 +101,23 @@ Installing pykinetic
 ....................
 
 
-Get the source code either git or download and unpack it into the "pykinetic"
-folder.
+Get the source code from github through git and install it.
 
 .. code:: shell-session
 
    $ git clone https://github.com/maserasgroup-repo/pykinetic.git pykinetic
+   $ python -m pip install pykinetic/
 
-Now install pykinetic
+If you do not have git or do prefer to download manually the source 
+code as a .zip or .tar.gz do it install it. 
 
 .. code:: shell-session
 
-   $ python -m pip install pykinetic/
+   $ python -m pip install pykinetic-0.0.0.tar.gz
 
-
-Installing with the -e option before pykinetic will make that all the changes in
-the source files will have have effect when you call them through their alias.
-However, you have to manually clean the folder generated in case of uninstalling
-the package.
+.. 
+   
+   Note: If you prefer to unpack it you can do it but it is not needed
 
 Running the tests
 .................

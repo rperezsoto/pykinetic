@@ -1,4 +1,4 @@
 dt		1E-12
 tfin		1E-9
-report_t	1E-11
+trep	1E-11
 concentrations	0,0.5 ; 1,0.5 ; 2,1

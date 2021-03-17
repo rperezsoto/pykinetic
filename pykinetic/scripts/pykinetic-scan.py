@@ -188,7 +188,7 @@ def main():
     # Initialize the Writer
     writer_cls = WRITERS[args.writer]
     writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
-                        jac_var='Jac',jac_fun_var='Jacobian',
+                        jac_var='Jac',jac_fun_var='jacobian',
                         header=args.header,tail=args.tail)
     writer.set_parameters(simulation=args.simulation,
                           convergence=args.convergence)

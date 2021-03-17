@@ -24,8 +24,8 @@ def Indent(lines,tab='    ',level=1):
     return Out
 
 class Writer(object):
-    def __init__(self, conc_var='x', mb_var='dxdt', fun_var='Model',
-                 jac_var='Jac',jac_fun_var='Jacobian',header=None,tail=None):
+    def __init__(self, conc_var='x', mb_var='dxdt', fun_var='model',
+                 jac_var='Jac',jac_fun_var='jacobian',header=None,tail=None):
         self.x = conc_var
         self.dxdt = mb_var
         self.f = fun_var
@@ -59,7 +59,7 @@ class Writer(object):
         if simulation is not None:
             self.parameters.update(simulation)
         if convergence is not None:
-            self.get_parameters.update(convergence)
+            self.parameters.update(convergence)
 
     # methods for object -> str transformations
     def constant(self,reaction,value_format):
@@ -170,10 +170,25 @@ class Writer(object):
         """
         pass
 
+    @abstractmethod
+    def _function(self,chemicalsys):
+        pass
+    @abstractmethod
+    def _jacobian(self,chemicalsys):
+        pass
+
     # main methods for writing
     def fill_header(self,chemicalsys):
-        self.header = self._header.format_map(self.parameters)
+        kwargs = dict()
+        kwargs.update(self.parameters)
+        for attr in ['dxdt','f','jac', 'jac_f']:
+            kwargs[attr] = getattr(self,attr)
+        self.header = self._header.format_map(kwargs)
     def fill_tail(self,chemicalsys):
+        kwargs = dict()
+        kwargs.update(self.parameters)
+        for attr in ['dxdt','f','jac', 'jac_f']:
+            kwargs[attr] = getattr(self,attr)
         self.tail = self._tail.format_map(kwargs)
 
     def fill(self,chemicalsys):
@@ -201,6 +216,12 @@ class Writer(object):
 
 class PythonWriter(Writer):
 
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        for var in ['x', 'dxdt', 'f', 'jac','jac_f']:
+            self.parameters[var] = getattr(self,var)
+        self.parameters['method'] = 'LSODA'
+
     def _load_default_header(self):
         with open(TEMPLATES_PATH.joinpath('python_header.default'),'r') as F:
             txt = F.read()
@@ -212,7 +233,7 @@ class PythonWriter(Writer):
 
     def set_parameters(self,simulation=None,convergence=None):
         if simulation is not None:
-            for key in ['tfin','report_t','dt']: 
+            for key in ['tfin','trep','dt']: 
                 self.parameters[key] = simulation.get(key,'')
             concentrations = self._initial_concentrations(simulation)
             self.parameters['concentrations'] = concentrations
@@ -230,7 +251,7 @@ class PythonWriter(Writer):
         expr += '*'.join(Aux)
         return  var, expr
     def ratelaw_partial(self,reaction,compound): # Currently only for Elemental Steps
-        var = f'r{reaction.key:02.0f}'
+        #var = f'r{reaction.key:02.0f}' Legacy code, to remove
         if compound not in reaction.reactants:
             return ''
         Aux = []
@@ -320,7 +341,7 @@ class PythonWriter(Writer):
         are vectors. This function corresponds to the system of diferential
         equations for the mass balances of the system.
         """
-        definition = f'def {self.f}({self.x},t):'
+        definition = f'def {self.f}(t,{self.x}):'
 
         lines = [ f'{self.dxdt} = np.zeros({chemicalsys.species})',]
         # Write the constants block
@@ -356,9 +377,9 @@ class PythonWriter(Writer):
         and t are vectors. This function corresponds to the Jacobian of the
         system of differential equations for the mass balances of the system.
         """
-        definition = f'def {self.jac_f}({self.x},t):'
+        definition = f'def {self.jac_f}(t,{self.x}):'
         n = chemicalsys.species
-        lines = [ f'{self.dxdt} = np.zeros(shape=({n},{n}))',]
+        lines = [ f'{self.jac} = np.zeros(shape=({n},{n}))',]
         # Write the constants block
         lines.append('')
         constants = self._kinetic_constants(chemicalsys)
@@ -369,7 +390,7 @@ class PythonWriter(Writer):
         lines.extend(elements)
         # Function end
         lines.append('')
-        lines.append(f'return {self.dxdt}')
+        lines.append(f'return {self.jac}')
         lines.append('\n')
 
         # Add one indentation level
@@ -390,12 +411,11 @@ class PythonWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        self.parameters['out_filename'] = 'data.txt'
+        out_filename = self.parameters.get('out_filename','data.txt')
+        self.parameters['out_filename'] = out_filename
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
-        self.header = self._header.format_map(self.parameters)
-    def fill_tail(self,chemicalsys):
-        self.tail = self._tail.format_map(self.parameters)
+        super().fill_header()
     def write(self,chemicalsys,filepath):
         self.fill(chemicalsys)
         # Write the constants block
@@ -420,7 +440,7 @@ class CplusplusWriter(Writer):
 
     def set_parameters(self,simulation=None,convergence=None):
         if simulation is not None:
-            for key in ['tfin','report_t','dt']: 
+            for key in ['tfin','trep','dt']: 
                 self.parameters[key] = simulation.get(key,'')
             concentrations = self._initial_concentrations(simulation)
             self.parameters['concentrations'] = concentrations
@@ -428,7 +448,7 @@ class CplusplusWriter(Writer):
             variables = ','.join(convergence.variables)
             values = convergence.as_str(sep=';')
             lines = [f'double {variables};',
-                     f"\t{values};"]
+                     f"    {values};"]
             self.parameters['convergence'] = '\n'.join(Indent(lines,level=0))
 
     # methods for object -> str transformations
@@ -442,7 +462,7 @@ class CplusplusWriter(Writer):
         expr += '*'.join(Aux)
         return  var, expr
     def ratelaw_partial(self,reaction,compound): # Currently only for Elemental Steps
-        var = f'r{reaction.key:02.0f}'
+        #var = f'r{reaction.key:02.0f}' Legacy code, to remove
         if compound not in reaction.reactants:
             return ''
         Aux = []
@@ -478,9 +498,11 @@ class CplusplusWriter(Writer):
         return var, ''.join(expr)
     def jacobian_element(self,Jac_ij):
         C1,C2 = Jac_ij.compound1, Jac_ij.compound2
-        if not Jac_ij.items:
+        var = f'{self.jac}({C1.key},{C2.key})'
+        if C1.key is None or C2.key is None: 
             return '', '0'
-        var = f'{self.jac}[{C1.key},{C2.key}]'
+        elif not Jac_ij.items:
+            return var, '0'
         expr = []
         for coef,reaction in Jac_ij.items:
             if coef == 1:
@@ -522,20 +544,24 @@ class CplusplusWriter(Writer):
             var,law = self.massbalance(MB)
             MBs.append(f'{var} = {law};')
         return MBs
+    def _jacobian_elements(self,chemicalsys):
+        Jac = []
+        jac_elements = chemicalsys.jacobian()
+        for jac_ij in jac_elements: 
+            var,expr = self.jacobian_element(jac_ij)
+            if expr:
+                Jac.append(f'{var} = {expr};')
+        return Jac
     def _function(self,chemicalsys,level=0):
         """
         Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
         are vectors. This function corresponds to the system of diferential
         equations for the mass balances of the system.
         """
-        definition = f'void {self.f}( const state_type &{self.x} , '\
-                     f'state_type &{self.dxdt} , const double t)'
+        definition = f'void operator()(const state_type &{self.x}, '\
+                     f'state_type &{self.dxdt}, const double t)'
 
         lines = []
-        # Write the constants block ## NOT IN C++
-        #lines.append('#Constants')
-        #constants = self._kinetic_constants(chemicalsys)
-        #lines.append(constants)
 
         # Write the ratelaws block
         ratelaws = self._ratelaws(chemicalsys)
@@ -555,17 +581,64 @@ class CplusplusWriter(Writer):
         # Add function definition
         lines.insert(0,definition)
 
+        # indent once
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('};')
+        # Add structure name
+        lines.insert(0,f'struct {self.f}')
+
         # Add the indentation level of the function
         lines = Indent(lines,tab='    ',level=level)
 
         return '\n'.join(lines)
-    def _jacobian(self,chemicalsys):
-        return None
+    def _jacobian(self,chemicalsys,level=0):
+        """
+        Generates the code of the jacobian of the function 'f' in dxdt = f(x,t) 
+        where x, dxdt and t are vectors.
+        """
+        definition = f'void operator()(const state_type &{self.x}, '\
+                     f'matrix_type &{self.jac}, const double t, '\
+                     f'state_type &dfdt)'
+
+        lines = []
+
+        # Write the jacobian elements
+        elements = self._jacobian_elements(chemicalsys)
+        lines.extend(elements)
+        # Function end
+        for i in range(chemicalsys.species): 
+            lines.append(f'dfdt[{i}] = 0;')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('}')
+        # Add function definition
+        lines.insert(0,definition)
+
+        # indent once
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add brackets
+        lines.insert(0,'{')
+        lines.append('};')
+        # Add structure name
+        lines.insert(0,f'struct {self.jac_f}')
+
+        # Ensure the final indentation level
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
     def _initial_concentrations(self,simulation):
         concentrations = []
         for key,val in simulation['concentrations'].items():
             concentrations.append(f'{self.x}[{key}] = {val};')
-        concentrations[1:] = Indent(concentrations[1:],level=1)
+        concentrations[1:] = Indent(concentrations[1:],tab='    ',level=1)
         return '\n'.join(concentrations)
 
     # main writing methods
@@ -574,7 +647,7 @@ class CplusplusWriter(Writer):
     def fill_tail(self,chemicalsys):
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
-        self.tail = self._tail.format_map(self.parameters)
+        super().fill_tail(chemicalsys)
     def fill(self,chemicalsys):
         super().fill(chemicalsys)
         constants = self._kinetic_constants(chemicalsys)
@@ -589,6 +662,8 @@ class CplusplusWriter(Writer):
                  self.constants,
                  '',
                  self.function,
+                 '',
+                 self.jacobian,
                  '',
                  self.tail]
         with open(filepath,'w') as F:

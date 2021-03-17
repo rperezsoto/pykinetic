@@ -111,7 +111,7 @@ Symbols:
 +---------+--------------------------------------------------+
 | **<=**  |   Reverse reaction (When the --relative          |
 |         |   flag is specified it uses as reference         |
-|         |   the left side.                                 |
+|         |   the left side).                                |
 +---------+--------------------------------------------------+
 | **<=>** |   Forward and reverse reaction sharing           |
 |         |   the same TS.                                   |
@@ -136,7 +136,7 @@ important when setting up scans since: ::
 
 Does not behave as: ::
 
-   A + B <=> C !2.0 scan
+   A <=> B !2.0 scan
 
 However, the following reactions do have the same behaviour: :: 
 
@@ -181,17 +181,17 @@ Example file: ::
 
    dt          1E-12
    tfin        1E+02
-   report_t    0.1
+   trep    0.1
    concentrations    0,1.0 ; 1,1.0 ; 2,0.1
 
 *  The order may be changed.
 *  Not all the parameters need to be specified in this file. 
 *  dt is the solver timestep for calculating the solution. Some solvers require 
    it and others no.
-*  report_t  corresponds to the time step for reporting the concentrations of 
+*  trep  corresponds to the time step for reporting the concentrations of 
    all the species.  
 *  tfin is the final time. Both number notations, 1E+02 and 100, are valid.
-*  dt, report_t and tfin are specified in seconds.
+*  dt, trep and tfin are specified in seconds.
 *  In the concentrations keyword only the non-zero initial concentrations in 
    M need to be included. In this example, the compounds 0 and 1 start with 1M
    and compound 2 with 0.1 M. (The number that corresponds to each compound 
