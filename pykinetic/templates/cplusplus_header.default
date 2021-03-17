@@ -7,11 +7,12 @@
 using namespace std;
 using namespace boost::numeric::odeint;
 
-typedef boost::numeric::ublas::vector< double > state_type;
+typedef boost::numeric::ublas::vector < double > state_type;
+typedef boost::numeric::ublas::matrix < double > matrix_type;
 
 ofstream outfile;
 
-string State2string(const state_type &v ,double t)
+string State2string(const state_type &v, double t)
 {{
     string s = boost::lexical_cast<std::string>(t);
     s += '\t';
@@ -22,6 +23,6 @@ string State2string(const state_type &v ,double t)
 
 void write_cout(const state_type &x, const double t)
 {{
-    string MyVector = State2string(x,t);
-    outfile <<  MyVector << '\n';
+    string MyVector = State2string(x, t);
+    outfile << MyVector << '\n';
 }}

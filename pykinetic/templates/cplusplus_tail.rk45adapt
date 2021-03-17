@@ -1,11 +1,12 @@
+//[ublas_main
 int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
     // time parameters
-    double tini,tend,trep;
+    double tini,tend,tstep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
-    trep = {trep}; // s
+    tstep = {dt}; // Timestep, s
 
     // Convergence Parameters
     {convergence}
@@ -19,11 +20,10 @@ int main()
     {concentrations}
 
     // Run the solver
-    typedef rosenbrock4 < double > stepper_type;
-    integrate_const(make_controlled(atol, rtol, stepper_type()),
-                    make_pair(model(), jacobian()),
-                    x, tini, tend, trep,
-                    write_cout);
+    typedef runge_kutta_dopri5< state_type > stepper_type;
+    integrate_adaptive(make_controlled(atol, rtol, stepper_type()), model() , x ,
+                     tini , tend , tstep , write_cout );
     outfile.close();
     return 0;
 }}
+//]

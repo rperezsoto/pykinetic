@@ -847,9 +847,9 @@ class SimulationParameters(Parameters):
     """
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self['tfin'] = self.get('tfin','')
-        self['trep'] = self.get('trep','')
-        self['dt'] = self.get('dt','trep')
+        self['tfin'] = self.get('tfin',0)
+        self['trep'] = self.get('trep',0)
+        self['dt'] = self.get('dt',0)
         self['concentrations'] = {'index':'value'}
     def read_concentrations(self):
         compounds_mark = ';'

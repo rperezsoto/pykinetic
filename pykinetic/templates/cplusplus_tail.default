@@ -1,4 +1,3 @@
-//[ublas_main
 int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
@@ -6,7 +5,7 @@ int main()
     double tini,tend,trep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
-    trep = {trep}; // Timestep to report, s
+    trep = {trep}; // s
 
     // Convergence Parameters
     {convergence}
@@ -15,14 +14,16 @@ int main()
     for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){{
         x[*i] = 0.0;
     }}
-    
-    // Initial concentrations: 
+
+    // Initial concentrations
     {concentrations}
 
     // Run the solver
-    typedef dense_output_runge_kutta<controlled_runge_kutta<runge_kutta_dopri5<state_type> > > stepper_type;
-    integrate_const(stepper_type(), model, x, tini, tend, trep, write_cout);
+    typedef rosenbrock4 < double > stepper_type;
+    integrate_const(make_controlled(atol, rtol, stepper_type()),
+                    make_pair(model(), jacobian()),
+                    x, tini, tend, trep,
+                    write_cout);
     outfile.close();
     return 0;
 }}
-//]
