@@ -2,29 +2,27 @@ int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
     // time parameters
-    double tini,tend,tstep,trep;
+    double tini,tend,trep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
-    tstep = {dt}; // Timestep, s
     trep = {trep}; // s
 
     // Convergence Parameters
-    double rtol,atol;
     {convergence}
 
     state_type x({species});
-    for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){
+    for (boost::numeric::ublas::vector<double>::const_iterator i = x.begin(); i != x.end(); ++i){{
         x[*i] = 0.0;
-    }
+    }}
 
     // Initial concentrations
     {concentrations}
 
     // Run the solver
-    typedef rosenbrock4< double > stepper_type;
+    typedef rosenbrock4 < double > stepper_type;
     integrate_const(make_controlled(atol, rtol, stepper_type()),
                     make_pair(model(), jacobian()),
-                    x, tini, tend, trep, 
+                    x, tini, tend, trep,
                     write_cout);
     outfile.close();
     return 0;

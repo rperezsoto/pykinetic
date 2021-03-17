@@ -411,12 +411,11 @@ class PythonWriter(Writer):
 
     # main writing methods
     def fill_header(self,chemicalsys):
-        kwargs = dict()
-        kwargs.update(self.parameters)
-        kwargs['out_filename'] = self.parameters.get('out_filename','data.txt')
-        kwargs['species'] = chemicalsys.species
-        kwargs['T'] = chemicalsys.T
-        self.header = self._header.format_map(kwargs)
+        out_filename = self.parameters.get('out_filename','data.txt')
+        self.parameters['out_filename'] = out_filename
+        self.parameters['species'] = chemicalsys.species
+        self.parameters['T'] = chemicalsys.T
+        super().fill_header()
     def write(self,chemicalsys,filepath):
         self.fill(chemicalsys)
         # Write the constants block
@@ -449,7 +448,7 @@ class CplusplusWriter(Writer):
             variables = ','.join(convergence.variables)
             values = convergence.as_str(sep=';')
             lines = [f'double {variables};',
-                     f"\t{values};"]
+                     f"    {values};"]
             self.parameters['convergence'] = '\n'.join(Indent(lines,level=0))
 
     # methods for object -> str transformations
@@ -499,9 +498,11 @@ class CplusplusWriter(Writer):
         return var, ''.join(expr)
     def jacobian_element(self,Jac_ij):
         C1,C2 = Jac_ij.compound1, Jac_ij.compound2
-        if not Jac_ij.items:
-            return '', '0'
         var = f'{self.jac}({C1.key},{C2.key})'
+        if C1.key is None or C2.key is None: 
+            return '', '0'
+        elif not Jac_ij.items:
+            return var, '0'
         expr = []
         for coef,reaction in Jac_ij.items:
             if coef == 1:
@@ -548,7 +549,7 @@ class CplusplusWriter(Writer):
         jac_elements = chemicalsys.jacobian()
         for jac_ij in jac_elements: 
             var,expr = self.jacobian_element(jac_ij)
-            if expr and expr != '0':
+            if expr:
                 Jac.append(f'{var} = {expr};')
         return Jac
     def _function(self,chemicalsys,level=0):
@@ -557,8 +558,8 @@ class CplusplusWriter(Writer):
         are vectors. This function corresponds to the system of diferential
         equations for the mass balances of the system.
         """
-        definition = f'void operator()( const state_type &{self.x} , '\
-                     f'state_type &{self.dxdt} , const double t)'
+        definition = f'void operator()(const state_type &{self.x}, '\
+                     f'state_type &{self.dxdt}, const double t)'
 
         lines = []
 
@@ -598,18 +599,13 @@ class CplusplusWriter(Writer):
         Generates the code of the jacobian of the function 'f' in dxdt = f(x,t) 
         where x, dxdt and t are vectors.
         """
-        definition = f'void operator()( const state_type &{self.x} , '\
-                     f'matrix_type &{self.jac_f} , const double t, '\
+        definition = f'void operator()(const state_type &{self.x}, '\
+                     f'matrix_type &{self.jac}, const double t, '\
                      f'state_type &dfdt)'
 
         lines = []
 
-        # Write the constants block
-        lines.append('')
-        constants = self._kinetic_constants(chemicalsys)
-        lines.extend(constants)
         # Write the jacobian elements
-        lines.append('')
         elements = self._jacobian_elements(chemicalsys)
         lines.extend(elements)
         # Function end
@@ -642,7 +638,7 @@ class CplusplusWriter(Writer):
         concentrations = []
         for key,val in simulation['concentrations'].items():
             concentrations.append(f'{self.x}[{key}] = {val};')
-        concentrations[1:] = Indent(concentrations[1:],level=1)
+        concentrations[1:] = Indent(concentrations[1:],tab='    ',level=1)
         return '\n'.join(concentrations)
 
     # main writing methods
@@ -651,7 +647,7 @@ class CplusplusWriter(Writer):
     def fill_tail(self,chemicalsys):
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
-        self.tail = self._tail.format_map(self.parameters)
+        super().fill_tail(chemicalsys)
     def fill(self,chemicalsys):
         super().fill(chemicalsys)
         constants = self._kinetic_constants(chemicalsys)

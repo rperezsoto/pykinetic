@@ -3,11 +3,10 @@ int main()
 {{
     outfile.open("{out_filename}", ofstream::out);
     // time parameters
-    double tini,tend,tstep,trep;
+    double tini,tend,tstep;
     tini = 0.0;
     tend = {tfin}; // Final time, s
     tstep = {dt}; // Timestep, s
-    trep = {trep}; // s
 
     // Convergence Parameters
     {convergence}
