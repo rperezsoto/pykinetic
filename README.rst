@@ -113,7 +113,7 @@ code as a .zip or .tar.gz do it install it.
 
 .. code:: shell-session
 
-   $ python -m pip install pykinetic-0.0.0.tar.gz
+   $ python -m pip install pykinetic-0.0.1.tar.gz
 
 .. 
    

@@ -169,6 +169,18 @@ Reactions file example:
    
    TS1     20.0 kcal/mol    scan
 
+.. reactions-example-end
+
+.. 
+   
+   Note: The --relative of pykinetic-model.py and pykinetic-scan.py will assume 
+   that the energies specified are relative to the energy of the reactants. In 
+   this example, enabling the --relative flag will result in the catalyzed 
+   reaction having direct barrier of 10 kcal/mol (assuming a scan value of 0 
+   kcal/mol). Not enabling the --relative flag will result in a barrier of 
+   10.0 - E([A···B···Cat]) kcal/mol, with the Compounds file example it would 
+   result in a barrier of 6.0 kcal/mol.
+
 
 Simulation parameters
 .....................
@@ -181,7 +193,7 @@ Example file: ::
 
    dt          1E-12
    tfin        1E+02
-   trep    0.1
+   trep        0.1
    concentrations    0,1.0 ; 1,1.0 ; 2,0.1
 
 *  The order may be changed.

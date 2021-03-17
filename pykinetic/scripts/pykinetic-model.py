@@ -11,7 +11,7 @@ from pykinetic.utils import (BiasedChemicalSystem, write_indexfile,
                               calc_standard_state_correction)
 from pykinetic.userinput import populate_chemicalsystem_fromfiles
 
-__version__ = "0.0.0"
+__version__ = "0.0.1"
 
 WRITERS = {'python':PythonWriter,
            'c++':CplusplusWriter}
