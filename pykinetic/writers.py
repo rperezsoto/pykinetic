@@ -415,7 +415,7 @@ class PythonWriter(Writer):
         self.parameters['out_filename'] = out_filename
         self.parameters['species'] = chemicalsys.species
         self.parameters['T'] = chemicalsys.T
-        super().fill_header()
+        super().fill_header(chemicalsys)
     def write(self,chemicalsys,filepath):
         self.fill(chemicalsys)
         # Write the constants block
