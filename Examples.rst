@@ -227,8 +227,6 @@ Creates a {python|c++} script that contains a system of mass balance equations
 
 .. code:: shell-session
 
-   .. code:: shell-session
-
    $ pykinetic-model.py compounds.txt reactions.txt model.py --writer python
    $ # After editing the file and including the concentrations and simulation times
    $ python model.py
@@ -245,7 +243,7 @@ Creates a {python|c++} script that contains a system of mass balance equations
 
 .. model-end
 
-pyssian-scan.py
+pykinetic-scan.py
 ...............
 
 .. scan-start
@@ -258,7 +256,7 @@ recommended to do a --dryrun and run each generated model by itself.
 .. code:: shell-session
 
    $ # it is recommended to use a simulation parameters file
-   $ pykinetic-model.py compounds.txt reactions.txt 0.0 0.5 5 --writer python --dryrun --I --simulation sim_params.txt
+   $ pykinetic-scan.py compounds.txt reactions.txt 0.0 0.5 5 --writer python --dryrun --I --simulation sim_params.txt
 
 
 .. scan-end

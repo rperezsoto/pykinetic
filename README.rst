@@ -162,4 +162,4 @@ Authors
 License
 -------
 
-(None currently)
+pykinetic is freely available under an `MIT <https://opensource.org/licenses/MIT>`_ License
