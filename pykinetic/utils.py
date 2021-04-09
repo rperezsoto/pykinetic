@@ -39,7 +39,7 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
             if isrelative:
                 energy = reaction.AE.as_unit(chemsys.unit)
             else:
-                energy = reaction.TS.energy.as_unit(chemsys.unit)
+                energy = reaction.TS.energy
             Out.append(f'{key})    {reaction}    !{energy}')
     else:
         for reaction in chemsys.reactions:

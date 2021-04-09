@@ -70,7 +70,7 @@ def populate_chemicalsystem_fromfiles(chemicalsystem,file_c,file_r,
         if mark in REVERSIBLE:
             reactions.append(Reaction(products,reactants))
         # Handle relative energy specification
-        if mark != DIFFUSION and relativeE: 
+        if mark != DIFFUSION and relativeE and label not in TS_dict: 
             energy = energy + reactants_energy
         # Create the TS
         ts_cls = MARKERS[mark]['TS']
