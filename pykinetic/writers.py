@@ -325,7 +325,8 @@ class PythonWriter(Writer):
         for compound in chemicalsys.compounds:
             MB = chemicalsys.massbalance(compound)
             var,law = self.massbalance(MB)
-            MBs.append(f'{var} = {law}')
+            if var:
+                MBs.append(f'{var} = {law}')
         return MBs
     def _jacobian_elements(self,chemicalsys):
         Jac = ['#Non-zero Elements',]
@@ -532,7 +533,8 @@ class CplusplusWriter(Writer):
         ratelaws = ['// Ratelaws',]
         for reaction in chemicalsys.reactions:
             var,law = self.ratelaw(reaction)
-            ratelaws.append(f'{var} = {law};')
+            if var:
+                ratelaws.append(f'{var} = {law};')
             vars.append(var)
         # Add variable declaration
         ratelaws.insert(1,f'double {",".join(vars)};')
