@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-import os
-import math
 import argparse
 import subprocess
+from itertools import chain
 
 from pathlib import Path
 
@@ -44,9 +43,6 @@ def create_parser():
                         default='kcal/mol',
                         choices=Energy._units,
                         help="Unit of Start and Stop parameters")
-    parser.add_argument("outfile", # No deberia existir a priori
-                        type=Path, 
-                        help="Output script")
     parser.add_argument("--relative",
                         action='store_true',
                         default=False,
@@ -60,6 +56,12 @@ def create_parser():
                         help="""If Enabled creates a txt file named 
                         'OutFile'.index with the indices used for reactions,
                         compounds and TSs""")
+    parser.add_argument("-Ir","--indexfile-relative",
+                        action="store_true",
+                        dest="indexfile_relative",
+                        default=False,
+                        help="""Enforces relative barriers in the specified 
+                        default energy unit in the indexfile.""")
     parser.add_argument("-T","--Temperature", 
                         nargs=2,
                         metavar=("Temp","Unit"),
@@ -215,12 +217,22 @@ def main():
     chemsys.apply_bias()
     chemsys.apply_scan()
 
+    # Ensure that at least one compound or TS has the scannable attribute set up
+    for item in chain(chemsys.compounds,chemsys.transitionstates): 
+        if item.scannable:
+            break
+    else:
+        raise ValueError('''No Compound/TS has the "scan" keyword in the 
+        input files. Please use pykinetic-model.py if the input files are 
+        correct otherwise please indicate in the input files which Compounds 
+        and/or transition states should be scanned.''')
+
     for i,energy in enumerate(energies): # Keep going
         stem = f'scan_{i:03d}' # stem of the produced files
         chemsys.scan = energy
 
         # Create Name of Script and OutFile
-        out_data_file = f'{stem}.data'
+        out_data_file = outputs_folder/f'{stem}.data'
         writer.parameters['out_filename'] = out_data_file
         print(stem)
 
@@ -238,7 +250,8 @@ def main():
 
         if args.IndexFile:
             index_file = indices_folder.joinpath(f'{stem}.index')
-            write_indexfile(chemsys,index_file, isrelative=args.relative)
+            isrelative = args.indexfile_relative or args.relative
+            write_indexfile(chemsys,index_file, isrelative=isrelative)
         
         if args.scripts:
             script = scripts_folder.joinpath(f'{stem}{tmp_file.suffix}')
