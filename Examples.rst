@@ -285,7 +285,7 @@ Now we create the model from scratch assuming a T of 25ºC.
 
 .. code:: python
 
-   from pykinetic.classes import (ChemicalSystem, Energy, Compounds, Reactions,
+   from pykinetic.classes import (ChemicalSystem, Energy, Compound, Reaction,
                                   TransitionState)
    from pykinetic.writers import PythonWriter as Writer
    
@@ -335,7 +335,7 @@ Modifying and loading a model
 
 .. code:: python
 
-   from pykinetic.classes import (Energy, Compounds, Reactions,
+   from pykinetic.classes import (Energy, Compound, Reaction,
                                   TransitionState)
    from pykinetic.utils import BiasedChemicalSystem, calc_standard_state_correction
    from pykinetic.writers import PythonWriter as Writer
