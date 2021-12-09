@@ -616,7 +616,7 @@ class ChemicalSystem(object):
     def T(self,other):
         self._T = other
         for reaction in self.reactions:
-            reaction.T = T
+            reaction.T = other
 
     # Methods related with the (c)ompounds attribute
     def cadd(self,compound,update=False):
@@ -641,20 +641,23 @@ class ChemicalSystem(object):
         self.Name2Compound[compound.label] = compound
         if update:
             self.cupdate()
-    def cextend(self,compounds):
+    def cextend(self,compounds,update=True):
         """
-        Lazy Addition, it first adds all the reactions and then
+        Lazy Addition, it first adds all the compounds and then
         it updates them.
 
         Parameters
         ----------
         compounds : list
             list of `Compound` instances
-
+        update : bool
+            Whether to update the compounds in the system after adding it or not
+            (the default is True).
         """
         for compound in compounds:
             self.cadd(compound,update=False)
-        self.cupdate()
+        if update:
+            self.cupdate()
     def cupdate(self,start=0,update_keys=False):
         """
         Updates the `compounds` attr reinitializing the indices.
@@ -706,7 +709,7 @@ class ChemicalSystem(object):
             self.reactions.append(reaction)
         if reaction.TS not in self.transitionstates: 
             self.transitionstates.append(reaction.TS)
-    def rextend(self,reactions):
+    def rextend(self,reactions,update=True):
         """
         Lazy Addition, it first adds all the reactions and then
         it updates them.
@@ -715,10 +718,14 @@ class ChemicalSystem(object):
         ----------
         reactions : list
             list of Reaction instances
+        update : bool
+            Whether to update the reactions in the system after adding it or not
+            (the default is True).
         """
         for reaction in reactions:
             self.radd(reaction,update=False)
-        self.rupdate()
+        if update: 
+            self.rupdate()
     def rupdate(self,start=0):
         """
         Updates the `reactions` attr ensuring appropiate key and T of each
