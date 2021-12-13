@@ -161,6 +161,9 @@ def parse_arguments(parser):
 
     if args.dryrun:
         args.scripts = True
+    
+    if not args.IndexFile and args.indexfile_relative: 
+        args.IndexFile = True
 
     return args
 

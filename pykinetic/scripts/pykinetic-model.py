@@ -41,6 +41,12 @@ def create_parser():
                         'OutFile'.index with the indices used for reactions,
                         compounds and TSs""",
                         )
+    parser.add_argument("-Ir","--indexfile-relative",
+                        action="store_true",
+                        dest="indexfile_relative",
+                        default=False,
+                        help="""Enforces relative barriers in the specified 
+                        default energy unit in the indexfile.""")
     parser.add_argument("-T","--Temperature", 
                         nargs=2,
                         metavar=("Temp","Unit"),
@@ -129,6 +135,9 @@ def parse_arguments(parser):
         conv_params = ConvergenceParameters.read_from(args.convergence)
     args.convergence = conv_params
 
+    if not args.IndexFile and args.indexfile_relative: 
+        args.IndexFile = True
+
     return args
 
 
@@ -158,8 +167,10 @@ def main():
     writer.write(chemsys,args.outfile)
 
     if args.IndexFile:
-        IdxFile = args.outfile.parent.joinpath(args.outfile.stem + '.index')
-        write_indexfile(chemsys,IdxFile,isrelative=args.relative)
+        stem = args.outfile.stem
+        index_file = args.outfile.parent.joinpath(f'{stem}.index')
+        isrelative = args.indexfile_relative or args.relative
+        write_indexfile(chemsys,index_file, isrelative=isrelative)
 
 if __name__ == '__main__':
     main()
