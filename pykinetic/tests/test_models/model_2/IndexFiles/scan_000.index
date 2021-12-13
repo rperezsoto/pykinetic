@@ -8,14 +8,14 @@
 6)    C    -2.0 kcal/mol
 #### reactions ####
 0)    A  +  B    =>    [A···B]    !4.0 kcal/mol
-1)    [A···B]    =>    A  +  B    !4.0 kcal/mol
-2)    [A···B]  +  Cat    =>    [A···B···Cat]    !6.0 kcal/mol
-3)    [A···B···Cat]    =>    [A···B]  +  Cat    !6.0 kcal/mol
+1)    [A···B]    =>    A  +  B    !2.0 kcal/mol
+2)    [A···B]  +  Cat    =>    [A···B···Cat]    !3.9999999999999996 kcal/mol
+3)    [A···B···Cat]    =>    [A···B]  +  Cat    !1.9999999999999998 kcal/mol
 4)    A  +  B    =>    C    !19.999999999999996 kcal/mol
-5)    C    =>    A  +  B    !19.999999999999996 kcal/mol
-6)    [A···B]    =>    C    !19.999999999999996 kcal/mol
-7)    C    =>    [A···B]    !19.999999999999996 kcal/mol
-8)    [A···B···Cat]    =>    [C···Cat]    !9.999999999999998 kcal/mol
-9)    [C···Cat]    =>    [A···B···Cat]    !9.999999999999998 kcal/mol
-10)    [C···Cat]    =>    C  +  Cat    !4.999999999999999 kcal/mol
-11)    C  +  Cat    =>    [C···Cat]    !4.999999999999999 kcal/mol
+5)    C    =>    A  +  B    !21.999999999999996 kcal/mol
+6)    [A···B]    =>    C    !17.999999999999996 kcal/mol
+7)    C    =>    [A···B]    !21.999999999999996 kcal/mol
+8)    [A···B···Cat]    =>    [C···Cat]    !5.999999999999998 kcal/mol
+9)    [C···Cat]    =>    [A···B···Cat]    !7.0 kcal/mol
+10)    [C···Cat]    =>    C  +  Cat    !1.9999999999999998 kcal/mol
+11)    C  +  Cat    =>    [C···Cat]    !7.0 kcal/mol

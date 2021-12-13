@@ -2,25 +2,19 @@ import sys
 import numpy as np
 import scipy.integrate
 
-OFile = 'data.txt'
-
-# alias for ode function
-odeint = scipy.integrate.odeint
-
-# Calculations Memory Constraint
-MaxMem = 28*1E6
+OFile = 'model.data'
 
 # Parameters
 species = 8
-dt = 1E-12 # Timestep s
 trep = 1E-11 # s
+dt = 1E-12 # maximum timestep for solving the system
 tfin = 1E-9 # Final Time
 xini = np.zeros(species)
 xini[0] = 0.5
 xini[1] = 0.5
 xini[2] = 1
 # Model at T=298.15 K
-def model(x,t):
+def model(t,x):
     dxdt = np.zeros(8)
     
     #Constants
@@ -71,8 +65,8 @@ def model(x,t):
     
     return dxdt
     
-def Jacobian(x,t):
-    dxdt = np.zeros(shape=(8,8))
+def jacobian(t,x):
+    Jac = np.zeros(shape=(8,8))
     
     #Constants
     k00 = 2.1243982516e+11
@@ -144,36 +138,26 @@ def Jacobian(x,t):
     Jac[7,6] = +k15*x[1]
     Jac[7,7] = -k11-k14*x[0]
     
-    return dxdt
+    return Jac
     
-# Calculation handling a maximum matrix size
-if species*tfin/dt > MaxMem:
-	tfin2 = MaxMem*dt/species
-	ti = 0
-else:
-	tfin2 = tfin
-	ti = 0
-t = np.arange(0,tfin2+dt,dt)
-xini2 = xini
+t = np.arange(0,tfin,trep)
 # Time indexes and Out predefinition
-Out_index = []
-t_old = -(trep+1.0)
-for i in range(len(t)):
-	if t[i] - t_old >= trep:
-		Out_index.append(i)
-		t_old = t[i]
-Out = ['' for i in Out_index]
-while ti+tfin2 <= tfin:
-	print('Current interval: [{},{}] s'.format(ti,ti+tfin2))
-	x = odeint(f,xini2,t,Dfun=Jacobian,rtol=1E-6,atol=1E-12)
-	# Output Writing
-	for j,i in enumerate(Out_index):
-		Row = '\t'.join(map(str,x[i,:].tolist()))
-		Out[j] = '{}\t{}'.format(ti+t[i],Row)
-		t_old = t[i]
-	with open('{}.txt'.format(OFile),'a') as F:
-		F.write('\n'.join(Out))
-		F.write('\n')
-	xini2 = x[-1,:]
-	ti += tfin2
-#
+solution = scipy.integrate.solve_ivp(fun=model, jac=jacobian, y0=xini,
+                                     t_span=(0,tfin), t_eval=t,
+                                     method='LSODA', max_step=min(dt,trep),
+                                     rtol=1E-6,atol=1E-12)
+
+if not solution.success:
+    print(solution.message)
+else:
+    print(f"""
+          nfev={solution.nfev}
+          njev={solution.njev}
+          nlu={solution.nlu}
+          status={solution.status}
+          success={solution.success}
+          """)
+    x = np.zeros(shape=(len(solution.t),species+1))
+    x[:,0] = solution.t
+    x[:,1:] = solution.y[:,:].transpose()
+    np.savetxt(OFile,x,delimiter='\t')
