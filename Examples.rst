@@ -118,7 +118,7 @@ Symbols:
 +---------+--------------------------------------------------+
 | **<d>** |   Forward and reverse "diffusion" reaction.      |
 |         |   Both share the TS. The specified energy is     |
-|         |   relative to the G(given) = G(TS)               |
+|         |   used as: G(specified) = G(TS)                  |
 |         |   - max(G(reactants),G(products))                |
 +---------+--------------------------------------------------+
 
