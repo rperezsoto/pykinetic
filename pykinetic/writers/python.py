@@ -455,6 +455,8 @@ class PFR(Batch):
     """
     Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.
     Models using this writer take inlet concentrations as floats and not tuples.
+    Allows providing the parameters through a SimulationParameters instance or 
+    directly upon instantiation.
     
     Parameters
     ----------
@@ -464,7 +466,7 @@ class PFR(Batch):
         Reactor Volume in L
 
     """
-    def __init__(self,flow,volume,**kwargs):
+    def __init__(self,flow=1.0,volume=1.0,**kwargs):
         super().__init__(**kwargs)
         self.flow = flow # L/s
         self.volume = volume #L
@@ -478,8 +480,8 @@ class PFR(Batch):
         self._tail = txt
     def set_parameters(self,**kwargs):
         super().set_parameters(**kwargs)
-        self.parameters['flow'] = self.flow
-        self.parameters['volume'] = self.volume
+        self.parameters['flow'] = self.parameters.get('flow',self.flow)
+        self.parameters['volume'] = self.parameters.get('volume',self.volume)
 
     # main writing methods
     def fill_header(self,chemicalsys):
