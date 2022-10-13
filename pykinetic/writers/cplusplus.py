@@ -64,9 +64,9 @@ class CplusplusWriter(Writer):
     def constant(self,reaction,value_format='{:0.10e}'):  # Currently only for Elemental Steps
         return super().constant(reaction,value_format)
     def massbalance(self,MassBalance):
-        if not MassBalance.items:
-            return '', '0'
         var = f'{self.dxdt}[{MassBalance.compound.key}]'
+        if not MassBalance.items:
+            return var, '0'
         expr = []
         for coef,reaction in MassBalance.items:
             if coef == 1:
@@ -125,7 +125,8 @@ class CplusplusWriter(Writer):
         for compound in chemicalsys.compounds:
             MB = chemicalsys.massbalance(compound)
             var,law = self.massbalance(MB)
-            MBs.append(f'{var} = {law};')
+            if var:
+                MBs.append(f'{var} = {law};')
         return MBs
     def _jacobian_elements(self,chemicalsys):
         Jac = []
