@@ -39,10 +39,19 @@ def create_parser():
                         help="Final value for the correction scan")
     parser.add_argument("steps",type=int,
                         help="Number of steps in between")
+    parser.add_argument("--scan-all",
+                        dest="scan_all", 
+                        action='store_true',
+                        default=False,
+                        help="""Adds all compounds and non-diffusion TS
+                        (TSs associated to reactions of the type <d>) to the 
+                        pool of scannable energies if they were not yet included
+                        in the corresponding input file with the scannable 
+                        keyword""")
     parser.add_argument("--scanunit",
                         default='kcal/mol',
                         choices=Energy._units,
-                        help="Unit of Start and Stop parameters")
+                        help="Unit of Start and Stop parameters (default: kcal/mol)")
     parser.add_argument("--relative",
                         action='store_true',
                         default=False,
@@ -217,6 +226,12 @@ def main():
                                       file_r=args.reactions,
                                       energy_unit=unit,
                                       relativeE=args.relative)
+    if args.scan_all:
+        for compound in chemsys.compounds: 
+            compound.scannable = True
+        for ts in chemsys.transitionstates: 
+            if not hasattr(ts,'barrier'): # only DiffusionTS have .barrier
+                ts.scannable = True
     chemsys.apply_bias()
     chemsys.apply_scan()
 

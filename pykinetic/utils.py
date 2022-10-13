@@ -89,13 +89,13 @@ class BiasedChemicalSystem(ChemicalSystem):
         for compound in self.compounds: 
             compound.energy = compound.energy + self.bias
         for TS in self.transitionstates: 
-            if not hasattr(TS,'barrier'):
+            if not hasattr(TS,'barrier'): # only DiffusionTS have .barrier
                 TS.energy = TS.energy + self.bias
     def remove_bias(self):
         for compound in self.compounds: 
             compound.energy = compound.energy - self.bias
         for TS in self.transitionstates:
-            if not hasattr(TS,'barrier'): 
+            if not hasattr(TS,'barrier'): # only DiffusionTS have .barrier
                 TS.energy = TS.energy - self.bias
     def change_bias(self,bias):
         self.remove_bias()
