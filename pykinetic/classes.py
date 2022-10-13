@@ -865,8 +865,13 @@ class SimulationParameters(Parameters):
         self['concentrations'] = dict()
         if text != 'index':
             for compound in text.strip().split(compounds_mark): 
-                key,val = compound.split(values_mark)
-                self['concentrations'][key.strip()] = val.strip()
+                key,value = compound.split(values_mark,maxsplit=1)
+                key_int = int(key.strip())
+                if values_mark not in value:
+                    self['concentrations'][key_int] = float(value.strip())
+                else:
+                    values = tuple([float(v.strip()) for v in value.split(',')])
+                    self['concentrations'][key_int] = values
     @classmethod
     def read_from(cls,file):
         parameters = super().read_from(file) 
