@@ -1,7 +1,9 @@
 import unittest
+from pykinetic.writers._base import TEMPLATES_PATH
 from pykinetic.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic.writers import Indent, PythonWriter, CplusplusWriter
 from pykinetic.writers.python import SemiBatch as pySemiBatch
+from pykinetic.writers.python import SemiBatchExtended as pySemiBatchExtended
 from pykinetic.writers.python import PFR as pyPFR
 
 class IndentTest(unittest.TestCase):
@@ -60,6 +62,15 @@ class PythonWriterTest(unittest.TestCase):
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
 
+    def test_templateload(self):
+        with open(TEMPLATES_PATH/'python_batch.head') as F:
+            sol_h = F.read()
+        with open(TEMPLATES_PATH/'python_batch.tail') as F:
+            sol_t = F.read()
+        with self.subTest(template='head'):
+            self.assertEqual(sol_h,self.writer._header)
+        with self.subTest(template='tail'):
+            self.assertEqual(sol_t,self.writer._tail)
     def test_ratelaw_expr(self):
         solutions = ['k00*x[0]',
                      'k01*x[0]*x[1]',
@@ -255,7 +266,7 @@ class PythonWriterTest(unittest.TestCase):
                     'Jac[3,2] = +k07*x[0]*x[1]']
         test = self.writer._jacobian_elements(self.chemsys)
         self.assertEqual(test,solution)
-class PySemiBatch(PythonWriterTest):
+class PySemiBatchTest(PythonWriterTest):
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
@@ -286,7 +297,16 @@ class PySemiBatch(PythonWriterTest):
             r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
-    def test___set_initial_concentrations(self):
+    def test_templateload(self):
+        with open(TEMPLATES_PATH/'python_semibatch.head') as F:
+            sol_h = F.read()
+        with open(TEMPLATES_PATH/'python_semibatch.tail') as F:
+            sol_t = F.read()
+        with self.subTest(template='head'):
+            self.assertEqual(sol_h,self.writer._header)
+        with self.subTest(template='tail'):
+            self.assertEqual(sol_t,self.writer._tail)
+    def test__set_initial_concentrations(self):
         self.writer._set_concentrations(self.concentrations)
         self.assertEqual(self.writer.keys,[0,])
         self.assertDictEqual(self.writer.Cadd,{0:1.0})
@@ -328,8 +348,49 @@ class PySemiBatch(PythonWriterTest):
                 MB = self.chemsys.massbalance(c)
                 test, _ = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
+class pySemiBatchExtendedTest(PythonWriterTest): 
+    def setUp(self):
+        self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
+        self.flow = 1.0
+        self.Vini = 1.0
+        self.writer = pySemiBatchExtended(flow=self.flow,Vini=self.Vini)
+        unit = 'kcal/mol'
+        A = Compound('A',Energy( 0.0,unit))
+        B = Compound('B',Energy( 0.0,unit))
+        C = Compound('C',Energy( 2.0,unit))
+        D = Compound('D',Energy(-1.0,unit))
+        E = Compound('E',Energy(  99,unit)) # Does not appear in reactions
+        # TransitionState(Energy(1.0,unit))
+        self.compounds = [A,B,C,D,E]
+        self.chemsys = ChemicalSystem()
+        for c in self.compounds:
+            self.chemsys.cadd(c,update=False)
+        self.chemsys.cupdate()
+        self.reactions = [Reaction((A,),(C,)),
+                          Reaction((A,B),(C,)),
+                          Reaction((A,A),(C,)),
+                          Reaction((A,),(B,C)),
+                          Reaction((A,),(C,B)),
+                          Reaction((A,),(C,C)),
+                          Reaction((A,B),(C,D)),
+                          Reaction((A,B,C),(D,)),
+                          Reaction((A,),(B,C,D))]
+        for r in self.reactions:
+            r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
+            self.chemsys.radd(r,update=False)
+        self.chemsys.rupdate()
+    def test_templateload(self):
+        with open(TEMPLATES_PATH/'python_semibatch_extended.head') as F:
+            sol_h = F.read()
+        with open(TEMPLATES_PATH/'python_semibatch_extended.tail') as F:
+            sol_t = F.read()
+        with self.subTest(template='head'):
+            self.assertEqual(sol_h,self.writer._header)
+        with self.subTest(template='tail'):
+            self.assertEqual(sol_t,self.writer._tail)
+    
 
-class PyPFR(PythonWriterTest): 
+class PyPFRTest(PythonWriterTest): 
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
@@ -360,7 +421,15 @@ class PyPFR(PythonWriterTest):
             r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
-
+    def test_templateload(self):
+        with open(TEMPLATES_PATH/'python_PFR.head') as F:
+            sol_h = F.read()
+        with open(TEMPLATES_PATH/'python_PFR.tail') as F:
+            sol_t = F.read()
+        with self.subTest(template='head'):
+            self.assertEqual(sol_h,self.writer._header)
+        with self.subTest(template='tail'):
+            self.assertEqual(sol_t,self.writer._tail)
 
 class CplusplusWriterTest(unittest.TestCase):
     def setUp(self):
@@ -389,7 +458,15 @@ class CplusplusWriterTest(unittest.TestCase):
             r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
             self.chemsys.radd(r,update=False)
         self.chemsys.rupdate()
-
+    def test_templateload(self):
+        with open(TEMPLATES_PATH/'cplusplus_header.default') as F:
+            sol_h = F.read()
+        with open(TEMPLATES_PATH/'cplusplus_tail.default') as F:
+            sol_t = F.read()
+        with self.subTest(template='head'):
+            self.assertEqual(sol_h,self.writer._header)
+        with self.subTest(template='tail'):
+            self.assertEqual(sol_t,self.writer._tail)
     def test_ratelaw_expr(self):
         solutions = ['k00*x[0]',
                      'k01*x[0]*x[1]',
