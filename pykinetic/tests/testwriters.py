@@ -1,6 +1,6 @@
+import unittest
 from pykinetic.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic.writers import Indent, PythonWriter, CplusplusWriter
-import unittest
 
 class IndentTest(unittest.TestCase):
     def test_default(self):
@@ -37,8 +37,9 @@ class PythonWriterTest(unittest.TestCase):
         B = Compound('B',Energy( 0.0,unit))
         C = Compound('C',Energy( 2.0,unit))
         D = Compound('D',Energy(-1.0,unit))
+        E = Compound('E',Energy(  99,unit)) # Does not appear in reactions
         # TransitionState(Energy(1.0,unit))
-        self.compounds = [A,B,C,D]
+        self.compounds = [A,B,C,D,E]
         self.chemsys = ChemicalSystem()
         for c in self.compounds:
             self.chemsys.cadd(c,update=False)
@@ -86,9 +87,11 @@ class PythonWriterTest(unittest.TestCase):
                      'k05',
                      'k06*x[1]',
                      'k07*x[1]*x[2]',
+                     '',
                      '']
-        compounds = [self.compounds[0] for i in solutions[:-1]]
-        compounds.append(self.compounds[-1])
+        compounds = [self.compounds[0] for i in solutions[:-2]]
+        compounds.append(self.compounds[-2]) # Add Product
+        compounds.append(self.compounds[-1]) # Add external
         for r,s,c in zip(self.reactions,solutions,compounds):
             with self.subTest(reaction=str(r),compound=c):
                 test = self.writer.ratelaw_partial(r,c)
@@ -98,6 +101,7 @@ class PythonWriterTest(unittest.TestCase):
                      '-r01+r03+r04-r06-r07+r08',
                      '+r00+r01+r02+r03+r04+2.0*r05+r06-r07+r08',
                      '+r06+r07+r08',
+                     '0',
                      '0']
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
@@ -112,6 +116,7 @@ class PythonWriterTest(unittest.TestCase):
                      'dxdt[1]',
                      'dxdt[2]',
                      'dxdt[3]',
+                     '',
                      '']
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
@@ -126,23 +131,27 @@ class PythonWriterTest(unittest.TestCase):
                       '-k01*x[0]-k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
                      ['-k01*x[1]+k03+k04-k06*x[1]-k07*x[1]*x[2]+k08',
                       '-k01*x[0]-k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
+                      '0',
                       '0',
                       '0'],
                      ['+k00+k01*x[1]+2.0*k02*x[0]+k03+k04+2.0*k05+k06*x[1]-k07*x[1]*x[2]+k08',
                       '+k01*x[0]+k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
                      ['+k06*x[1]+k07*x[1]*x[2]+k08',
                       '+k06*x[0]+k07*x[0]*x[2]',
                       '+k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
-                     ['0']*5]
+                     ['0']*6]
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
@@ -159,23 +168,28 @@ class PythonWriterTest(unittest.TestCase):
                       'Jac[0,1]',
                       'Jac[0,2]',
                       'Jac[0,3]',
+                      '',
                       ''],
                      ['Jac[1,0]',
                       'Jac[1,1]',
                       'Jac[1,2]',
                       'Jac[1,3]',
+                      '',
                       ''],
                      ['Jac[2,0]',
                       'Jac[2,1]',
                       'Jac[2,2]',
                       'Jac[2,3]',
+                      '',
                       ''],
                      ['Jac[3,0]',
                       'Jac[3,1]',
                       'Jac[3,2]',
                       'Jac[3,3]',
+                      '',
                       ''],
-                     ['']*5]
+                     ['']*6,
+                     ['']*6]
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
@@ -248,7 +262,8 @@ class CplusplusWriterTest(unittest.TestCase):
         B = Compound('B',Energy( 0.0,unit))
         C = Compound('C',Energy( 2.0,unit))
         D = Compound('D',Energy(-1.0,unit))
-        self.compounds = [A,B,C,D]
+        E = Compound('E',Energy(  99,unit)) # Does not appear in reactions
+        self.compounds = [A,B,C,D,E]
         self.chemsys = ChemicalSystem()
         for c in self.compounds:
             self.chemsys.cadd(c,update=False)
@@ -296,9 +311,11 @@ class CplusplusWriterTest(unittest.TestCase):
                      'k05',
                      'k06*x[1]',
                      'k07*x[1]*x[2]',
+                     '',
                      '']
-        compounds = [self.compounds[0] for i in solutions[:-1]]
-        compounds.append(self.compounds[-1])
+        compounds = [self.compounds[0] for i in solutions[:-2]]
+        compounds.append(self.compounds[-2]) # Add Product
+        compounds.append(self.compounds[-1]) # Add external
         for r,s,c in zip(self.reactions,solutions,compounds):
             with self.subTest(reaction=str(r),compound=c):
                 test = self.writer.ratelaw_partial(r,c)
@@ -308,6 +325,7 @@ class CplusplusWriterTest(unittest.TestCase):
                      '-r01+r03+r04-r06-r07+r08',
                      '+r00+r01+r02+r03+r04+2.0*r05+r06-r07+r08',
                      '+r06+r07+r08',
+                     '0',
                      '0']
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
@@ -322,6 +340,7 @@ class CplusplusWriterTest(unittest.TestCase):
                      'dxdt[1]',
                      'dxdt[2]',
                      'dxdt[3]',
+                     'dxdt[4]',
                      '']
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
@@ -336,23 +355,27 @@ class CplusplusWriterTest(unittest.TestCase):
                       '-k01*x[0]-k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
                      ['-k01*x[1]+k03+k04-k06*x[1]-k07*x[1]*x[2]+k08',
                       '-k01*x[0]-k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
+                      '0',
                       '0',
                       '0'],
                      ['+k00+k01*x[1]+2.0*k02*x[0]+k03+k04+2.0*k05+k06*x[1]-k07*x[1]*x[2]+k08',
                       '+k01*x[0]+k06*x[0]-k07*x[0]*x[2]',
                       '-k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
                      ['+k06*x[1]+k07*x[1]*x[2]+k08',
                       '+k06*x[0]+k07*x[0]*x[2]',
                       '+k07*x[0]*x[1]',
                       '0',
+                      '0',
                       '0'],
-                     ['0']*5]
+                     ['0']*6]
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
@@ -369,23 +392,33 @@ class CplusplusWriterTest(unittest.TestCase):
                       'Jac(0,1)',
                       'Jac(0,2)',
                       'Jac(0,3)',
+                      'Jac(0,4)',
                       ''],
                      ['Jac(1,0)',
                       'Jac(1,1)',
                       'Jac(1,2)',
                       'Jac(1,3)',
+                      'Jac(1,4)',
                       ''],
                      ['Jac(2,0)',
                       'Jac(2,1)',
                       'Jac(2,2)',
                       'Jac(2,3)',
+                      'Jac(2,4)',
                       ''],
                      ['Jac(3,0)',
                       'Jac(3,1)',
                       'Jac(3,2)',
                       'Jac(3,3)',
+                      'Jac(3,4)',
                       ''],
-                     ['']*5]
+                     ['Jac(4,0)',
+                      'Jac(4,1)',
+                      'Jac(4,2)',
+                      'Jac(4,3)',
+                      'Jac(4,4)',
+                      ''],
+                     ['']*6]
         compounds = [c for c in self.compounds]
         compounds.append(Compound('ClearlyNotInTheSystem',5.2))
         for sols,c in zip(solutions,compounds):
@@ -431,6 +464,7 @@ class CplusplusWriterTest(unittest.TestCase):
                     'dxdt[0] = -r00-r01-2.0*r02-r03-r04-r05-r06-r07-r08;',
                     'dxdt[1] = -r01+r03+r04-r06-r07+r08;',
                     'dxdt[2] = +r00+r01+r02+r03+r04+2.0*r05+r06-r07+r08;',
-                    'dxdt[3] = +r06+r07+r08;']
+                    'dxdt[3] = +r06+r07+r08;',
+                    'dxdt[4] = 0;']
         test = self.writer._massbalances(self.chemsys)
         self.assertEqual(test,solution)

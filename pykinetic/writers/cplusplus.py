@@ -64,8 +64,11 @@ class CplusplusWriter(Writer):
     def constant(self,reaction,value_format='{:0.10e}'):  # Currently only for Elemental Steps
         return super().constant(reaction,value_format)
     def massbalance(self,MassBalance):
+        if MassBalance.compound.key is None:
+            return '', '0'
         var = f'{self.dxdt}[{MassBalance.compound.key}]'
-        if not MassBalance.items:
+        # Assume that if it has a key, it is a compound of the Chemical System
+        if not MassBalance.items: 
             return var, '0'
         expr = []
         for coef,reaction in MassBalance.items:
@@ -83,8 +86,6 @@ class CplusplusWriter(Writer):
         var = f'{self.jac}({C1.key},{C2.key})'
         if C1.key is None or C2.key is None: 
             return '', '0'
-        elif not Jac_ij.items:
-            return var, '0'
         expr = []
         for coef,reaction in Jac_ij.items:
             if coef == 1:
