@@ -287,7 +287,7 @@ Now we create the model from scratch assuming a T of 25ºC.
 
    from pykinetic.classes import (ChemicalSystem, Energy, Compound, Reaction,
                                   TransitionState)
-   from pykinetic.writers import PythonWriter as Writer
+   from pykinetic.writers.python import Batch as Writer
    
    # We initialize the ChemicalSystem
    chemsys = ChemicalSystem(T=298.15)

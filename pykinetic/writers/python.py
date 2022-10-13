@@ -9,7 +9,7 @@ template files that come with the libary.
 from collections import Counter
 from ._base import TEMPLATES_PATH, Indent, Writer
 
-class PythonWriter(Writer):
+class Batch(Writer):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -223,7 +223,7 @@ class PythonWriter(Writer):
         with open(filepath,'w') as F:
             F.write(''.join(items))
 
-class SemiBatch(PythonWriter):
+class SemiBatch(Batch):
 
     def __init__(self,flow,Vini,**kwargs):
         super().__init__(**kwargs)
@@ -451,7 +451,7 @@ class SemiBatchExtended(SemiBatch):
         self.fill_tail(systems[0])
         self.function = self._function(systems)
         self.jacobian = self._jacobian(systems)
-class PFR(PythonWriter):
+class PFR(Batch):
     """
     Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.
     Models using this writer take inlet concentrations as floats and not tuples.

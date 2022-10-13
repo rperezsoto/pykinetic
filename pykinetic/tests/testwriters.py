@@ -1,7 +1,8 @@
 import unittest
 from pykinetic.writers._base import TEMPLATES_PATH
 from pykinetic.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
-from pykinetic.writers import Indent, PythonWriter, CplusplusWriter
+from pykinetic.writers import Indent, CplusplusWriter
+from pykinetic.writers.python import Batch as pyBatch
 from pykinetic.writers.python import SemiBatch as pySemiBatch
 from pykinetic.writers.python import SemiBatchExtended as pySemiBatchExtended
 from pykinetic.writers.python import PFR as pyPFR
@@ -33,9 +34,9 @@ class IndentTest(unittest.TestCase):
             with self.subTest(i=i,j=j):
                 self.assertEqual(t,s)
 
-class PythonWriterTest(unittest.TestCase):
+class pyBatchTest(unittest.TestCase):
     def setUp(self):
-        self.writer = PythonWriter()
+        self.writer = pyBatch()
         unit = 'kcal/mol'
         A = Compound('A',Energy( 0.0,unit))
         B = Compound('B',Energy( 0.0,unit))
@@ -266,7 +267,7 @@ class PythonWriterTest(unittest.TestCase):
                     'Jac[3,2] = +k07*x[0]*x[1]']
         test = self.writer._jacobian_elements(self.chemsys)
         self.assertEqual(test,solution)
-class PySemiBatchTest(PythonWriterTest):
+class PySemiBatchTest(pyBatchTest):
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
@@ -348,7 +349,7 @@ class PySemiBatchTest(PythonWriterTest):
                 MB = self.chemsys.massbalance(c)
                 test, _ = self.writer.massbalance(MB)
                 self.assertEqual(test,s)
-class pySemiBatchExtendedTest(PythonWriterTest): 
+class pySemiBatchExtendedTest(pyBatchTest): 
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
@@ -390,7 +391,7 @@ class pySemiBatchExtendedTest(PythonWriterTest):
             self.assertEqual(sol_t,self.writer._tail)
     
 
-class PyPFRTest(PythonWriterTest): 
+class PyPFRTest(pyBatchTest): 
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0

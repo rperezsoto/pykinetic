@@ -1,3 +1,3 @@
 from ._base  import TEMPLATES_PATH, Indent, Writer
-from .python import PythonWriter
+import python
 from .cplusplus import CplusplusWriter

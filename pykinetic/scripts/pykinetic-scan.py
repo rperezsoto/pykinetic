@@ -6,14 +6,15 @@ from itertools import chain
 from pathlib import Path
 
 from pykinetic.classes import Energy,SimulationParameters,ConvergenceParameters
-from pykinetic.writers import PythonWriter,CplusplusWriter
+from pykinetic.writers import CplusplusWriter
+import pykinetic.writers as writers
 from pykinetic.utils import (ScannableChemicalSystem, write_indexfile,
                               calc_standard_state_correction)
 from pykinetic.userinput import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.1"
 
-WRITERS = {'python':PythonWriter,
+WRITERS = {'python':writers.python.Batch,
            'c++':CplusplusWriter}
 COMMANDS = {}
 COMMANDS['python'] = lambda x: ['python3',x ]
