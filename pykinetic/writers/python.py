@@ -223,3 +223,260 @@ class PythonWriter(Writer):
         with open(filepath,'w') as F:
             F.write(''.join(items))
 
+class SemiBatch(PythonWriter):
+
+    def __init__(self,flow,Vini,**kwargs):
+        super().__init__(**kwargs)
+        self.keys = [] # Keys of the different reactants added
+        self.flow = flow
+        self.Vini = Vini # initial volume
+        self.Cadd = None
+    def _load_default_header(self):
+        with open(TEMPLATES_PATH / 'python_semibatch.head','r') as F:
+            txt = F.read()
+        self._header = txt
+    def _load_default_tail(self):
+        with open(TEMPLATES_PATH / 'python_semibatch.tail','r') as F:
+            txt = F.read()
+        self._tail = txt
+    def set_parameters(self,**kwargs):
+        super().set_parameters(**kwargs)
+
+    # methods for object -> str transformations
+    def massbalance(self,MassBalance):
+        if MassBalance.compound.key not in self.keys:
+            return super().massbalance(MassBalance)
+        
+        var, expr = super().massbalance(MassBalance)
+        expr = f'tflow*Cin{MassBalance.compound.key:02.0f} {expr}'
+        return var, expr
+
+    # main writing methods
+    def fill_header(self,chemicalsys):
+        out_filename = self.parameters.get('out_filename','data.txt')
+        self.parameters['out_filename'] = out_filename
+        self.parameters['species'] = chemicalsys.species
+        self.parameters['T'] = chemicalsys.T
+        self.parameters['Vini'] = self.Vini
+        self.parameters['Cadd'] = self.Cadd
+        self.parameters['flow'] = self.flow
+        super().fill_header(chemicalsys)
+
+    # auxiliary writing methods
+    def _function(self,chemicalsys,level=0):
+        """
+        Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
+        are vectors. This function corresponds to the system of diferential
+        equations for the mass balances of the system.
+        """
+        definition = f'def {self.f}(t,{self.x}):'
+
+        lines = [ f'{self.dxdt} = np.zeros({chemicalsys.species}+1)',]
+        # Write the Inlet Concentrations and Flow
+        lines.append(f'tflow = {self.flow}/{self.x}[-1] # flow/V; 1/s')
+        inletC = self._flask_initial_concentrations()
+        lines.extend(inletC)
+        # Write the constants block
+        lines.append('')
+        constants = self._kinetic_constants(chemicalsys)
+        lines.extend(constants)
+        # Write the ratelaws block
+        lines.append('')
+        ratelaws = self._ratelaws(chemicalsys)
+        lines.extend(ratelaws)
+        # Write the MassBalances block
+        lines.append('')
+        massbalances = self._massbalances(chemicalsys)
+        lines.extend(massbalances)
+        # Include the Volume 
+        lines.append('')
+        lines.append(f'{self.dxdt}[-1] = tflow # flow/V; 1/s')
+        lines.append(f'{self.dxdt}[:] = {self.dxdt}[:]*{self.x}[-1]')
+        # Function end
+        lines.append('')
+        lines.append(f'return {self.dxdt}')
+        lines.append('\n')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add function definition
+        lines.insert(0,definition)
+
+        # Add the indentation level of the function
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
+    def _jacobian(self,chemicalsys,level=0):
+        """
+        Generates the code of function 'Jac' in  dxdt = Jac(x,t) where x, dxdt
+        and t are vectors. This function corresponds to the Jacobian of the
+        system of differential equations for the mass balances of the system.
+        """
+        definition = f'def {self.jac_f}(t,{self.x}):'
+        n = chemicalsys.species
+        lines = [ f'{self.jac} = np.zeros(shape=({n}+1,{n}+1))',]
+        # Write the constants block
+        lines.append('')
+        constants = self._kinetic_constants(chemicalsys)
+        lines.extend(constants)
+        # Write the jacobian elements
+        lines.append('')
+        elements = self._jacobian_elements(chemicalsys)
+        lines.extend(elements)
+        # Include the Volume 
+        lines.append('')
+        lines.append(f'{self.jac}[:,:] = {self.jac}[:,:]*{self.x}[-1]')
+
+        # Function end
+        lines.append('')
+        lines.append(f'return {self.jac}')
+        lines.append('\n')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add function definition
+        lines.insert(0,definition)
+
+        # Add the indentation level of the function
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
+    def _set_concentrations(self,concentrations):
+        reactor = dict()
+        flask = dict()
+        for key,(r,f) in concentrations.items(): 
+            if r != 0: 
+                reactor[key] = r
+            if f != 0: 
+                flask[key] = f
+        self.parameters['concentrations'] = reactor
+        self.Cadd = flask
+        self.keys = list(flask.keys())
+    def _initial_concentrations(self,simulation):
+        self._set_concentrations(simulation['concentrations'])
+        return super()._initial_concentrations(self.parameters)
+    def _flask_initial_concentrations(self): 
+        concentrations = []
+        for key,val in self.Cadd.items():
+            concentrations.append(f'Cin{key:02.0f} = {val}')
+        return concentrations
+
+class PFR(PythonWriter):
+    """
+    Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.
+    Models using this writer take inlet concentrations as floats and not tuples.
+    
+    Parameters
+    ----------
+    flow : float
+        Flowrate in L/s
+    volume : float
+        Reactor Volume in L
+
+    """
+    def __init__(self,flow,volume,**kwargs):
+        super().__init__(**kwargs)
+        self.flow = flow # L/s
+        self.volume = volume #L
+    def _load_default_header(self):
+        with open(TEMPLATES_PATH / 'python_PFR.head','r') as F:
+            txt = F.read()
+        self._header = txt
+    def _load_default_tail(self):
+        with open(TEMPLATES_PATH / 'python_PFR.tail','r') as F:
+            txt = F.read()
+        self._tail = txt
+    def set_parameters(self,**kwargs):
+        super().set_parameters(**kwargs)
+        self.parameters['flow'] = self.flow
+        self.parameters['volume'] = self.volume
+
+    # main writing methods
+    def fill_header(self,chemicalsys):
+        out_filename = self.parameters.get('out_filename','data.txt')
+        self.parameters['out_filename'] = out_filename
+        self.parameters['species'] = chemicalsys.species
+        self.parameters['T'] = chemicalsys.T
+        super().fill_header(chemicalsys)
+
+    def _function(self,chemicalsys,level=0):
+        """
+        Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
+        are vectors. This function corresponds to the system of diferential
+        equations for the mass balances of the system.
+        """
+        definition = f'def {self.f}(t,{self.x}):'
+
+        lines = [ f'{self.dxdt} = np.zeros({chemicalsys.species})',]
+        # Write the Inlet Concentrations and Flow
+        lines.append(f'flow = {self.flow} # flow; L/s')
+        # Write the constants block
+        lines.append('')
+        constants = self._kinetic_constants(chemicalsys)
+        lines.extend(constants)
+        # Write the ratelaws block
+        lines.append('')
+        ratelaws = self._ratelaws(chemicalsys)
+        lines.extend(ratelaws)
+        # Write the MassBalances block
+        lines.append('')
+        massbalances = self._massbalances(chemicalsys)
+        lines.extend(massbalances)
+        # Include the Volume 
+        lines.append('')
+        lines.append(f'{self.dxdt}[:] = {self.dxdt}[:]/flow')
+        # Function end
+        lines.append('')
+        lines.append(f'return {self.dxdt}')
+        lines.append('\n')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add function definition
+        lines.insert(0,definition)
+
+        # Add the indentation level of the function
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
+    def _jacobian(self,chemicalsys,level=0):
+        """
+        Generates the code of function 'Jac' in  dxdt = Jac(x,t) where x, dxdt
+        and t are vectors. This function corresponds to the Jacobian of the
+        system of differential equations for the mass balances of the system.
+        """
+        definition = f'def {self.jac_f}(t,{self.x}):'
+        n = chemicalsys.species
+        lines = [ f'{self.jac} = np.zeros(shape=({n},{n}))',]
+        lines.append(f'flow = {self.flow} # flow; L/s')
+        # Write the constants block
+        lines.append('')
+        constants = self._kinetic_constants(chemicalsys)
+        lines.extend(constants)
+        # Write the jacobian elements
+        lines.append('')
+        elements = self._jacobian_elements(chemicalsys)
+        lines.extend(elements)
+        # Include the Volume 
+        lines.append('')
+        lines.append(f'{self.jac}[:,:] = {self.jac}[:,:]/flow')
+
+        # Function end
+        lines.append('')
+        lines.append(f'return {self.jac}')
+        lines.append('\n')
+
+        # Add one indentation level
+        lines = Indent(lines,tab='    ',level=1)
+
+        # Add function definition
+        lines.insert(0,definition)
+
+        # Add the indentation level of the function
+        lines = Indent(lines,tab='    ',level=level)
+
+        return '\n'.join(lines)
+    

@@ -1,0 +1,17 @@
+import sys
+import numpy as np
+import scipy.integrate
+
+OFile = '{out_filename}'
+
+# Parameters
+species = {species}
+volume = {volume} # Reactor Volume, L
+urep = {trep} # volume step, L
+du = {dt} # maximum volume step, L 
+ufin = volume # Final volume slice, L
+flow = {flow} # Flow L/s
+{x}ini = np.zeros(species) # Influx concentrations
+{concentrations}
+
+# Model at T={T} K

@@ -1,0 +1,20 @@
+u = np.arange(0,ufin,urep)
+solution = scipy.integrate.solve_ivp(fun={f}, jac={jac_f}, y0={x}ini,
+                                     t_span=(0,ufin), t_eval=u,
+                                     method='{method}', max_step=min(du,urep),
+                                     {convergence})
+
+if not solution.success:
+    print(solution.message)
+else:
+    print(f"""
+          nfev={{solution.nfev}}
+          njev={{solution.njev}}
+          nlu={{solution.nlu}}
+          status={{solution.status}}
+          success={{solution.success}}
+          """)
+    {x} = np.zeros(shape=(len(solution.t),species+1))
+    {x}[:,0] = solution.t
+    {x}[:,1:] = (solution.y[:species,:]).transpose()
+    np.savetxt(OFile,{x},delimiter='\t')

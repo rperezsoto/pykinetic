@@ -1,6 +1,8 @@
 import unittest
 from pykinetic.classes import Compound, Energy, ChemicalSystem, Reaction, TransitionState
 from pykinetic.writers import Indent, PythonWriter, CplusplusWriter
+from pykinetic.writers.python import SemiBatch as pySemiBatch
+from pykinetic.writers.python import PFR as pyPFR
 
 class IndentTest(unittest.TestCase):
     def test_default(self):
@@ -253,6 +255,112 @@ class PythonWriterTest(unittest.TestCase):
                     'Jac[3,2] = +k07*x[0]*x[1]']
         test = self.writer._jacobian_elements(self.chemsys)
         self.assertEqual(test,solution)
+class PySemiBatch(PythonWriterTest):
+    def setUp(self):
+        self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
+        self.flow = 1.0
+        self.Vini = 1.0
+        self.writer = pySemiBatch(flow=self.flow,Vini=self.Vini)
+        unit = 'kcal/mol'
+        A = Compound('A',Energy( 0.0,unit))
+        B = Compound('B',Energy( 0.0,unit))
+        C = Compound('C',Energy( 2.0,unit))
+        D = Compound('D',Energy(-1.0,unit))
+        E = Compound('E',Energy(  99,unit)) # Does not appear in reactions
+        # TransitionState(Energy(1.0,unit))
+        self.compounds = [A,B,C,D,E]
+        self.chemsys = ChemicalSystem()
+        for c in self.compounds:
+            self.chemsys.cadd(c,update=False)
+        self.chemsys.cupdate()
+        self.reactions = [Reaction((A,),(C,)),
+                          Reaction((A,B),(C,)),
+                          Reaction((A,A),(C,)),
+                          Reaction((A,),(B,C)),
+                          Reaction((A,),(C,B)),
+                          Reaction((A,),(C,C)),
+                          Reaction((A,B),(C,D)),
+                          Reaction((A,B,C),(D,)),
+                          Reaction((A,),(B,C,D))]
+        for r in self.reactions:
+            r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
+            self.chemsys.radd(r,update=False)
+        self.chemsys.rupdate()
+    def test___set_initial_concentrations(self):
+        self.writer._set_concentrations(self.concentrations)
+        self.assertEqual(self.writer.keys,[0,])
+        self.assertDictEqual(self.writer.Cadd,{0:1.0})
+        self.assertDictEqual(self.writer.parameters['concentrations'],{1:1.0})
+    def test__flask_initial_concentrations(self):
+        sol = f'Cin{0:02.0f} = {self.concentrations[0][1]}'
+        self.writer._set_concentrations(self.concentrations)
+        test = self.writer._flask_initial_concentrations()
+        self.assertEqual([sol,],test)
+    def test_massbalance_expr(self):
+        self.writer._set_concentrations(self.concentrations)
+        solutions = ['tflow*Cin00 -r00-r01-2.0*r02-r03-r04-r05-r06-r07-r08',
+                     '-r01+r03+r04-r06-r07+r08',
+                     '+r00+r01+r02+r03+r04+2.0*r05+r06-r07+r08',
+                     '+r06+r07+r08',
+                     '0',
+                     '0']
+        compounds = [c for c in self.compounds]
+        compounds.append(Compound('ClearlyNotInTheSystem',5.2))
+        for s,c in zip(solutions,compounds):
+            with self.subTest(compound=c):
+                ## Future MB = self.chemsys.massbalance(c)
+                MB = self.chemsys.massbalance(c)
+                _ , test = self.writer.massbalance(MB)
+                self.assertEqual(test,s)
+    def test_massbalance_var(self):
+        self.writer._set_concentrations(self.concentrations)
+        solutions = ['dxdt[0]',
+                     'dxdt[1]',
+                     'dxdt[2]',
+                     'dxdt[3]',
+                     '',
+                     '']
+        compounds = [c for c in self.compounds]
+        compounds.append(Compound('ClearlyNotInTheSystem',5.2))
+        for s,c in zip(solutions,compounds):
+            with self.subTest(compound=c):
+                ## Future MB = self.chemsys.massbalance(c)
+                MB = self.chemsys.massbalance(c)
+                test, _ = self.writer.massbalance(MB)
+                self.assertEqual(test,s)
+
+class PyPFR(PythonWriterTest): 
+    def setUp(self):
+        self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
+        self.flow = 1.0
+        self.volume = 1.0
+        self.writer = pyPFR(flow=self.flow,volume=self.volume)
+        unit = 'kcal/mol'
+        A = Compound('A',Energy( 0.0,unit))
+        B = Compound('B',Energy( 0.0,unit))
+        C = Compound('C',Energy( 2.0,unit))
+        D = Compound('D',Energy(-1.0,unit))
+        E = Compound('E',Energy(  99,unit)) # Does not appear in reactions
+        # TransitionState(Energy(1.0,unit))
+        self.compounds = [A,B,C,D,E]
+        self.chemsys = ChemicalSystem()
+        for c in self.compounds:
+            self.chemsys.cadd(c,update=False)
+        self.chemsys.cupdate()
+        self.reactions = [Reaction((A,),(C,)),
+                          Reaction((A,B),(C,)),
+                          Reaction((A,A),(C,)),
+                          Reaction((A,),(B,C)),
+                          Reaction((A,),(C,B)),
+                          Reaction((A,),(C,C)),
+                          Reaction((A,B),(C,D)),
+                          Reaction((A,B,C),(D,)),
+                          Reaction((A,),(B,C,D))]
+        for r in self.reactions:
+            r.TS = TransitionState(Energy(1.0,'kcal/mol') + r.reactants_energy)
+            self.chemsys.radd(r,update=False)
+        self.chemsys.rupdate()
+
 
 class CplusplusWriterTest(unittest.TestCase):
     def setUp(self):
