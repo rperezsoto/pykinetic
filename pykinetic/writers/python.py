@@ -18,11 +18,11 @@ class PythonWriter(Writer):
         self.parameters['method'] = 'LSODA'
 
     def _load_default_header(self):
-        with open(TEMPLATES_PATH / 'python_header.default','r') as F:
+        with open(TEMPLATES_PATH / 'python_batch.head','r') as F:
             txt = F.read()
         self._header = txt
     def _load_default_tail(self):
-        with open(TEMPLATES_PATH / 'python_tail.default','r') as F:
+        with open(TEMPLATES_PATH / 'python_batch.tail','r') as F:
             txt = F.read()
         self._tail = txt
 
@@ -362,7 +362,95 @@ class SemiBatch(PythonWriter):
         for key,val in self.Cadd.items():
             concentrations.append(f'Cin{key:02.0f} = {val}')
         return concentrations
+class SemiBatchExtended(SemiBatch):
+    """
+    A writer to account for a SemiBatch Reactor with an influx of species 
+    coupled after a 'tsection' time of the total simulation with a Batch reactor. 
+    As a consequence the Simulation parameters required for this type of model 
+    require the parameters 'tsection' and 'tfin' as well as the parameters for 
+    the initial SemiBatch reactor. For writing it up to two Chemical Systems 
+    can be provided.
+    """
+    def _load_default_header(self):
+        with open(TEMPLATES_PATH / 'python_semibatch_extended.head','r') as F:
+            txt = F.read()
+        self._header = txt
+    def _load_default_tail(self):
+        with open(TEMPLATES_PATH / 'python_semibatch_extended.tail','r') as F:
+            txt = F.read()
+        self._tail = txt
+    def set_parameters(self,simulation=None,convergence=None):
+        if simulation is not None:
+            self.parameters.update(simulation)
+            concentrations = self._initial_concentrations(simulation)
+            self.parameters['concentrations'] = concentrations
+        if convergence is not None:
+            self.parameters['convergence'] = convergence.as_str(sep=',')
 
+    def _function(self,systems,level=0):
+        """
+        Generates the code of function 'f' in  dxdt = f(x,t) where x, dxdt and t
+        are vectors. This function corresponds to the system of diferential
+        equations for the mass balances of the system.
+        """
+        _f = self.f
+        self.f = f'{self.f}_semi'
+
+        fadd = super()._function(systems[0],level)
+        
+        self.f = f'{_f}_batch'
+        # Remove the "added compounds"
+        _keys = self.keys
+        self.keys = []
+
+        fnoadd = super(SemiBatch,self)._function(systems[1],level)
+        
+        # Return everything to normal
+        self.f = _f
+        self.keys = _keys
+
+
+        return fadd + fnoadd
+    def _jacobian(self, systems, level=0):
+        _jac_f = self.jac_f 
+        self.jac_f = f'{self.jac_f}_semi'
+
+        jacadd = super()._jacobian(systems[0],level)
+        
+        self.jac_f = f'{_jac_f}_batch'
+        # Remove the "added compounds"
+        _keys = self.keys
+        self.keys = []
+
+        jacnoadd = super(SemiBatch,self)._jacobian(systems[1],level)
+
+        self.jac_f = _jac_f
+        self.keys = _keys
+
+        return jacadd + jacnoadd
+    
+    # main methods for writing
+    def fill(self,system1,system2=None):
+        """
+        Reads the information of the chemical system and updates the values
+        needed for writing.
+
+        Parameters
+        ----------
+        system1 : ChemicalSystem
+            Chemical System to be written for the SemiBatch reactor model section
+        system2 : ChemicalSystem, optional
+            Chemical System to be written for the Batch reactor model section, 
+            If none is provided it defaults to the system1.
+        """
+        if system2 is None: 
+            systems = [system1,system1]
+        else: 
+            systems = [system1,system2]
+        self.fill_header(systems[0])
+        self.fill_tail(systems[0])
+        self.function = self._function(systems)
+        self.jacobian = self._jacobian(systems)
 class PFR(PythonWriter):
     """
     Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.

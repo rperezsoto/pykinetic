@@ -1,0 +1,60 @@
+t = np.arange(0,tsection,trep)
+# Time indexes and Out predefinition
+solution = scipy.integrate.solve_ivp(fun={f}_semi, jac={jac_f}_semi, y0={x}ini,
+                                     t_span=(0,tsection), t_eval=t,
+                                     method='{method}', max_step=min(dt,trep),
+                                     {convergence})
+
+if not solution.success:
+    print(solution.message)
+    raise SystemExit
+else:
+    print(f"""
+          nfev={{solution.nfev}}
+          njev={{solution.njev}}
+          nlu={{solution.nlu}}
+          status={{solution.status}}
+          success={{solution.success}}
+          """)
+    {x}_semi = np.zeros(shape=(len(solution.t),species+2))
+    {x}_semi[:,0] = solution.t
+    volume = solution.y[-1,:]
+    {x}_semi[:,1:species+2] = (solution.y[:species+1,:]/volume).transpose()
+    {x}_semi[:,-1] = volume.transpose()
+    #np.savetxt(OFile,{x},delimiter='\t')
+
+tfin2 = tfin -tsection
+xini2 = np.zeros(species)
+xini2[:] = solution.y[:species,-1] / solution.y[-1,-1]
+
+t = np.arange(0,tfin2,trep)
+# Time indexes and Out predefinition
+solution = scipy.integrate.solve_ivp(fun={f}_batch, jac={jac_f}_batch, y0={x}ini2,
+                                     t_span=(0,tfin2), t_eval=t,
+                                     method='{method}', max_step=min(dt,trep),
+                                     {convergence})
+
+if not solution.success:
+    print(solution.message)
+else:
+    print(f"""
+          nfev={{solution.nfev}}
+          njev={{solution.njev}}
+          nlu={{solution.nlu}}
+          status={{solution.status}}
+          success={{solution.success}}
+          """)
+    {x}_batch = np.zeros(shape=(len(solution.t),species+1))
+    {x}_batch[:,0] = solution.t + tsection
+    {x}_batch[:,1:] = (solution.y[:,:]).transpose()
+
+x = np.vstack(({x}_semi[:,:-1],{x}_batch[:,:]))
+np.savetxt(OFile,x,delimiter='\t')
+
+# Save the Volume 
+#vol = np.zeros(shape=(x.shape[0],2))
+#vol[:,0] = x[:,0]
+#l = x_semi.shape[0]
+#vol[:l,1] = volume.transpose()
+#vol[l:,1] = vol[l-1,1]
+#np.savetxt('volume.data',vol,delimiter='\t')
