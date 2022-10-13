@@ -1,0 +1,14 @@
+import sys
+import numpy as np
+import scipy.integrate
+
+OFile = '{out_filename}'
+
+# Parameters
+species = {species}
+trep = {trep} # s
+dt = {dt} # maximum timestep for solving the system
+tfin = {tfin} # Final Time
+{x}ini = np.zeros(species)
+{concentrations}
+# Model at T={T} K

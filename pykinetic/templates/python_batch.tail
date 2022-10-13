@@ -1,0 +1,21 @@
+t = np.arange(0,tfin,trep)
+# Time indexes and Out predefinition
+solution = scipy.integrate.solve_ivp(fun={f}, jac={jac_f}, y0={x}ini,
+                                     t_span=(0,tfin), t_eval=t,
+                                     method='{method}', max_step=min(dt,trep),
+                                     {convergence})
+
+if not solution.success:
+    print(solution.message)
+else:
+    print(f"""
+          nfev={{solution.nfev}}
+          njev={{solution.njev}}
+          nlu={{solution.nlu}}
+          status={{solution.status}}
+          success={{solution.success}}
+          """)
+    {x} = np.zeros(shape=(len(solution.t),species+1))
+    {x}[:,0] = solution.t
+    {x}[:,1:] = solution.y[:,:].transpose()
+    np.savetxt(OFile,{x},delimiter='\t')
