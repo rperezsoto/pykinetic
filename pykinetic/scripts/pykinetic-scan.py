@@ -252,12 +252,12 @@ def main():
             p.wait()
 
         if args.IndexFile:
-            index_file = indices_folder.joinpath(f'{stem}.index')
+            index_file = indices_folder / f'{stem}.index'
             isrelative = args.indexfile_relative or args.relative
             write_indexfile(chemsys,index_file, isrelative=isrelative)
         
         if args.scripts:
-            script = scripts_folder.joinpath(f'{stem}{tmp_file.suffix}')
+            script = scripts_folder / f'{stem}{tmp_file.suffix}'
             tmp_file.rename(script)
 
         with open(scan_parameters_file,'a') as F:

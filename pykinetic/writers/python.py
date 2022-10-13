@@ -18,11 +18,11 @@ class PythonWriter(Writer):
         self.parameters['method'] = 'LSODA'
 
     def _load_default_header(self):
-        with open(TEMPLATES_PATH.joinpath('python_header.default'),'r') as F:
+        with open(TEMPLATES_PATH / 'python_header.default','r') as F:
             txt = F.read()
         self._header = txt
     def _load_default_tail(self):
-        with open(TEMPLATES_PATH.joinpath('python_tail.default'),'r') as F:
+        with open(TEMPLATES_PATH / 'python_tail.default','r') as F:
             txt = F.read()
         self._tail = txt
 

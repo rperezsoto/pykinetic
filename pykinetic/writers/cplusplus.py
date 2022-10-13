@@ -12,11 +12,11 @@ from ._base import TEMPLATES_PATH, Indent, Writer
 class CplusplusWriter(Writer):
 
     def _load_default_header(self):
-        with open(TEMPLATES_PATH.joinpath('cplusplus_header.default'),'r') as F:
+        with open(TEMPLATES_PATH / 'cplusplus_header.default','r') as F:
             txt = F.read()
         self._header = txt
     def _load_default_tail(self):
-        with open(TEMPLATES_PATH.joinpath('cplusplus_tail.default'),'r') as F:
+        with open(TEMPLATES_PATH / 'cplusplus_tail.default','r') as F:
             txt = F.read()
         self._tail = txt
 

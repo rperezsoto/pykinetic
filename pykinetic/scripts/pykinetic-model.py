@@ -168,7 +168,7 @@ def main():
 
     if args.IndexFile:
         stem = args.outfile.stem
-        index_file = args.outfile.parent.joinpath(f'{stem}.index')
+        index_file = args.outfile.parent / f'{stem}.index'
         isrelative = args.indexfile_relative or args.relative
         write_indexfile(chemsys,index_file, isrelative=isrelative)
 
