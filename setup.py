@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name = 'pykinetic',
-    packages = ['pykinetic',],
+    packages = find_packages(),#['pykinetic',],
     description = """A python library and command line apps to write 
                      microkinetic models for """,
     keywords = ['compchem', 'microkinetics'],
