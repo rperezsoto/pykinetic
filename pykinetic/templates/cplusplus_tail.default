@@ -21,7 +21,7 @@ int main()
     // Run the solver
     typedef rosenbrock4 < double > stepper_type;
     integrate_const(make_controlled(atol, rtol, stepper_type()),
-                    make_pair(model(), jacobian()),
+                    make_pair({f}(), {jac_f}()),
                     x, tini, tend, trep,
                     write_cout);
     outfile.close();

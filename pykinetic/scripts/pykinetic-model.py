@@ -6,14 +6,15 @@ import argparse
 from pathlib import Path
 
 from pykinetic.classes import Energy,SimulationParameters,ConvergenceParameters
-from pykinetic.writers import PythonWriter,CplusplusWriter
+from pykinetic.writers import CplusplusWriter
+import pykinetic.writers as writers
 from pykinetic.utils import (BiasedChemicalSystem, write_indexfile, 
                               calc_standard_state_correction)
 from pykinetic.userinput import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.1"
 
-WRITERS = {'python':PythonWriter,
+WRITERS = {'python':writers.python.Batch,
            'c++':CplusplusWriter}
 
 def create_parser():
@@ -41,6 +42,12 @@ def create_parser():
                         'OutFile'.index with the indices used for reactions,
                         compounds and TSs""",
                         )
+    parser.add_argument("-Ir","--indexfile-relative",
+                        action="store_true",
+                        dest="indexfile_relative",
+                        default=False,
+                        help="""Enforces relative barriers in the specified 
+                        default energy unit in the indexfile.""")
     parser.add_argument("-T","--Temperature", 
                         nargs=2,
                         metavar=("Temp","Unit"),
@@ -129,6 +136,9 @@ def parse_arguments(parser):
         conv_params = ConvergenceParameters.read_from(args.convergence)
     args.convergence = conv_params
 
+    if not args.IndexFile and args.indexfile_relative: 
+        args.IndexFile = True
+
     return args
 
 
@@ -158,8 +168,10 @@ def main():
     writer.write(chemsys,args.outfile)
 
     if args.IndexFile:
-        IdxFile = args.outfile.parent.joinpath(args.outfile.stem + '.index')
-        write_indexfile(chemsys,IdxFile,isrelative=args.relative)
+        stem = args.outfile.stem
+        index_file = args.outfile.parent / f'{stem}.index'
+        isrelative = args.indexfile_relative or args.relative
+        write_indexfile(chemsys,index_file, isrelative=isrelative)
 
 if __name__ == '__main__':
     main()

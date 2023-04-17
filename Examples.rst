@@ -26,7 +26,7 @@ Compounds
 .. compounds-start
 
 General format:
-+++++++++++++++ 
+***************
 
 Each line of the compounds file follows the format: ::
 
@@ -39,7 +39,7 @@ Each line of the compounds file follows the format: ::
 * The number of empty spaces or tabs is not strict as long as all the columns are separated by at least one (tab or empty space).
 
 Compound label rules:
-+++++++++++++++++++++ 
+*********************
 
 The compound's label is relatively free. The only exceptions are those that 
 include any symbol used in the reactions file to specify the reactions:
@@ -64,9 +64,9 @@ include any symbol used in the reactions file to specify the reactions:
 +---------------------------+---------------------------+
 
 Compounds file example:
-+++++++++++++++++++++++
+***********************
 
-::
+.. code:: none
 
    A                0.0 kcal/mol
    B                0.0 kcal/mol
@@ -85,9 +85,9 @@ Reactions
 
 
 General format:
-+++++++++++++++ 
+***************
 
-:: 
+.. code:: none 
 
    # Line that starts with "#" is considered as comment and ignored
    reactants    symbol    products    !energy    unit    scan
@@ -101,7 +101,7 @@ transition state, that can be either shared bewteen different reactions or
 just specified at the end for simplicity. 
 
 Symbols:
-++++++++
+********
 
 
 +---------+--------------------------------------------------+
@@ -118,7 +118,7 @@ Symbols:
 +---------+--------------------------------------------------+
 | **<d>** |   Forward and reverse "diffusion" reaction.      |
 |         |   Both share the TS. The specified energy is     |
-|         |   relative to the G(given) = G(TS)               |
+|         |   used as: G(specified) = G(TS)                  |
 |         |   - max(G(reactants),G(products))                |
 +---------+--------------------------------------------------+
 
@@ -129,16 +129,22 @@ once per reaction.
 
 Reversible reactions are automatically converted into 2 reactions,
 the forward and the reverse reactions **sharing the same TS**. This is only 
-important when setting up scans since: ::
+important when setting up scans since: 
+
+.. code:: none
 
    A  => B  !2.0 scan 
    B  => A  !2.0 
 
-Does not behave as: ::
+Does not behave as:
+
+.. code:: none
 
    A <=> B !2.0 scan
 
-However, the following reactions do have the same behaviour: :: 
+However, the following reactions do have the same behaviour: 
+
+.. code:: none 
 
    A  => B  !TS1
    B  => A  !TS1
@@ -147,9 +153,9 @@ However, the following reactions do have the same behaviour: ::
 
 
 Reactions file example: 
-+++++++++++++++++++++++
+***********************
 
-::
+.. code:: none
 
    # Adduct Formation
     A         +    B     <d>    [A···B]                !2.0 kcal/mol
@@ -171,9 +177,9 @@ Reactions file example:
 
 .. reactions-example-end
 
-.. 
+.. note::
    
-   Note: The --relative of pykinetic-model.py and pykinetic-scan.py will assume 
+   The --relative of pykinetic-model.py and pykinetic-scan.py will assume 
    that the energies specified are relative to the energy of the reactants. In 
    this example, enabling the --relative flag will result in the catalyzed 
    reaction having direct barrier of 10 kcal/mol (assuming a scan value of 0 
@@ -189,12 +195,15 @@ This file is optional and is generally useful when you already have a model
 and are going to generate different versions of the model and you don not want 
 to keep the tedious task of re-writing these parameters onto the generated file. 
 
-Example file: :: 
+Example file: 
+
+.. code::  none
 
    dt          1E-12
    tfin        1E+02
    trep        0.1
    concentrations    0,1.0 ; 1,1.0 ; 2,0.1
+
 
 *  The order may be changed.
 *  Not all the parameters need to be specified in this file. 
@@ -244,7 +253,7 @@ Creates a {python|c++} script that contains a system of mass balance equations
 .. model-end
 
 pykinetic-scan.py
-...............
+.................
 
 .. scan-start
 
@@ -285,9 +294,9 @@ Now we create the model from scratch assuming a T of 25ºC.
 
 .. code:: python
 
-   from pykinetic.classes import (ChemicalSystem, Energy, Compounds, Reactions,
+   from pykinetic.classes import (ChemicalSystem, Energy, Compound, Reaction,
                                   TransitionState)
-   from pykinetic.writers import PythonWriter as Writer
+   from pykinetic.writers.python import Batch as Writer
    
    # We initialize the ChemicalSystem
    chemsys = ChemicalSystem(T=298.15)
@@ -335,7 +344,7 @@ Modifying and loading a model
 
 .. code:: python
 
-   from pykinetic.classes import (Energy, Compounds, Reactions,
+   from pykinetic.classes import (Energy, Compound, Reaction,
                                   TransitionState)
    from pykinetic.utils import BiasedChemicalSystem, calc_standard_state_correction
    from pykinetic.writers import PythonWriter as Writer

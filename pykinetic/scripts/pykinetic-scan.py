@@ -1,20 +1,20 @@
 #!/usr/bin/python3
-import os
-import math
 import argparse
 import subprocess
+from itertools import chain
 
 from pathlib import Path
 
 from pykinetic.classes import Energy,SimulationParameters,ConvergenceParameters
-from pykinetic.writers import PythonWriter,CplusplusWriter
+from pykinetic.writers import CplusplusWriter
+import pykinetic.writers as writers
 from pykinetic.utils import (ScannableChemicalSystem, write_indexfile,
                               calc_standard_state_correction)
 from pykinetic.userinput import populate_chemicalsystem_fromfiles
 
 __version__ = "0.0.1"
 
-WRITERS = {'python':PythonWriter,
+WRITERS = {'python':writers.python.Batch,
            'c++':CplusplusWriter}
 COMMANDS = {}
 COMMANDS['python'] = lambda x: ['python3',x ]
@@ -40,13 +40,19 @@ def create_parser():
                         help="Final value for the correction scan")
     parser.add_argument("steps",type=int,
                         help="Number of steps in between")
+    parser.add_argument("--scan-all",
+                        dest="scan_all", 
+                        action='store_true',
+                        default=False,
+                        help="""Adds all compounds and non-diffusion TS
+                        (TSs associated to reactions of the type <d>) to the 
+                        pool of scannable energies if they were not yet included
+                        in the corresponding input file with the scannable 
+                        keyword""")
     parser.add_argument("--scanunit",
                         default='kcal/mol',
                         choices=Energy._units,
-                        help="Unit of Start and Stop parameters")
-    parser.add_argument("outfile", # No deberia existir a priori
-                        type=Path, 
-                        help="Output script")
+                        help="Unit of Start and Stop parameters (default: kcal/mol)")
     parser.add_argument("--relative",
                         action='store_true',
                         default=False,
@@ -60,6 +66,12 @@ def create_parser():
                         help="""If Enabled creates a txt file named 
                         'OutFile'.index with the indices used for reactions,
                         compounds and TSs""")
+    parser.add_argument("-Ir","--indexfile-relative",
+                        action="store_true",
+                        dest="indexfile_relative",
+                        default=False,
+                        help="""Enforces relative barriers in the specified 
+                        default energy unit in the indexfile.""")
     parser.add_argument("-T","--Temperature", 
                         nargs=2,
                         metavar=("Temp","Unit"),
@@ -159,6 +171,9 @@ def parse_arguments(parser):
 
     if args.dryrun:
         args.scripts = True
+    
+    if not args.IndexFile and args.indexfile_relative: 
+        args.IndexFile = True
 
     return args
 
@@ -212,15 +227,31 @@ def main():
                                       file_r=args.reactions,
                                       energy_unit=unit,
                                       relativeE=args.relative)
+    if args.scan_all:
+        for compound in chemsys.compounds: 
+            compound.scannable = True
+        for ts in chemsys.transitionstates: 
+            if not hasattr(ts,'barrier'): # only DiffusionTS have .barrier
+                ts.scannable = True
     chemsys.apply_bias()
     chemsys.apply_scan()
+
+    # Ensure that at least one compound or TS has the scannable attribute set up
+    for item in chain(chemsys.compounds,chemsys.transitionstates): 
+        if item.scannable:
+            break
+    else:
+        raise ValueError('''No Compound/TS has the "scan" keyword in the 
+        input files. Please use pykinetic-model.py if the input files are 
+        correct otherwise please indicate in the input files which Compounds 
+        and/or transition states should be scanned.''')
 
     for i,energy in enumerate(energies): # Keep going
         stem = f'scan_{i:03d}' # stem of the produced files
         chemsys.scan = energy
 
         # Create Name of Script and OutFile
-        out_data_file = f'{stem}.data'
+        out_data_file = outputs_folder/f'{stem}.data'
         writer.parameters['out_filename'] = out_data_file
         print(stem)
 
@@ -237,11 +268,12 @@ def main():
             p.wait()
 
         if args.IndexFile:
-            index_file = indices_folder.joinpath(f'{stem}.index')
-            write_indexfile(chemsys,index_file, isrelative=args.relative)
+            index_file = indices_folder / f'{stem}.index'
+            isrelative = args.indexfile_relative or args.relative
+            write_indexfile(chemsys,index_file, isrelative=isrelative)
         
         if args.scripts:
-            script = scripts_folder.joinpath(f'{stem}{tmp_file.suffix}')
+            script = scripts_folder / f'{stem}{tmp_file.suffix}'
             tmp_file.rename(script)
 
         with open(scan_parameters_file,'a') as F:

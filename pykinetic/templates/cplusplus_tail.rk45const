@@ -21,7 +21,7 @@ int main()
 
     // Run the solver
     typedef dense_output_runge_kutta<controlled_runge_kutta<runge_kutta_dopri5<state_type> > > stepper_type;
-    integrate_const(stepper_type(), model(), x, tini, tend, trep, write_cout);
+    integrate_const(stepper_type(), {f}(), x, tini, tend, trep, write_cout);
     outfile.close();
     return 0;
 }}

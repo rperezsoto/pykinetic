@@ -14,12 +14,14 @@ apps generate a file that can be compiled/executed and that represents the
 kinetic model. It includes the "pykinetic" python library in case that either
 the reactions or the chemical species are to be added programatically.
 
+.. project-description-end
+
 .. contents:: 
    :backlinks: none
    :depth: 2
    :local:
 
-.. setup-instructions
+.. setup-instructions-start
 
 Getting Started
 ---------------
@@ -135,6 +137,7 @@ Uninstalling pykinetic
 
    $ python -m pip uninstall pykinetic
 
+.. setup-instructions-end
 
 Developed with
 --------------
@@ -142,24 +145,27 @@ Developed with
 - python 3.7.3
 - Ubuntu 16.04 LTS and Ubuntu 18.04 LTS
 
-.. examples-msg
 
 Examples
 --------
 
-Please open the `Examples.rst <Examples.rst>`_ file in github to visualize the basic usage examples
-or read the documentation.
-
-
-.. project-author-license
+Please open the `Examples.rst <Examples.rst>`_ file in github to visualize the 
+basic usage examples or read the documentation.
 
 Authors
 -------
 
+.. project-authors-start
+
 * **Raúl Pérez-Soto** - - https://github.com/rperezsoto
 
+.. project-authors-end
 
 License
 -------
 
-pykinetic is freely available under an `MIT <https://opensource.org/licenses/MIT>`_ License
+.. project-license-start
+
+pykinetic is freely available under an `MIT <https://opensource.org/licenses/MIT>`__ License
+
+.. project-license-end

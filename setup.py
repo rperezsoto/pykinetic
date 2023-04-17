@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setup(
     name = 'pykinetic',
-    packages = ['pykinetic',],
+    packages = find_packages(),#['pykinetic',],
     description = """A python library and command line apps to write 
                      microkinetic models for """,
     keywords = ['compchem', 'microkinetics'],
@@ -13,7 +13,7 @@ setup(
     classifiers = ["Programming Language :: Python :: 3",],
     long_description=long_description,
     long_description_content_type="text/x-rst",
-    url = 'https://github.com/fmaserasgroup-repo/pyssian-utils', # Update
+    url = 'https://github.com/rperezsoto/pykinetic', # Update
     python_requires='>=3.6',
     install_requires=['setuptools','pathlib','numpy'],
     extras_requires=['numpy','scipy'],

@@ -39,7 +39,7 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
             if isrelative:
                 energy = reaction.AE.as_unit(chemsys.unit)
             else:
-                energy = reaction.TS.energy.as_unit(chemsys.unit)
+                energy = reaction.TS.energy
             Out.append(f'{key})    {reaction}    !{energy}')
     else:
         for reaction in chemsys.reactions:
@@ -50,11 +50,33 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
     with open(file,'w') as F :
         F.write('\n'.join(Out))
         F.write('\n')
-def calc_standard_state_correction(T):
+def calc_standard_state_correction(T,pressure='atm'):
+    """
+    Calculates the standard state correction to 1M and temperature=T. 
+
+
+    Parameters
+    ----------
+    T : float
+        Temperature in K
+    pressure : str, optional
+        units of the standard state considered to calculate gibbs free energies,
+        Usually it is either 1atm or 1bar, by default 'atm'
+
+    Returns
+    -------
+    Energy
+        Standard state correction to 1M and the specified temperature
+    """
     # constants from "The NIST Reference on Constants, Units, and Uncertainty"
     R_SI = 8.314462618    # J/(mol K)
-    R_atm = 0.0820573661  # atm L / (mol K)
-    return Energy(R_SI*T*math.log(R_atm*T),'J/mol')
+    if pressure == 'bar': 
+        R_bar = 0.0831446261815324
+        R = R_bar
+    else: 
+        R_atm = 0.0820573661  # atm L / (mol K)
+        R = R_atm
+    return Energy(R_SI*T*math.log(R*T),'J/mol')
 
 ######################### Class Specializations ################################
 class BiasedChemicalSystem(ChemicalSystem):
@@ -67,11 +89,11 @@ class BiasedChemicalSystem(ChemicalSystem):
     ----------
     bias : float, Energy
         bias to the energy of each species (the default is 0.0).
+    bias_unit: str
+        (the default is 'kcal/mol').
     T : float
         Temperature in K (the default is 298.15).
     unit : str
-        (the default is 'kcal/mol').
-    CorrUnit: str
         (the default is 'kcal/mol').
     """
     def __init__(self,bias=0.0,bias_unit='kcal/mol',T=298.15,unit='kcal/mol'):
@@ -84,13 +106,13 @@ class BiasedChemicalSystem(ChemicalSystem):
         for compound in self.compounds: 
             compound.energy = compound.energy + self.bias
         for TS in self.transitionstates: 
-            if not hasattr(TS,'barrier'):
+            if not hasattr(TS,'barrier'): # only DiffusionTS have .barrier
                 TS.energy = TS.energy + self.bias
     def remove_bias(self):
         for compound in self.compounds: 
             compound.energy = compound.energy - self.bias
         for TS in self.transitionstates:
-            if not hasattr(TS,'barrier'): 
+            if not hasattr(TS,'barrier'): # only DiffusionTS have .barrier
                 TS.energy = TS.energy - self.bias
     def change_bias(self,bias):
         self.remove_bias()
@@ -117,15 +139,15 @@ class ScannableChemicalSystem(BiasedChemicalSystem):
     ----------
     scan : float, Energy
         bias to the energy of each species (the default is 0.0).
-    T : float
-        Temperature in K (the default is 298.15).
+    scan_unit : str
+        (the default is 'kcal/mol').
     bias : float, Energy
         bias to the energy of each species (the default is 0.0).
+    bias_unit : str
+        (the default is 'kcal/mol').
     T : float
         Temperature in K (the default is 298.15).
     unit : str
-        (the default is 'kcal/mol').
-    CorrUnit: str
         (the default is 'kcal/mol').
 
     """
