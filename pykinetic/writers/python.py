@@ -1,15 +1,15 @@
 """
-This module contains the Writer classes that are in charge of translating the 
-provided chemical system to the different languages or formats as well as the 
-Base class to inherit from, 'Writer'. 
-Currently only python and c++ are supported. This module depends on the 
-template files that come with the libary.
+This module contains all the different writers per reactor for the python language.
 """
 
 from collections import Counter
 from ._base import TEMPLATES_PATH, Indent, Writer
 
 class Batch(Writer):
+    """
+    Writer class of python scripts for Batch reactor models
+    
+    """
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -224,7 +224,20 @@ class Batch(Writer):
             F.write(''.join(items))
 
 class SemiBatch(Batch):
+    """
+    A writer to account for a SemiBatch Reactor with an influx of species 
+    coupled after a 'tsection' time of the total simulation with a Batch reactor. 
+    As a consequence the Simulation parameters required for this type of model 
+    require the parameters 'tsection' and 'tfin' as well as the parameters for 
+    the initial SemiBatch reactor.
 
+    Parameters
+    ----------
+    flow : float
+        Flowrate in L/s
+    volume : float
+        Reactor Volume in L
+    """
     def __init__(self,flow,Vini,**kwargs):
         super().__init__(**kwargs)
         self.keys = [] # Keys of the different reactants added
@@ -364,12 +377,8 @@ class SemiBatch(Batch):
         return concentrations
 class SemiBatchExtended(SemiBatch):
     """
-    A writer to account for a SemiBatch Reactor with an influx of species 
-    coupled after a 'tsection' time of the total simulation with a Batch reactor. 
-    As a consequence the Simulation parameters required for this type of model 
-    require the parameters 'tsection' and 'tfin' as well as the parameters for 
-    the initial SemiBatch reactor. For writing it up to two Chemical Systems 
-    can be provided.
+    Extension of the SemiBatch reactor model that allows up to 2 chemical 
+    systems, one per section.
     """
     def _load_default_header(self):
         with open(TEMPLATES_PATH / 'python_semibatch_extended.head','r') as F:

@@ -1,9 +1,5 @@
 """
-This module contains the Writer classes that are in charge of translating the 
-provided chemical system to the different languages or formats as well as the 
-Base class to inherit from, 'Writer'. 
-Currently only python and c++ are supported. This module depends on the 
-template files that come with the libary.
+This module contains all the different writers per reactor for the C++ language.
 """
 
 from collections import Counter

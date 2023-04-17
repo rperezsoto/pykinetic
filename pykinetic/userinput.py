@@ -33,6 +33,20 @@ for mark in MARKERS:
 
 re_is_energy = re.compile('(-?[0-9]*\.+[0-9]*)\s*?([^\s]*?)')
 def is_energy(text):
+    """
+    Returns if a given string corresponds to an energy or not. If the string is 
+    a 
+
+    Parameters
+    ----------
+    text : str
+        A string that may be an energy
+
+    Returns
+    -------
+    bool or truth-like value
+        If True or True-like then the evaluated string is an energy.
+    """
     test = re_is_energy.findall(text)
     if test:
         return test[0]
@@ -41,6 +55,25 @@ def is_energy(text):
 
 def populate_chemicalsystem_fromfiles(chemicalsystem,file_c,file_r,
                                       energy_unit='J/mol',relativeE=False):
+    """
+    Fills a chemicalsystem with the compounds and reactions specified in the 
+    compunds file and the reactions file. 
+
+    Parameters
+    ----------
+    chemicalsystem : pykinetic.classes.ChemicalSystem
+        chemical system that will be populated
+    file_c : str or Path
+        path to the correctly formatted compounds file  
+    file_r : str or Path
+        path to the correctly formatted reactions file
+    energy_unit : str, optional
+        default unit to assume when none is found, by default 'J/mol'
+    relativeE : bool, optional
+        If true the energies of the reactions are assumed to be the barriers 
+        relative to reactants instead of assumed to be the energy of the 
+        transition state connecting reactants and products, by default False
+    """
 
     # Process the Compound File
     raw_compounds = read_compounds(file_c)
@@ -87,6 +120,9 @@ def populate_chemicalsystem_fromfiles(chemicalsystem,file_c,file_r,
         chemicalsystem.rupdate()
 
 def read_compounds(file):
+    """
+    To-document
+    """
     raw_compounds = []
     with open(file,"r") as F:
         for line in F:
@@ -96,6 +132,9 @@ def read_compounds(file):
             raw_compounds.append(line.split())
     return raw_compounds
 def create_compounds(raw_compounds,energy_unit='J/mol'):
+    """
+    To-document
+    """
     err_msg = "Unexpected number of items in \n '{}' "
     compounds = []
     for items in raw_compounds:
@@ -120,6 +159,9 @@ def create_compounds(raw_compounds,energy_unit='J/mol'):
     return compounds
 
 def read_reactions(file):
+    """
+    To-document
+    """
     reaction_lines = []
     TS_lines = [] 
     with open(file,'r') as F:
@@ -135,6 +177,9 @@ def read_reactions(file):
     raw_reactions = [split_reaction_line(line) for line in reaction_lines]
     return raw_reactions,TS_lines
 def create_TS_dict(TS_lines,energy_unit='J/mol'):
+    """
+    To-document
+    """
     TS_dict = dict()
     for line in TS_lines:
         scannable = False
@@ -160,6 +205,9 @@ def create_TS_dict(TS_lines,energy_unit='J/mol'):
                          "Check for duplicates")
     return TS_dict
 def prepare_inline_TS(TS_text,TS_dict,energy_unit='J/mol'):
+    """
+    To-document
+    """
     scannable = False
     # Prepare the TS data
     TS_items = TS_text.split()
@@ -183,6 +231,9 @@ def prepare_inline_TS(TS_text,TS_dict,energy_unit='J/mol'):
         raise ValueError(f'Wrong TS definition at "{ts}"')
     return label,energy,scannable
 def split_reaction_line(reaction_text): 
+    """
+    To-document
+    """
     for mark in MARKERS: 
         match = MARKERS[mark]['matcher'].findall(reaction_text)
         if match:

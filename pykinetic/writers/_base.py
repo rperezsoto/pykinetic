@@ -24,6 +24,11 @@ def Indent(lines,tab='    ',level=1):
     return Out
 
 class Writer(object):
+    """
+    Base class of a writer object. A writer object allows the customized 
+    translation of a kinetic model into a script to carry out its simulation in 
+    a specific language and under a specific system constraints.  
+    """
     def __init__(self, conc_var='x', mb_var='dxdt', fun_var='model',
                  jac_var='Jac',jac_fun_var='jacobian',header=None,tail=None):
         self.x = conc_var
@@ -66,8 +71,11 @@ class Writer(object):
         """
         Takes in a reaction and returns 2 expressions, the string of the 
         variable and the string with the value of the constant. I.e.
+
         # Reaction(1 => 2)
+
         A = <ElementalStep 1 of Type '=>' with reacts=(1,) products(2,)>
+
         'k01', '1.00000000' = PythonWriter.constant(A)
 
         Parameters
@@ -106,14 +114,19 @@ class Writer(object):
     def ratelaw_partial(self,reaction,compound):
         """
         Takes in a reaction and returns and the string of the partial derivative
-         the ratelaw with respect to the concentration of compound. I.e.
+        the ratelaw with respect to the concentration of compound. I.e.
+
         # Reaction(1 => 2), Compound 1
+
         A = <ElementalStep 1 of Type '=>' with reacts=(1,) products(2,)>
+
         # r01,'k01*x[1]'ratelaw(A)
+
         'k01' = PythonWriter.ratelaw_partial(A)
 
         Parameters
         ----------
+
         reaction : Reaction
             Any reaction
         compound : Compound
@@ -121,6 +134,7 @@ class Writer(object):
 
         Returns
         -------
+        
         expr
             variable and expresion of the reaction
         """
@@ -130,10 +144,15 @@ class Writer(object):
         """
         Takes in a mass balance and returns 2 expressions, the string of the
         variable and the string of the expression. I.e.
+
         # Given a Chemical system with only Reaction('A <=> B')
+
         # d[A]dt = -r1 + r2 = -k01[A] + k2[B]
+
         # being A.key = 0 and B.key = 1
+
         A = <ElementalStep 1 of Type '=>' with reacts=(1,) products(2,)>
+
         'dxdt[0]', '-k01*x[1] +k02[B]' = PythonWriter.massbalance(A)
 
         Parameters
@@ -152,10 +171,15 @@ class Writer(object):
         """
         Takes the partial differential of a MB and returns the variable of the
         jacobian and the string of the expression. I.e.
+
         # Given a Chemical system with only Reaction('A <=> B')
+
         # d[A]dt = -r1 + r2 = -k01[A] + k2[B]
+
         # being A.key = 0 and B.key = 1
+
         C = <JacobianElement(Reaction(1),Compound(A))>
+        
         'Jac[0,0]', '-k01' = PythonWriter.jacobian_element(A)
 
         Parameters

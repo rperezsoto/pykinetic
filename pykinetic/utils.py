@@ -51,6 +51,23 @@ def write_indexfile(chemsys,file,withoutTS=True,isrelative=False):
         F.write('\n'.join(Out))
         F.write('\n')
 def calc_standard_state_correction(T,pressure='atm'):
+    """
+    Calculates the standard state correction to 1M and temperature=T. 
+
+
+    Parameters
+    ----------
+    T : float
+        Temperature in K
+    pressure : str, optional
+        units of the standard state considered to calculate gibbs free energies,
+        Usually it is either 1atm or 1bar, by default 'atm'
+
+    Returns
+    -------
+    Energy
+        Standard state correction to 1M and the specified temperature
+    """
     # constants from "The NIST Reference on Constants, Units, and Uncertainty"
     R_SI = 8.314462618    # J/(mol K)
     if pressure == 'bar': 
@@ -72,11 +89,11 @@ class BiasedChemicalSystem(ChemicalSystem):
     ----------
     bias : float, Energy
         bias to the energy of each species (the default is 0.0).
+    bias_unit: str
+        (the default is 'kcal/mol').
     T : float
         Temperature in K (the default is 298.15).
     unit : str
-        (the default is 'kcal/mol').
-    CorrUnit: str
         (the default is 'kcal/mol').
     """
     def __init__(self,bias=0.0,bias_unit='kcal/mol',T=298.15,unit='kcal/mol'):
@@ -122,15 +139,15 @@ class ScannableChemicalSystem(BiasedChemicalSystem):
     ----------
     scan : float, Energy
         bias to the energy of each species (the default is 0.0).
-    T : float
-        Temperature in K (the default is 298.15).
+    scan_unit : str
+        (the default is 'kcal/mol').
     bias : float, Energy
         bias to the energy of each species (the default is 0.0).
+    bias_unit : str
+        (the default is 'kcal/mol').
     T : float
         Temperature in K (the default is 298.15).
     unit : str
-        (the default is 'kcal/mol').
-    CorrUnit: str
         (the default is 'kcal/mol').
 
     """
