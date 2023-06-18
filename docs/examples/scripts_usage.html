@@ -99,17 +99,17 @@
 <h2>pykinetic-model.py<a class="headerlink" href="#pykinetic-model-py" title="Permalink to this heading"></a></h2>
 <p>Creates a {python|c++} script that contains a system of mass balance equations
 (that represent a certain Chemical System) and the tools to solve it numerically.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py compounds.txt reactions.txt model.py --writer python
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py<span class="w"> </span>compounds.txt<span class="w"> </span>reactions.txt<span class="w"> </span>model.py<span class="w"> </span>--writer<span class="w"> </span>python
 <span class="gp">$ </span><span class="c1"># After editing the file and including the concentrations and simulation times</span>
-<span class="gp">$ </span>python model.py
+<span class="gp">$ </span>python<span class="w"> </span>model.py
 <span class="gp">$ </span><span class="c1"># A fast approach to visualize the data generated is with xmgrace</span>
 <span class="gp">$ </span><span class="c1"># model.data is just a csv file where the first column is the time.</span>
-<span class="gp">$ </span>xmgrace -nxy model.data
+<span class="gp">$ </span>xmgrace<span class="w"> </span>-nxy<span class="w"> </span>model.data
 </pre></div>
 </div>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py compounds.txt reactions.txt model.cpp --writer c++
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py<span class="w"> </span>compounds.txt<span class="w"> </span>reactions.txt<span class="w"> </span>model.cpp<span class="w"> </span>--writer<span class="w"> </span>c++
 <span class="gp">$ </span><span class="c1"># After editing the file and including the concentrations and simulation times</span>
-<span class="gp">$ </span>g++ model.cpp -o model.exe
+<span class="gp">$ </span>g++<span class="w"> </span>model.cpp<span class="w"> </span>-o<span class="w"> </span>model.exe
 <span class="gp">$ </span>./model.exe
 </pre></div>
 </div>
@@ -121,7 +121,7 @@
 per each value of a scanned energy/energies of compounds/TSs. Currently it is
 recommended to do a --dryrun and run each generated model by itself.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="c1"># it is recommended to use a simulation parameters file</span>
-<span class="gp">$ </span>pykinetic-scan.py compounds.txt reactions.txt <span class="m">0</span>.0 <span class="m">0</span>.5 <span class="m">5</span> --writer python --dryrun --I --simulation sim_params.txt
+<span class="gp">$ </span>pykinetic-scan.py<span class="w"> </span>compounds.txt<span class="w"> </span>reactions.txt<span class="w"> </span><span class="m">0</span>.0<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="m">5</span><span class="w"> </span>--writer<span class="w"> </span>python<span class="w"> </span>--dryrun<span class="w"> </span>--I<span class="w"> </span>--simulation<span class="w"> </span>sim_params.txt
 </pre></div>
 </div>
 </section>

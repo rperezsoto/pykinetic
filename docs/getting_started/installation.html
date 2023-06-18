@@ -116,23 +116,23 @@ currently being reviewed.</p>
 <section id="installing-the-dependencies">
 <h2>Installing the dependencies<a class="headerlink" href="#installing-the-dependencies" title="Permalink to this heading"></a></h2>
 <p>python3.7 installation in Ubuntu 18.04 LTS</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo apt-get update
-<span class="gp">$ </span>sudo apt-get install python3.7 python3.7-dev
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3.7<span class="w"> </span>python3.7-dev
 </pre></div>
 </div>
 <p>If for any reason it is not reachable:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo add-apt-repository ppa:deadsnakes/ppa
-<span class="gp">$ </span>sudo apt-get update
-<span class="gp">$ </span>sudo apt-get install python3.7 python3.7-dev
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>add-apt-repository<span class="w"> </span>ppa:deadsnakes/ppa
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3.7<span class="w"> </span>python3.7-dev
 </pre></div>
 </div>
 <p>Now you can skip the next step if you don't want to set up a virtual environment
 the lines below correspond to python3.7 but can be also applied to python3.6 or
 higher (Remember to change &quot;my_venv&quot; for the actual path of the directory where
 you want the virtual environment)</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo apt-get install python3.7-venv
-<span class="gp">$ </span>python3.7 -m venv my_venv
-<span class="gp">$ </span><span class="nb">source</span> my_venv/bin/activate
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>python3.7-venv
+<span class="gp">$ </span>python3.7<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>my_venv
+<span class="gp">$ </span><span class="nb">source</span><span class="w"> </span>my_venv/bin/activate
 </pre></div>
 </div>
 <p>In the case of creating a virtual environment and running the
@@ -143,29 +143,29 @@ for &quot;python3.7&quot; or whichever python executable you used for the virtua
 explicitly use the python executable in which you are going to install the
 the package.
 Now we install the python default installer pip in our virtual environment</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install pip
-<span class="gp">$ </span>python -m pip install --upgrade pip
-<span class="gp">$ </span>python -m pip install setuptools
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pip
+<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>setuptools
 </pre></div>
 </div>
 <p>If it proceeded without any errors (pip and setuptools should already be
 installed) otherwise please check the <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">pip</a> documentation</p>
 <p>Now to install the optional dependencies (Skip if you do not want them):</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install numpy scipy
-<span class="gp">$ </span>sudo apt-get install libboost-dev
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> </span>scipy
+<span class="gp">$ </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libboost-dev
 </pre></div>
 </div>
 </section>
 <section id="installing-pykinetic">
 <h2>Installing pykinetic<a class="headerlink" href="#installing-pykinetic" title="Permalink to this heading"></a></h2>
 <p>Get the source code from github through git and install it.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/maserasgroup-repo/pykinetic.git pykinetic
-<span class="gp">$ </span>python -m pip install pykinetic/
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/maserasgroup-repo/pykinetic.git<span class="w"> </span>pykinetic
+<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pykinetic/
 </pre></div>
 </div>
 <p>If you do not have git or do prefer to download manually the source
 code as a .zip or .tar.gz do it install it.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install pykinetic-0.1.0.tar.gz
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pykinetic-0.1.0.tar.gz
 </pre></div>
 </div>
 <blockquote>
@@ -175,13 +175,13 @@ code as a .zip or .tar.gz do it install it.</p>
 <section id="running-the-tests">
 <h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Permalink to this heading"></a></h2>
 <p>After installing you should be able to run the tests:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m unittest -v pykinetic.tests
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>-v<span class="w"> </span>pykinetic.tests
 </pre></div>
 </div>
 </section>
 <section id="uninstalling-pykinetic">
 <h2>Uninstalling pykinetic<a class="headerlink" href="#uninstalling-pykinetic" title="Permalink to this heading"></a></h2>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip uninstall pykinetic
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>uninstall<span class="w"> </span>pykinetic
 </pre></div>
 </div>
 </section>
