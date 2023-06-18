@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Scripts Usage" href="../examples/scripts_usage.html" />
+    <link rel="next" title="Writers" href="writers.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
@@ -45,7 +45,23 @@
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">File Formats</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">File Formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#compounds-file">Compounds File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general-format">General format:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compound-label-rules">Compound label rules:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compounds-file-example">Compounds file example:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#reactions-file">Reactions File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">General format:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#symbols">Symbols:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reactions-file-example">Reactions file example:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#simulation-parameters-file">Simulation Parameters File</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="writers.html">Writers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -53,9 +69,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/library_usage.html">Library Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/workflows.html">Workflows</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/pykinetic.html">pykinetic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">About</span></p>
 <ul>
@@ -88,8 +104,205 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="file-formats">
+  <style> .red {color:#c76160; font-weight:bold; font-size:16px} </style>
+<style> .green {color:#3d642d; font-weight:bold; font-size:16px} </style><section id="file-formats">
 <h1>File Formats<a class="headerlink" href="#file-formats" title="Permalink to this heading"></a></h1>
+<p>The usage of pykinetic through the provided command line apps requires various
+text files following a specific formatting. The &quot;Compounds&quot; file and the
+&quot;Reactions&quot; file are always required.</p>
+<section id="compounds-file">
+<h2>Compounds File<a class="headerlink" href="#compounds-file" title="Permalink to this heading"></a></h2>
+<p>In this file the user specifies the compounds as well as their energies.</p>
+<section id="general-format">
+<h3>General format:<a class="headerlink" href="#general-format" title="Permalink to this heading"></a></h3>
+<p>Each line of the compounds file follows the format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Line that starts with &quot;#&quot; is considered as comment and ignored</span>
+<span class="n">compound_label</span>    <span class="n">energy</span>    <span class="n">unit</span>    <span class="n">scan</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The label and the energy columns are always required.</p></li>
+<li><p>The unit may be specified as command line argument.</p></li>
+<li><p>The &quot;scan&quot; keyword allows to mark a certain compound to produce several models while changing the energy of everything that is marked by the scan keyword.</p></li>
+<li><p>The number of empty spaces or tabs is not strict as long as all the columns are separated by at least one (tab or empty space).</p></li>
+</ul>
+</section>
+<section id="compound-label-rules">
+<h3>Compound label rules:<a class="headerlink" href="#compound-label-rules" title="Permalink to this heading"></a></h3>
+<p>The compound's label is relatively free. The only exceptions are those that
+include any symbol used in the reactions file to specify the reactions:</p>
+<ul class="simple">
+<li><p>must not have emtpy spaces within the label.</p></li>
+<li><p>&quot;!&quot; symbol must not be used.</p></li>
+<li><p>&quot;+&quot; may be included as long as it is not surrounded by empty spaces or tabs.</p></li>
+<li><p>Any reaction symbol surrounded by empty spaces or tabs.</p></li>
+</ul>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Accepted Labels</strong></p></th>
+<th class="head"><p><strong>Non-Valid Labels</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="green">[H2O···H2O]</span></p></td>
+<td><p><span class="red">[H2O H2O]</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="green">H2O+H2O</span></p></td>
+<td><p><span class="red">H2O + H2O</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="green">[LCu(OTf)2]Na+</span></p></td>
+<td><p><span class="red">[LCu(OTf)2]Na +</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="green">Enz=&gt;inactive</span></p></td>
+<td><p><span class="red">Enz =&gt; inactive</span></p></td>
+</tr>
+<tr class="row-even"><td><p><span class="green">花火</span></p></td>
+<td><p><span class="red">!</span></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="compounds-file-example">
+<h3>Compounds file example:<a class="headerlink" href="#compounds-file-example" title="Permalink to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A                0.0 kcal/mol
+B                0.0 kcal/mol
+Cat              0.0 kcal/mol
+[A···B]          2.0 kcal/mol
+[A···B···Cat]    4.0 kcal/mol
+[C···Cat]        3.0 kcal/mol
+C               -2.0 kcal/mol
+</pre></div>
+</div>
+</section>
+</section>
+<section id="reactions-file">
+<h2>Reactions File<a class="headerlink" href="#reactions-file" title="Permalink to this heading"></a></h2>
+<p>In this file the user specifies the reactions and the Transition States (TS) or
+a manner of calculating the energy of the associated TS.</p>
+<section id="id1">
+<h3>General format:<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Line that starts with &quot;#&quot; is considered as comment and ignored
+reactants    symbol    products    !energy    unit    scan
+reactants2   symbol    products2   !TSLabel
+reactants3   symbol    products3   !TSLabel
+TSLabel    energy    unit    scan
+</pre></div>
+</div>
+<p>The first three examples after the comment correspond to the format of lines
+that indicate a reaction. The last one corresponds to the specification of a
+transition state, that can be either shared bewteen different reactions or
+just specified at the end for simplicity.</p>
+</section>
+<section id="symbols">
+<h3>Symbols:<a class="headerlink" href="#symbols" title="Permalink to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symbol</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>=&gt;</strong></p></td>
+<td><p>Forward reaction</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>&lt;=</strong></p></td>
+<td><p>Reverse reaction (When the --relative
+flag is specified it uses as reference
+the left side).</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>&lt;=&gt;</strong></p></td>
+<td><p>Forward and reverse reaction sharing
+the same TS.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>&lt;d&gt;</strong></p></td>
+<td><p>Forward and reverse &quot;diffusion&quot; reaction.
+Both share the TS. The specified energy is
+used as: G(specified) = G(TS)
+- max(G(reactants),G(products))</p></td>
+</tr>
+</tbody>
+</table>
+<p>All symbols must be surrounded by empty spaces or tabs and should be used only
+once per reaction.</p>
+<p>Reversible reactions are automatically converted into 2 reactions,
+the forward and the reverse reactions <strong>sharing the same TS</strong>. This is only
+important when setting up scans since:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A  =&gt; B  !2.0 scan
+B  =&gt; A  !2.0
+</pre></div>
+</div>
+<p>Does not behave as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A &lt;=&gt; B !2.0 scan
+</pre></div>
+</div>
+<p>However, the following reactions do have the same behaviour:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A  =&gt; B  !TS1
+B  =&gt; A  !TS1
+TS1  2.0  scan
+</pre></div>
+</div>
+</section>
+<section id="reactions-file-example">
+<h3>Reactions file example:<a class="headerlink" href="#reactions-file-example" title="Permalink to this heading"></a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Adduct Formation
+ A         +    B     &lt;d&gt;    [A···B]                !2.0 kcal/mol
+[A···B]    +    Cat   &lt;d&gt;    [A···B···Cat]          !2.0 kcal/mol
+
+# Uncatalyzed reaction upon collision
+ A         +    B     &lt;=&gt;     C                     !TS1
+
+# Uncatalyzed reaction with preformation of adduct
+[A···B]               &lt;=&gt;     C                     !TS1
+
+# Catalyzed reaction
+[A···B···Cat]         &lt;=&gt;    [C···Cat]              !10.0 kcal/mol scan
+
+# Product Diffusion
+[C···Cat]             &lt;d&gt;     C      +     Cat      !2.0 kcal/mol
+
+TS1     20.0 kcal/mol    scan
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The --relative of pykinetic-model.py and pykinetic-scan.py will assume
+that the energies specified are relative to the energy of the reactants. In
+this example, enabling the --relative flag will result in the catalyzed
+reaction having direct barrier of 10 kcal/mol (assuming a scan value of 0
+kcal/mol). Not enabling the --relative flag will result in a barrier of
+10.0 - E([A···B···Cat]) kcal/mol, with the Compounds file example it would
+result in a barrier of 6.0 kcal/mol.</p>
+</div>
+</section>
+</section>
+<section id="simulation-parameters-file">
+<h2>Simulation Parameters File<a class="headerlink" href="#simulation-parameters-file" title="Permalink to this heading"></a></h2>
+<p>This file is optional and is generally useful when you already have a model
+and are going to generate different versions of the model and you don not want
+to keep the tedious task of re-writing these parameters onto the generated file.</p>
+<p>Example file:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>dt          1E-12
+tfin        1E+02
+trep        0.1
+concentrations    0,1.0 ; 1,1.0 ; 2,0.1
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The order may be changed.</p></li>
+<li><p>Not all the parameters need to be specified in this file.</p></li>
+<li><p>dt is the solver timestep for calculating the solution. Some solvers require
+it and others no.</p></li>
+<li><p>trep  corresponds to the time step for reporting the concentrations of
+all the species.</p></li>
+<li><p>tfin is the final time. Both number notations, 1E+02 and 100, are valid.</p></li>
+<li><p>dt, trep and tfin are specified in seconds.</p></li>
+<li><p>In the concentrations keyword only the non-zero initial concentrations in
+M need to be included. In this example, the compounds 0 and 1 start with 1M
+and compound 2 with 0.1 M. (The number that corresponds to each compound
+corresponds to the order in which they appear at the compounds file,
+starting from 0)</p></li>
+</ul>
+</section>
 </section>
 
 
@@ -97,7 +310,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../examples/scripts_usage.html" class="btn btn-neutral float-right" title="Scripts Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="writers.html" class="btn btn-neutral float-right" title="Writers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

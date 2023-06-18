@@ -46,16 +46,21 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/writers.html">Writers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="scripts_usage.html">Scripts Usage</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Library Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-model-from-scratch">Creating a model from scratch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modifying-and-loading-a-model">Modifying and loading a model</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/pykinetic.html">pykinetic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">About</span></p>
 <ul>
@@ -90,6 +95,107 @@
              
   <section id="library-usage">
 <h1>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this heading"></a></h1>
+<section id="creating-a-model-from-scratch">
+<h2>Creating a model from scratch<a class="headerlink" href="#creating-a-model-from-scratch" title="Permalink to this heading"></a></h2>
+<p>Lets assume the following compounds and reactions:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A    0.0  kcal/mol
+B    0.0  kcal/mol
+C    2.0  kcal/mol
+D   -2.0  kcal/mol
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>A + B &lt;=&gt; C   !10.0 kcal/mol
+C      =&gt; D   !18.0 kcal/mol
+</pre></div>
+</div>
+<p>Now we create the model from scratch assuming a T of 25ºC.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pykinetic.classes</span> <span class="kn">import</span> <span class="p">(</span><span class="n">ChemicalSystem</span><span class="p">,</span> <span class="n">Energy</span><span class="p">,</span> <span class="n">Compound</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span>
+                               <span class="n">TransitionState</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pykinetic.writers.python</span> <span class="kn">import</span> <span class="n">Batch</span> <span class="k">as</span> <span class="n">Writer</span>
+
+<span class="c1"># We initialize the ChemicalSystem</span>
+<span class="n">chemsys</span> <span class="o">=</span> <span class="n">ChemicalSystem</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">)</span>
+
+<span class="c1"># Now we create the compounds</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">Energy</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">))</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">B</span><span class="p">,</span><span class="n">Energy</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">))</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">Energy</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">))</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">D</span><span class="p">,</span><span class="n">Energy</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">))</span>
+
+<span class="c1"># we can now add them one by one to the system:</span>
+<span class="c1"># chemsys.cadd(A)</span>
+<span class="c1"># chemsys.cadd(B)</span>
+<span class="c1"># ...</span>
+<span class="c1"># or create a list and add them all</span>
+<span class="n">compounds</span> <span class="o">=</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">]</span>
+<span class="n">chemsys</span><span class="o">.</span><span class="n">cextend</span><span class="p">(</span><span class="n">compounds</span><span class="p">,</span><span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># if we dont update=True we will have to do it &quot;manually&quot;</span>
+<span class="c1"># chemsys.cupdate()</span>
+
+<span class="c1"># Now we create the reactions</span>
+<span class="n">r1d</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">),</span><span class="n">products</span><span class="o">=</span><span class="p">(</span><span class="n">C</span><span class="p">,))</span>
+<span class="n">r1i</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">(</span><span class="n">C</span><span class="p">,),</span><span class="n">products</span><span class="o">=</span><span class="p">(</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">))</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">Reaction</span><span class="p">(</span><span class="n">reactants</span><span class="o">=</span><span class="p">(</span><span class="n">C</span><span class="p">,),</span><span class="n">products</span><span class="o">=</span><span class="p">(</span><span class="n">D</span><span class="p">,))</span>
+<span class="c1"># we can ignore the T parameter as it will be automatically set up by the</span>
+<span class="c1"># ChemicalSystem object</span>
+
+<span class="c1"># We create the TSs and assign them to their reactions</span>
+<span class="n">TS1</span> <span class="o">=</span> <span class="n">TransitionState</span><span class="p">(</span><span class="n">Energy</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;TS1&#39;</span><span class="p">,</span><span class="n">reactions</span><span class="o">=</span><span class="p">[</span><span class="n">r1d</span><span class="p">,</span><span class="n">r1i</span><span class="p">])</span>
+<span class="n">TS2</span> <span class="o">=</span> <span class="n">TransitionState</span><span class="p">(</span><span class="n">Energy</span><span class="p">(</span><span class="mf">18.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;TS2&#39;</span><span class="p">)</span>
+<span class="n">TS2</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r2</span><span class="p">)</span>
+
+<span class="c1"># Now we add the reactions to the ChemicalSystem. Now we use radd or rextend.</span>
+<span class="n">chemsys</span><span class="o">.</span><span class="n">radd</span><span class="p">(</span><span class="n">r1d</span><span class="p">)</span>
+<span class="n">chemsys</span><span class="o">.</span><span class="n">radd</span><span class="p">(</span><span class="n">r1i</span><span class="p">)</span>
+<span class="n">chemsys</span><span class="o">.</span><span class="n">radd</span><span class="p">(</span><span class="n">r2</span><span class="p">)</span>
+
+<span class="c1"># Now we have our chemical system already set up. Now we proceed to write it.</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">Writer</span><span class="p">()</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chemsys</span><span class="p">,</span><span class="s1">&#39;model.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="modifying-and-loading-a-model">
+<h2>Modifying and loading a model<a class="headerlink" href="#modifying-and-loading-a-model" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pykinetic.classes</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Energy</span><span class="p">,</span> <span class="n">Compound</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span>
+                               <span class="n">TransitionState</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pykinetic.utils</span> <span class="kn">import</span> <span class="n">BiasedChemicalSystem</span><span class="p">,</span> <span class="n">calc_standard_state_correction</span>
+<span class="kn">from</span> <span class="nn">pykinetic.writers.python</span> <span class="kn">import</span> <span class="n">Batch</span> <span class="k">as</span> <span class="n">Writer</span>
+<span class="kn">from</span> <span class="nn">pykinetic.userinput</span> <span class="kn">import</span> <span class="n">populate_chemicalsystem_fromfiles</span>
+
+<span class="c1"># We initialize the ChemicalSystem and we want to apply a SS correction</span>
+<span class="c1"># from 1 atm -&gt; 1 M</span>
+<span class="n">std_correction</span> <span class="o">=</span> <span class="n">calc_standard_state_correction</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">)</span>
+<span class="n">chemsys</span> <span class="o">=</span> <span class="n">BiasedChemicalSystem</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">)</span>
+
+<span class="n">file_c</span> <span class="o">=</span> <span class="s1">&#39;compounds.txt&#39;</span>
+<span class="n">file_r</span> <span class="o">=</span> <span class="s1">&#39;reactions.txt&#39;</span>
+
+<span class="c1"># Now we add from the files the compounds, reactions and TSs.</span>
+<span class="n">populate_chemicalsystem_fromfiles</span><span class="p">(</span><span class="n">chemsys</span><span class="p">,</span><span class="n">file_c</span><span class="p">,</span><span class="n">file_r</span><span class="p">,</span>
+                                   <span class="n">energy_unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span>
+                                   <span class="n">relativeE</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Now we apply the bias. The biased system adds the bias to all the</span>
+<span class="c1"># compounds and TSs. In this case it is applying the standard state correction</span>
+<span class="c1"># from 1 atm -&gt; 1 M.</span>
+<span class="n">chemsys</span><span class="o">.</span><span class="n">apply_bias</span><span class="p">()</span>
+<span class="c1"># The default bias is 0.0, but it is important to run this method after</span>
+<span class="c1"># adding all the compounds and reactions when the bias is not 0.</span>
+
+<span class="c1"># we can write the model without the bias now</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">Writer</span><span class="p">()</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chemsys</span><span class="p">,</span><span class="s1">&#39;model.py&#39;</span><span class="p">)</span>
+
+<span class="c1"># Now we can change the bias if we decide so</span>
+
+<span class="n">chemsys</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">calc_standard_state_correction</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">)</span>
+
+<span class="c1"># Now we proceed to write the model with std state correction.</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chemsys</span><span class="p">,</span><span class="s1">&#39;model_stdcorr.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pykinetic.utils &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/pykinetic.html">pykinetic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pykinetic.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pykinetic.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains several utilities grouped by usage:</span>
+
+<span class="sd">   *   The &#39;Pykinetic Utilities&#39; are functions with usage in the scripts that </span>
+<span class="sd">       accompany this library.</span>
+<span class="sd">   *   Class Specializations. Subclasses of the ChemicalSystem used for the</span>
+<span class="sd">       scripts pykinetic-model and pykinetic-scan.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="kn">from</span> <span class="nn">.classes</span> <span class="kn">import</span> <span class="n">ChemicalSystem</span><span class="p">,</span> <span class="n">Reaction</span><span class="p">,</span> <span class="n">Energy</span><span class="p">,</span> <span class="n">DiffusionTS</span>
+
+<span class="c1">########################## Pykinetic Utilities #################################</span>
+<div class="viewcode-block" id="write_indexfile"><a class="viewcode-back" href="../../api/pykinetic.utils.html#pykinetic.utils.write_indexfile">[docs]</a><span class="k">def</span> <span class="nf">write_indexfile</span><span class="p">(</span><span class="n">chemsys</span><span class="p">,</span><span class="n">file</span><span class="p">,</span><span class="n">withoutTS</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">isrelative</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writes a File that summarizes both Compounds and Reactions Files as</span>
+<span class="sd">    they were modeled. Simple division of this file should lead to two files</span>
+<span class="sd">    that should be able reproduce at least the function and the Jacobian.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    chemsys : ChemicalSystem</span>
+<span class="sd">        A ChemicalSystem or subclass to output</span>
+<span class="sd">    FilePath : str</span>
+<span class="sd">        A valid filepath for the IndexFile</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;#### compounds ####&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">chemsys</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">compound</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">compound</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">)    </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s1">    </span><span class="si">{</span><span class="n">energy</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;#### reactions ####&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">withoutTS</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">chemsys</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">key</span>
+            <span class="k">if</span> <span class="n">isrelative</span><span class="p">:</span>
+                <span class="n">energy</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">AE</span><span class="o">.</span><span class="n">as_unit</span><span class="p">(</span><span class="n">chemsys</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">energy</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">TS</span><span class="o">.</span><span class="n">energy</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">)    </span><span class="si">{</span><span class="n">reaction</span><span class="si">}</span><span class="s1">    !</span><span class="si">{</span><span class="n">energy</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">chemsys</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">key</span>
+            <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">)    </span><span class="si">{</span><span class="n">reaction</span><span class="si">}</span><span class="s1">    !</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">TS</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">TS</span> <span class="ow">in</span> <span class="n">chemsys</span><span class="o">.</span><span class="n">transitionstates</span><span class="p">:</span> 
+            <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">TS</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s1">    </span><span class="si">{</span><span class="n">TS</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">as_unit</span><span class="p">(</span><span class="n">chemsys</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span> <span class="p">:</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Out</span><span class="p">))</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="calc_standard_state_correction"><a class="viewcode-back" href="../../api/pykinetic.utils.html#pykinetic.utils.calc_standard_state_correction">[docs]</a><span class="k">def</span> <span class="nf">calc_standard_state_correction</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">pressure</span><span class="o">=</span><span class="s1">&#39;atm&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the standard state correction to 1M and temperature=T. </span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    T : float</span>
+<span class="sd">        Temperature in K</span>
+<span class="sd">    pressure : str, optional</span>
+<span class="sd">        units of the standard state considered to calculate gibbs free energies,</span>
+<span class="sd">        Usually it is either 1atm or 1bar, by default &#39;atm&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Energy</span>
+<span class="sd">        Standard state correction to 1M and the specified temperature</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># constants from &quot;The NIST Reference on Constants, Units, and Uncertainty&quot;</span>
+    <span class="n">R_SI</span> <span class="o">=</span> <span class="mf">8.314462618</span>    <span class="c1"># J/(mol K)</span>
+    <span class="k">if</span> <span class="n">pressure</span> <span class="o">==</span> <span class="s1">&#39;bar&#39;</span><span class="p">:</span> 
+        <span class="n">R_bar</span> <span class="o">=</span> <span class="mf">0.0831446261815324</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">R_bar</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">R_atm</span> <span class="o">=</span> <span class="mf">0.0820573661</span>  <span class="c1"># atm L / (mol K)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">R_atm</span>
+    <span class="k">return</span> <span class="n">Energy</span><span class="p">(</span><span class="n">R_SI</span><span class="o">*</span><span class="n">T</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">R</span><span class="o">*</span><span class="n">T</span><span class="p">),</span><span class="s1">&#39;J/mol&#39;</span><span class="p">)</span></div>
+
+<span class="c1">######################### Class Specializations ################################</span>
+<div class="viewcode-block" id="BiasedChemicalSystem"><a class="viewcode-back" href="../../api/pykinetic.utils.html#pykinetic.utils.BiasedChemicalSystem">[docs]</a><span class="k">class</span> <span class="nc">BiasedChemicalSystem</span><span class="p">(</span><span class="n">ChemicalSystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A specialization used to directly apply a constant bias to the energy of</span>
+<span class="sd">    to all the species (as the Standard State Correction does). It is applied to</span>
+<span class="sd">    compounds and TS except from the diffusion TSs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bias : float, Energy</span>
+<span class="sd">        bias to the energy of each species (the default is 0.0).</span>
+<span class="sd">    bias_unit: str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    T : float</span>
+<span class="sd">        Temperature in K (the default is 298.15).</span>
+<span class="sd">    unit : str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">bias_unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">T</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span><span class="n">Energy</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bias</span> <span class="o">=</span> <span class="n">bias</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bias</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span><span class="n">bias_unit</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">apply_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span> 
+            <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+        <span class="k">for</span> <span class="n">TS</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionstates</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">TS</span><span class="p">,</span><span class="s1">&#39;barrier&#39;</span><span class="p">):</span> <span class="c1"># only DiffusionTS have .barrier</span>
+                <span class="n">TS</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">TS</span><span class="o">.</span><span class="n">energy</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+    <span class="k">def</span> <span class="nf">remove_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span> 
+            <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">compound</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+        <span class="k">for</span> <span class="n">TS</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitionstates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">TS</span><span class="p">,</span><span class="s1">&#39;barrier&#39;</span><span class="p">):</span> <span class="c1"># only DiffusionTS have .barrier</span>
+                <span class="n">TS</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">TS</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+    <span class="k">def</span> <span class="nf">change_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">bias</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_bias</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span><span class="n">Energy</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bias</span> <span class="o">=</span> <span class="n">bias</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Guessing energy unit from previous bias&#39; unit&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bias</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_bias</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_bias</span><span class="p">()</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bias</span>
+    <span class="nd">@bias</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">change_bias</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ScannableChemicalSystem"><a class="viewcode-back" href="../../api/pykinetic.utils.html#pykinetic.utils.ScannableChemicalSystem">[docs]</a><span class="k">class</span> <span class="nc">ScannableChemicalSystem</span><span class="p">(</span><span class="n">BiasedChemicalSystem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A specialization of BiasedChemicalSystem that provides the methods to apply</span>
+<span class="sd">    dinamically change the energy of all the compounds and TS flagged as </span>
+<span class="sd">    scannable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scan : float, Energy</span>
+<span class="sd">        bias to the energy of each species (the default is 0.0).</span>
+<span class="sd">    scan_unit : str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    bias : float, Energy</span>
+<span class="sd">        bias to the energy of each species (the default is 0.0).</span>
+<span class="sd">    bias_unit : str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+<span class="sd">    T : float</span>
+<span class="sd">        Temperature in K (the default is 298.15).</span>
+<span class="sd">    unit : str</span>
+<span class="sd">        (the default is &#39;kcal/mol&#39;).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scan</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">scan_unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span>
+                 <span class="n">bias</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span><span class="n">bias_unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">,</span><span class="n">T</span><span class="o">=</span><span class="mf">298.15</span><span class="p">,</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span><span class="n">bias_unit</span><span class="p">,</span><span class="n">T</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="n">Energy</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span> <span class="o">=</span> <span class="n">scan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan_unit</span> <span class="o">=</span> <span class="n">scan</span><span class="o">.</span><span class="n">unit</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="n">scan_unit</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan_unit</span> <span class="o">=</span> <span class="n">scan_unit</span>
+
+    <span class="k">def</span> <span class="nf">apply_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">transitionstates</span><span class="p">):</span> 
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">scannable</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="s1">&#39;barrier&#39;</span><span class="p">):</span> 
+                    <span class="n">item</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">energy</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">item</span><span class="o">.</span><span class="n">barrier</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">barrier</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span>
+    <span class="k">def</span> <span class="nf">remove_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">transitionstates</span><span class="p">):</span> 
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">scannable</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span><span class="s1">&#39;barrier&#39;</span><span class="p">):</span> 
+                    <span class="n">item</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span>
+                <span class="k">else</span><span class="p">:</span> 
+                    <span class="n">item</span><span class="o">.</span><span class="n">barrier</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">barrier</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scan</span>
+    <span class="k">def</span> <span class="nf">change_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">scan</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remove_scan</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="n">Energy</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span> <span class="o">=</span> <span class="n">scan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">scan</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_scan_unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_scan</span><span class="p">()</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scan</span>
+    <span class="nd">@scan</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">change_scan</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

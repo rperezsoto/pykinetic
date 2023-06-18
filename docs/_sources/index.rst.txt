@@ -13,6 +13,7 @@ Welcome to pykinetic's Documentation!
 
    getting_started/installation
    getting_started/file_formats
+   getting_started/writers
 
 .. 
    Concepts section commented until further notice
@@ -34,9 +35,9 @@ Welcome to pykinetic's Documentation!
 
 .. toctree::
    :maxdepth: 4
-   :caption: API Documentation
+   :caption: Python API
 
-   api/api
+   api/pykinetic
 
 .. toctree::
    :maxdepth: 2

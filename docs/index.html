@@ -45,6 +45,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/writers.html">Writers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -52,9 +53,9 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/library_usage.html">Library Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/workflows.html">Workflows</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/pykinetic.html">pykinetic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">About</span></p>
 <ul>
@@ -89,30 +90,105 @@
              
   <section id="welcome-to-pykinetic-s-documentation">
 <h1>Welcome to pykinetic's Documentation!<a class="headerlink" href="#welcome-to-pykinetic-s-documentation" title="Permalink to this heading"></a></h1>
-<p>This project consists of two command line apps &quot;pykinetic-model.py&quot; and
-&quot;pykinetic-scan.py&quot; to facilitate the generation of microkinetic models. Both
-apps generate a file that can be compiled/executed and that represents the
-kinetic model. It includes the &quot;pykinetic&quot; python library in case that either
-the reactions or the chemical species are to be added programatically.</p>
+<p>Pykinetic is a project that aims to facilitate the automation and generation
+of kinetic and microkinetic models. Pykinetic acts as an intermediate layer
+between the user and the mathematical model that is then simulated to obtain the
+kinetic data. This functionality can be done either through the use of the
+pykinetic python library or through the use of the command line apps:
+&quot;pykinetic-model.py&quot; and &quot;pykinetic-scan.py&quot;. The minimal source code to run the
+simulation is the output of pykinetic and currently python and c++ are supported.
+Compiling and executing that code leads to the simulation of the chemical system.</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="getting_started/installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/installation.html#installing-the-dependencies">Installing the dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/installation.html#installing-pykinetic">Installing pykinetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/installation.html#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/installation.html#uninstalling-pykinetic">Uninstalling pykinetic</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/file_formats.html">File Formats</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/file_formats.html#compounds-file">Compounds File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#general-format">General format:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#compound-label-rules">Compound label rules:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#compounds-file-example">Compounds file example:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/file_formats.html#reactions-file">Reactions File</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#id1">General format:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#symbols">Symbols:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started/file_formats.html#reactions-file-example">Reactions file example:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/file_formats.html#simulation-parameters-file">Simulation Parameters File</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/writers.html">Writers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/writers.html#python">Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/writers.html#c">C++</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="examples/scripts_usage.html">Scripts Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/scripts_usage.html">Scripts Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/scripts_usage.html#pykinetic-model-py">pykinetic-model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/scripts_usage.html#pykinetic-scan-py">pykinetic-scan.py</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/library_usage.html">Library Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/library_usage.html#creating-a-model-from-scratch">Creating a model from scratch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/library_usage.html#modifying-and-loading-a-model">Modifying and loading a model</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="examples/workflows.html">Workflows</a></li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/pykinetic.html">pykinetic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/pykinetic.classes.html">classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#energy">Energy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#chemicalsystem">ChemicalSystem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#compound">Compound</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#reaction">Reaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#transition-states">Transition states</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#massbalance">MassBalance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.classes.html#jacobianelement">JacobianElement</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/pykinetic.writers.html">writers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.writers._base.html">base</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers._base.html#writer">Writer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.writers.python.html">python</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers.python.html#batch">Batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers.python.html#pfr">PFR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers.python.html#semibatch">SemiBatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers.python.html#semibatchextended">SemiBatchExtended</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.writers.cplusplus.html">C++</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/pykinetic.writers.cplusplus.html#batch">Batch</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/pykinetic.utils.html">utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.utils.html#pykinetic-utilities">Pykinetic Utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api/pykinetic.utils.html#specialized-chemicalsystems">Specialized ChemicalSystems</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/pykinetic.userinput.html">userinput</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">

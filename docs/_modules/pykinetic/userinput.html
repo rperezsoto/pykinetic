@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pykinetic.userinput &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/pykinetic.html">pykinetic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pykinetic.userinput</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pykinetic.userinput</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the basic functions to read the user provided files and </span>
+<span class="sd">populate a ChemicalSystem class from them. The core function of this module is</span>
+<span class="sd">&#39;populate_chemicalsystem_fromfiles&#39;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span> 
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="kn">from</span> <span class="nn">.classes</span> <span class="kn">import</span> <span class="n">Compound</span><span class="p">,</span><span class="n">Energy</span><span class="p">,</span><span class="n">Reaction</span><span class="p">,</span><span class="n">TransitionState</span><span class="p">,</span><span class="n">DiffusionTS</span>
+
+
+<span class="c1"># Custom errors</span>
+<div class="viewcode-block" id="MissingCompounds"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.MissingCompounds">[docs]</a><span class="k">class</span> <span class="nc">MissingCompounds</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+<div class="viewcode-block" id="MissingTransitionStates"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.MissingTransitionStates">[docs]</a><span class="k">class</span> <span class="nc">MissingTransitionStates</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<span class="c1"># GLOBALS</span>
+<span class="n">DIFFUSION</span> <span class="o">=</span> <span class="s1">&#39;&lt;d&gt;&#39;</span>
+<span class="n">BACKWARDS</span> <span class="o">=</span> <span class="s1">&#39;&lt;=&#39;</span>
+<span class="n">FORWARD</span> <span class="o">=</span> <span class="s1">&#39;=&gt;&#39;</span>
+<span class="n">EQUILIBRIUM</span> <span class="o">=</span> <span class="s1">&#39;&lt;=&gt;&#39;</span>
+<span class="n">MARKERS</span> <span class="o">=</span> <span class="p">{</span><span class="n">EQUILIBRIUM</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;TS&#39;</span><span class="p">:</span><span class="n">TransitionState</span><span class="p">,},</span>  <span class="c1"># Reversible</span>
+           <span class="n">FORWARD</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;TS&#39;</span><span class="p">:</span><span class="n">TransitionState</span><span class="p">,},</span>  <span class="c1"># Direct reaction</span>
+           <span class="n">BACKWARDS</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;TS&#39;</span><span class="p">:</span><span class="n">TransitionState</span><span class="p">,},</span>  <span class="c1"># Backwards reaction</span>
+           <span class="n">DIFFUSION</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;TS&#39;</span><span class="p">:</span><span class="n">DiffusionTS</span><span class="p">,}}</span>      <span class="c1"># Reversible diffusion</span>
+
+<span class="n">REVERSIBLE</span> <span class="o">=</span> <span class="p">[</span><span class="n">EQUILIBRIUM</span><span class="p">,</span><span class="n">DIFFUSION</span><span class="p">]</span> <span class="c1"># reactions modeled as 2 elemental steps</span>
+
+<span class="k">for</span> <span class="n">mark</span> <span class="ow">in</span> <span class="n">MARKERS</span><span class="p">:</span> 
+    <span class="n">MARKERS</span><span class="p">[</span><span class="n">mark</span><span class="p">][</span><span class="s1">&#39;matcher&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;(.*)\s</span><span class="si">{</span><span class="n">mark</span><span class="si">}</span><span class="s1">\s(.*)\s!(.*)&#39;</span><span class="p">)</span>
+
+<span class="n">re_is_energy</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;(-?[0-9]*\.+[0-9]*)\s*?([^\s]*?)&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="is_energy"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.is_energy">[docs]</a><span class="k">def</span> <span class="nf">is_energy</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns if a given string corresponds to an energy or not. If the string is </span>
+<span class="sd">    a </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    text : str</span>
+<span class="sd">        A string that may be an energy</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool or truth-like value</span>
+<span class="sd">        If True or True-like then the evaluated string is an energy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">test</span> <span class="o">=</span> <span class="n">re_is_energy</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">test</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="populate_chemicalsystem_fromfiles"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.populate_chemicalsystem_fromfiles">[docs]</a><span class="k">def</span> <span class="nf">populate_chemicalsystem_fromfiles</span><span class="p">(</span><span class="n">chemicalsystem</span><span class="p">,</span><span class="n">file_c</span><span class="p">,</span><span class="n">file_r</span><span class="p">,</span>
+                                      <span class="n">energy_unit</span><span class="o">=</span><span class="s1">&#39;J/mol&#39;</span><span class="p">,</span><span class="n">relativeE</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fills a chemicalsystem with the compounds and reactions specified in the </span>
+<span class="sd">    compunds file and the reactions file. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    chemicalsystem : pykinetic.classes.ChemicalSystem</span>
+<span class="sd">        chemical system that will be populated</span>
+<span class="sd">    file_c : str or Path</span>
+<span class="sd">        path to the correctly formatted compounds file  </span>
+<span class="sd">    file_r : str or Path</span>
+<span class="sd">        path to the correctly formatted reactions file</span>
+<span class="sd">    energy_unit : str, optional</span>
+<span class="sd">        default unit to assume when none is found, by default &#39;J/mol&#39;</span>
+<span class="sd">    relativeE : bool, optional</span>
+<span class="sd">        If true the energies of the reactions are assumed to be the barriers </span>
+<span class="sd">        relative to reactants instead of assumed to be the energy of the </span>
+<span class="sd">        transition state connecting reactants and products, by default False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Process the Compound File</span>
+    <span class="n">raw_compounds</span> <span class="o">=</span> <span class="n">read_compounds</span><span class="p">(</span><span class="n">file_c</span><span class="p">)</span>
+    <span class="n">compounds</span> <span class="o">=</span> <span class="n">create_compounds</span><span class="p">(</span><span class="n">raw_compounds</span><span class="p">,</span><span class="n">energy_unit</span><span class="p">)</span>
+    <span class="n">chemicalsystem</span><span class="o">.</span><span class="n">cextend</span><span class="p">(</span><span class="n">compounds</span><span class="p">)</span>
+
+    <span class="c1"># Process the reaction File</span>
+    <span class="n">raw_reactions</span><span class="p">,</span> <span class="n">TS_lines</span> <span class="o">=</span> <span class="n">read_reactions</span><span class="p">(</span><span class="n">file_r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">TS_lines</span><span class="p">:</span> 
+        <span class="n">TS_dict</span> <span class="o">=</span> <span class="n">create_TS_dict</span><span class="p">(</span><span class="n">TS_lines</span><span class="p">,</span><span class="n">energy_unit</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">TS_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="n">check_missing_compounds</span><span class="p">(</span><span class="n">chemicalsystem</span><span class="p">,</span><span class="n">raw_reactions</span><span class="p">)</span>
+    <span class="n">check_missing_TS</span><span class="p">(</span><span class="n">raw_reactions</span><span class="p">,</span><span class="n">TS_dict</span><span class="p">)</span>
+
+    <span class="c1"># Parse the reactions and create the reaction and ts instances</span>
+    <span class="k">for</span> <span class="n">reactants</span><span class="p">,</span><span class="n">mark</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">TS_text</span> <span class="ow">in</span> <span class="n">raw_reactions</span><span class="p">:</span> 
+        <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="n">chemicalsystem</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">reactants</span><span class="p">]</span>
+        <span class="n">products</span>  <span class="o">=</span> <span class="p">[</span><span class="n">chemicalsystem</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">products</span><span class="p">]</span>
+        <span class="n">reactants_energy</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">r</span><span class="o">.</span><span class="n">energy</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">reactants</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">mark</span> <span class="o">==</span> <span class="n">BACKWARDS</span><span class="p">:</span>
+            <span class="n">reactants</span><span class="p">,</span> <span class="n">products</span> <span class="o">=</span> <span class="n">products</span><span class="p">,</span> <span class="n">reactants</span>
+        <span class="n">label</span><span class="p">,</span><span class="n">energy</span><span class="p">,</span><span class="n">scannable</span> <span class="o">=</span> <span class="n">prepare_inline_TS</span><span class="p">(</span><span class="n">TS_text</span><span class="p">,</span><span class="n">TS_dict</span><span class="p">,</span><span class="n">energy_unit</span><span class="p">)</span>
+        <span class="c1"># Create the reaction/s</span>
+        <span class="n">reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">Reaction</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">products</span><span class="p">),]</span>
+        <span class="k">if</span> <span class="n">mark</span> <span class="ow">in</span> <span class="n">REVERSIBLE</span><span class="p">:</span>
+            <span class="n">reactions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Reaction</span><span class="p">(</span><span class="n">products</span><span class="p">,</span><span class="n">reactants</span><span class="p">))</span>
+        <span class="c1"># Handle relative energy specification</span>
+        <span class="k">if</span> <span class="n">mark</span> <span class="o">!=</span> <span class="n">DIFFUSION</span> <span class="ow">and</span> <span class="n">relativeE</span> <span class="ow">and</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TS_dict</span><span class="p">:</span> 
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span> <span class="o">+</span> <span class="n">reactants_energy</span>
+        <span class="c1"># Create the TS</span>
+        <span class="n">ts_cls</span> <span class="o">=</span> <span class="n">MARKERS</span><span class="p">[</span><span class="n">mark</span><span class="p">][</span><span class="s1">&#39;TS&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">chemicalsystem</span><span class="o">.</span><span class="n">Name2TS</span><span class="p">:</span> 
+            <span class="n">TS</span> <span class="o">=</span> <span class="n">ts_cls</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span><span class="n">reactions</span><span class="o">=</span><span class="n">reactions</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                        <span class="n">scannable</span><span class="o">=</span><span class="n">scannable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">TS</span> <span class="o">=</span> <span class="n">chemicalsystem</span><span class="o">.</span><span class="n">Name2TS</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+            <span class="n">TS</span><span class="o">.</span><span class="n">reactions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">reactions</span><span class="p">)</span>
+        <span class="c1"># Add the reactions to the chemical system</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">reactions</span><span class="p">:</span> 
+            <span class="n">reaction</span><span class="o">.</span><span class="n">TS</span> <span class="o">=</span> <span class="n">TS</span>
+            <span class="n">chemicalsystem</span><span class="o">.</span><span class="n">radd</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">chemicalsystem</span><span class="o">.</span><span class="n">rupdate</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="read_compounds"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.read_compounds">[docs]</a><span class="k">def</span> <span class="nf">read_compounds</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw_compounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">raw_compounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">raw_compounds</span></div>
+<div class="viewcode-block" id="create_compounds"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.create_compounds">[docs]</a><span class="k">def</span> <span class="nf">create_compounds</span><span class="p">(</span><span class="n">raw_compounds</span><span class="p">,</span><span class="n">energy_unit</span><span class="o">=</span><span class="s1">&#39;J/mol&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;Unexpected number of items in </span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{}</span><span class="s2">&#39; &quot;</span>
+    <span class="n">compounds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">raw_compounds</span><span class="p">:</span>
+        <span class="n">scannable</span> <span class="o">=</span> <span class="s1">&#39;scan&#39;</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">scannable</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">label</span><span class="p">,</span><span class="n">energy</span><span class="p">,</span><span class="n">unit</span> <span class="o">=</span> <span class="n">items</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> 
+            <span class="n">label</span><span class="p">,</span><span class="n">energy</span> <span class="o">=</span> <span class="n">items</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">energy_unit</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">err_msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)))</span>
+        <span class="n">compound</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">(</span><span class="n">label</span><span class="p">,</span><span class="n">Energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span><span class="n">unit</span><span class="p">),</span><span class="n">scannable</span><span class="o">=</span><span class="n">scannable</span><span class="p">)</span>
+        <span class="n">compounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span> <span class="c1"># Check if there is any duplicates</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">compounds</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">compounds</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span> 
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Inconsistent number of compounds. Check for duplicates&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">compounds</span></div>
+
+<div class="viewcode-block" id="read_reactions"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.read_reactions">[docs]</a><span class="k">def</span> <span class="nf">read_reactions</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reaction_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">TS_lines</span> <span class="o">=</span> <span class="p">[]</span> 
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="s1">&#39;!&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>   <span class="c1"># [A-]  +  [B+] =&gt; C  !TS1 </span>
+            <span class="n">reaction_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>               <span class="c1"># TSNAME    Number   (Unit)</span>
+            <span class="n">TS_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">raw_reactions</span> <span class="o">=</span> <span class="p">[</span><span class="n">split_reaction_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">reaction_lines</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">raw_reactions</span><span class="p">,</span><span class="n">TS_lines</span></div>
+<div class="viewcode-block" id="create_TS_dict"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.create_TS_dict">[docs]</a><span class="k">def</span> <span class="nf">create_TS_dict</span><span class="p">(</span><span class="n">TS_lines</span><span class="p">,</span><span class="n">energy_unit</span><span class="o">=</span><span class="s1">&#39;J/mol&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">TS_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">TS_lines</span><span class="p">:</span>
+        <span class="n">scannable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="c1"># Guess if it is a scannable TS</span>
+        <span class="k">if</span> <span class="n">items</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;scan&#39;</span><span class="p">:</span>
+            <span class="n">scannable</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># now only two cases are possible</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Energy unit is specified</span>
+            <span class="n">label</span><span class="p">,</span><span class="n">energy</span><span class="p">,</span><span class="n">unit</span> <span class="o">=</span> <span class="n">items</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="c1"># energy unit is not specified</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">energy</span> <span class="o">=</span> <span class="n">items</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">energy_unit</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected number of items in </span><span class="se">\n</span><span class="s2"> &#39;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&#39; &quot;</span><span class="p">)</span>
+        <span class="n">TS_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span><span class="n">unit</span><span class="p">),</span><span class="n">scannable</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span> <span class="c1"># Check if there is any duplicates</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_dict</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_lines</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span> 
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inconsistent number of TSs at the end of the file. &quot;</span> \
+                         <span class="s2">&quot;Check for duplicates&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">TS_dict</span></div>
+<div class="viewcode-block" id="prepare_inline_TS"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.prepare_inline_TS">[docs]</a><span class="k">def</span> <span class="nf">prepare_inline_TS</span><span class="p">(</span><span class="n">TS_text</span><span class="p">,</span><span class="n">TS_dict</span><span class="p">,</span><span class="n">energy_unit</span><span class="o">=</span><span class="s1">&#39;J/mol&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scannable</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Prepare the TS data</span>
+    <span class="n">TS_items</span> <span class="o">=</span> <span class="n">TS_text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_energy</span><span class="p">(</span><span class="n">TS_text</span><span class="p">):</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">TS_items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">energy</span><span class="p">,</span><span class="n">scannable</span> <span class="o">=</span> <span class="n">TS_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> 
+        <span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">TS_items</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">energy_unit</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">number</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">TS_items</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">number</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">TS_items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">TS_items</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;scan&#39;</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">number</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">TS_items</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">Energy</span><span class="p">(</span><span class="n">number</span><span class="p">,</span><span class="n">unit</span><span class="p">)</span>
+        <span class="n">scannable</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">ts</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TS_items</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Wrong TS definition at &quot;</span><span class="si">{</span><span class="n">ts</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">label</span><span class="p">,</span><span class="n">energy</span><span class="p">,</span><span class="n">scannable</span></div>
+<div class="viewcode-block" id="split_reaction_line"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.split_reaction_line">[docs]</a><span class="k">def</span> <span class="nf">split_reaction_line</span><span class="p">(</span><span class="n">reaction_text</span><span class="p">):</span> 
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    To-document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">mark</span> <span class="ow">in</span> <span class="n">MARKERS</span><span class="p">:</span> 
+        <span class="n">match</span> <span class="o">=</span> <span class="n">MARKERS</span><span class="p">[</span><span class="n">mark</span><span class="p">][</span><span class="s1">&#39;matcher&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">reaction_text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;the reaction does not contain a known marker&#39;</span><span class="p">)</span>
+
+    <span class="n">reactants_text</span><span class="p">,</span> <span class="n">products_text</span><span class="p">,</span> <span class="n">TS_text</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">reactants_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; + &#39;</span><span class="p">)]</span>
+    <span class="n">products</span>  <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">products_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; + &#39;</span><span class="p">)]</span>
+    
+    <span class="k">return</span>  <span class="n">reactants</span><span class="p">,</span> <span class="n">mark</span><span class="p">,</span> <span class="n">products</span><span class="p">,</span> <span class="n">TS_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="check_missing_compounds"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.check_missing_compounds">[docs]</a><span class="k">def</span> <span class="nf">check_missing_compounds</span><span class="p">(</span><span class="n">chemicalsystem</span><span class="p">,</span><span class="n">raw_reactions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if all the compounds in the chemicalsystem are &#39;defined&#39; </span>
+<span class="sd">    within the ChemicalSystem instance.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    MissingCompounds</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defined_compounds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">chemicalsystem</span><span class="o">.</span><span class="n">Name2Compound</span><span class="p">)</span>
+    <span class="n">reactants</span><span class="p">,</span><span class="n">mark</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">TS_text</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">raw_reactions</span><span class="p">)</span>
+    <span class="n">reaction_compounds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">reactants</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">products</span><span class="p">)))</span>
+    <span class="n">missing_compounds</span> <span class="o">=</span> <span class="n">reaction_compounds</span> <span class="o">-</span> <span class="n">defined_compounds</span>
+    <span class="k">if</span> <span class="n">missing_compounds</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The following compounds are not defined: </span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="se">\t</span><span class="s1">NUMBER</span><span class="se">\t</span><span class="s1">UNIT?&#39;</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">missing_compounds</span><span class="p">)]</span>
+        <span class="k">raise</span> <span class="n">MissingCompounds</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)))</span></div>
+<div class="viewcode-block" id="check_missing_TS"><a class="viewcode-back" href="../../api/pykinetic.userinput.html#pykinetic.userinput.check_missing_TS">[docs]</a><span class="k">def</span> <span class="nf">check_missing_TS</span><span class="p">(</span><span class="n">raw_reactions</span><span class="p">,</span><span class="n">TS_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if all the labeled transition states of the reactions are &#39;defined&#39; </span>
+<span class="sd">    are defined.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    MissingTransitionStates</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">defined_TS</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">TS_dict</span><span class="p">)</span>
+    <span class="n">reactants</span><span class="p">,</span><span class="n">mark</span><span class="p">,</span><span class="n">products</span><span class="p">,</span><span class="n">TS_text</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">raw_reactions</span><span class="p">)</span>
+    <span class="n">reaction_TS</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">TS_text</span> <span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_energy</span><span class="p">(</span><span class="n">item</span><span class="p">):</span> 
+            <span class="n">reaction_TS</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">missing_TS</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">reaction_TS</span><span class="p">)</span> <span class="o">-</span> <span class="n">defined_TS</span>
+    <span class="k">if</span> <span class="n">missing_TS</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;The following labeled TS are not defined: </span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="se">\t</span><span class="s1">NUMBER</span><span class="se">\t</span><span class="s1">UNIT?</span><span class="se">\t</span><span class="s1">SCAN?&#39;</span> 
+                 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">missing_TS</span><span class="p">)]</span>
+        <span class="k">raise</span> <span class="n">MissingTransitionStates</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">)))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

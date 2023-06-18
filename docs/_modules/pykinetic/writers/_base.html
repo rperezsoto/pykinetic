@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pykinetic.writers._base &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/pykinetic.html">pykinetic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pykinetic.writers._base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pykinetic.writers._base</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the Writer classes that are in charge of translating the </span>
+<span class="sd">provided chemical system to the different languages or formats as well as the </span>
+<span class="sd">Base class to inherit from, &#39;Writer&#39;. </span>
+<span class="sd">Currently only python and c++ are supported. This module depends on the </span>
+<span class="sd">template files that come with the libary.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+
+<span class="n">TEMPLATES_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">resource_filename</span><span class="p">(</span><span class="s1">&#39;pykinetic&#39;</span><span class="p">,</span><span class="s1">&#39;templates&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Indent"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Indent">[docs]</a><span class="k">def</span> <span class="nf">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Takes an iterable of strings, each representing a line and returns them with</span>
+<span class="sd">    the indentation level and character specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">Out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">tab</span><span class="o">*</span><span class="n">level</span><span class="si">}{</span><span class="n">line</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Out</span></div>
+
+<div class="viewcode-block" id="Writer"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer">[docs]</a><span class="k">class</span> <span class="nc">Writer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class of a writer object. A writer object allows the customized </span>
+<span class="sd">    translation of a kinetic model into a script to carry out its simulation in </span>
+<span class="sd">    a specific language and under a specific system constraints.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conc_var</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">mb_var</span><span class="o">=</span><span class="s1">&#39;dxdt&#39;</span><span class="p">,</span> <span class="n">fun_var</span><span class="o">=</span><span class="s1">&#39;model&#39;</span><span class="p">,</span>
+                 <span class="n">jac_var</span><span class="o">=</span><span class="s1">&#39;Jac&#39;</span><span class="p">,</span><span class="n">jac_fun_var</span><span class="o">=</span><span class="s1">&#39;jacobian&#39;</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">tail</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">conc_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span> <span class="o">=</span> <span class="n">mb_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">fun_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac</span> <span class="o">=</span> <span class="n">jac_var</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span> <span class="o">=</span> <span class="n">jac_fun_var</span>
+        <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_default_header</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">header</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">header</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">tail</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_default_tail</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">tail</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">tail</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span> <span class="p">:</span> <span class="s1">&#39;MISSING&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Defaults Load</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_load_default_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_load_default_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># methods for parameter reading</span>
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">simulation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">convergence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">simulation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">convergence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">convergence</span><span class="p">)</span>
+
+    <span class="c1"># methods for object -&gt; str transformations</span>
+<div class="viewcode-block" id="Writer.constant"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.constant">[docs]</a>    <span class="k">def</span> <span class="nf">constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">value_format</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes in a reaction and returns 2 expressions, the string of the </span>
+<span class="sd">        variable and the string with the value of the constant. I.e.</span>
+
+<span class="sd">        # Reaction(1 =&gt; 2)</span>
+
+<span class="sd">        A = &lt;ElementalStep 1 of Type &#39;=&gt;&#39; with reacts=(1,) products(2,)&gt;</span>
+
+<span class="sd">        &#39;k01&#39;, &#39;1.00000000&#39; = PythonWriter.constant(A)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reaction : Reaction</span>
+<span class="sd">            Any reaction</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        var,expr</span>
+<span class="sd">            variable and expresion of the reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;k</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">value_format</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">k</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Writer.ratelaw"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.ratelaw">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">ratelaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes in a reaction and returns 2 expressions, the string of the </span>
+<span class="sd">        variable and the string of the ratelaw expression. I.e.</span>
+<span class="sd">        # Reaction(1 =&gt; 2)</span>
+<span class="sd">        A = &lt;ElementalStep 1 of Type &#39;=&gt;&#39; with reacts=(1,) products(2,)&gt;</span>
+<span class="sd">        &#39;r01&#39;, &#39;k01*x[1]&#39; = PythonWriter.ratelaw(A)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reaction : Reaction</span>
+<span class="sd">            Any reaction</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        var,expr</span>
+<span class="sd">            variable and expresion of the reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Writer.ratelaw_partial"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.ratelaw_partial">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">ratelaw_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">compound</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes in a reaction and returns and the string of the partial derivative</span>
+<span class="sd">        the ratelaw with respect to the concentration of compound. I.e.</span>
+
+<span class="sd">        # Reaction(1 =&gt; 2), Compound 1</span>
+
+<span class="sd">        A = &lt;ElementalStep 1 of Type &#39;=&gt;&#39; with reacts=(1,) products(2,)&gt;</span>
+
+<span class="sd">        # r01,&#39;k01*x[1]&#39;ratelaw(A)</span>
+
+<span class="sd">        &#39;k01&#39; = PythonWriter.ratelaw_partial(A)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        reaction : Reaction</span>
+<span class="sd">            Any reaction</span>
+<span class="sd">        compound : Compound</span>
+<span class="sd">            Any compound</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        </span>
+<span class="sd">        expr</span>
+<span class="sd">            variable and expresion of the reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Writer.massbalance"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.massbalance">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">massbalance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Massbalance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes in a mass balance and returns 2 expressions, the string of the</span>
+<span class="sd">        variable and the string of the expression. I.e.</span>
+
+<span class="sd">        # Given a Chemical system with only Reaction(&#39;A &lt;=&gt; B&#39;)</span>
+
+<span class="sd">        # d[A]dt = -r1 + r2 = -k01[A] + k2[B]</span>
+
+<span class="sd">        # being A.key = 0 and B.key = 1</span>
+
+<span class="sd">        A = &lt;ElementalStep 1 of Type &#39;=&gt;&#39; with reacts=(1,) products(2,)&gt;</span>
+
+<span class="sd">        &#39;dxdt[0]&#39;, &#39;-k01*x[1] +k02[B]&#39; = PythonWriter.massbalance(A)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reaction : MassBalance</span>
+<span class="sd">            Any MassBalance</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        var,expr</span>
+<span class="sd">            variable and expresion of the reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+<div class="viewcode-block" id="Writer.jacobian_element"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.jacobian_element">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">jacobian_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Jac_ij</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes the partial differential of a MB and returns the variable of the</span>
+<span class="sd">        jacobian and the string of the expression. I.e.</span>
+
+<span class="sd">        # Given a Chemical system with only Reaction(&#39;A &lt;=&gt; B&#39;)</span>
+
+<span class="sd">        # d[A]dt = -r1 + r2 = -k01[A] + k2[B]</span>
+
+<span class="sd">        # being A.key = 0 and B.key = 1</span>
+
+<span class="sd">        C = &lt;JacobianElement(Reaction(1),Compound(A))&gt;</span>
+<span class="sd">        </span>
+<span class="sd">        &#39;Jac[0,0]&#39;, &#39;-k01&#39; = PythonWriter.jacobian_element(A)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Jac_ij : JacobianElement</span>
+<span class="sd">            Any JacobianElement object</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        var,expr</span>
+<span class="sd">            variable and expresion of the reaction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># main methods for writing</span>
+    <span class="k">def</span> <span class="nf">fill_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;dxdt&#39;</span><span class="p">,</span><span class="s1">&#39;f&#39;</span><span class="p">,</span><span class="s1">&#39;jac&#39;</span><span class="p">,</span> <span class="s1">&#39;jac_f&#39;</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fill_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;dxdt&#39;</span><span class="p">,</span><span class="s1">&#39;f&#39;</span><span class="p">,</span><span class="s1">&#39;jac&#39;</span><span class="p">,</span> <span class="s1">&#39;jac_f&#39;</span><span class="p">]:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Writer.fill"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the information of the chemical system and updates the values</span>
+<span class="sd">        needed for writing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_header</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_tail</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_function</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Writer.clear"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the variables related to writing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jacobian</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div>
+
+<div class="viewcode-block" id="Writer.write"><a class="viewcode-back" href="../../../api/pykinetic.writers._base.html#pykinetic.writers._base.Writer.write">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Writes the current chemical system into the file specified &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

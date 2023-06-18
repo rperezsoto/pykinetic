@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pykinetic.writers.python &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/pykinetic.html">pykinetic</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pykinetic.writers.python</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pykinetic.writers.python</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains all the different writers per reactor for the python language.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">._base</span> <span class="kn">import</span> <span class="n">TEMPLATES_PATH</span><span class="p">,</span> <span class="n">Indent</span><span class="p">,</span> <span class="n">Writer</span>
+
+<div class="viewcode-block" id="Batch"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch">[docs]</a><span class="k">class</span> <span class="nc">Batch</span><span class="p">(</span><span class="n">Writer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writer class of python scripts for Batch reactor models</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;dxdt&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;jac&#39;</span><span class="p">,</span><span class="s1">&#39;jac_f&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">var</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LSODA&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_load_default_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_batch.head&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">_load_default_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_batch.tail&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">txt</span>
+
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">simulation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">convergence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">simulation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;tfin&#39;</span><span class="p">,</span><span class="s1">&#39;trep&#39;</span><span class="p">,</span><span class="s1">&#39;dt&#39;</span><span class="p">]:</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">concentrations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_concentrations</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;concentrations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">concentrations</span>
+        <span class="k">if</span> <span class="n">convergence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;convergence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">as_str</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="c1"># methods for object -&gt; str transformations</span>
+<div class="viewcode-block" id="Batch.ratelaw"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.ratelaw">[docs]</a>    <span class="k">def</span> <span class="nf">ratelaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">):</span> <span class="c1"># Currently only for Elemental Steps</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;r</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">Aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;k</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">*&#39;</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">()</span> <span class="c1"># Unpack the reactants Counter</span>
+        <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">Aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">]&#39;</span><span class="p">)</span>
+        <span class="n">expr</span> <span class="o">+=</span> <span class="s1">&#39;*&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Aux</span><span class="p">)</span>
+        <span class="k">return</span>  <span class="n">var</span><span class="p">,</span> <span class="n">expr</span></div>
+<div class="viewcode-block" id="Batch.ratelaw_partial"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.ratelaw_partial">[docs]</a>    <span class="k">def</span> <span class="nf">ratelaw_partial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">compound</span><span class="p">):</span> <span class="c1"># Currently only for Elemental Steps</span>
+        <span class="c1">#var = f&#39;r{reaction.key:02.0f}&#39; Legacy code, to remove</span>
+        <span class="k">if</span> <span class="n">compound</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">Aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Create a new Unpack the reactants Counter</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">reaction</span><span class="o">.</span><span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">())</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">reactants</span><span class="p">[</span><span class="n">compound</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">coef</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">coef</span><span class="si">:</span><span class="s1">0.1f</span><span class="si">}</span><span class="s1">*k</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;k</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">reactants</span><span class="p">[</span><span class="n">compound</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">reactants</span> <span class="o">=</span> <span class="n">reactants</span><span class="o">.</span><span class="n">elements</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">R</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">reactants</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">Aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">R</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">]&#39;</span><span class="p">)</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Aux</span><span class="p">)</span>
+        <span class="k">return</span>  <span class="n">expr</span></div>
+<div class="viewcode-block" id="Batch.constant"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.constant">[docs]</a>    <span class="k">def</span> <span class="nf">constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reaction</span><span class="p">,</span><span class="n">value_format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{:0.10e}</span><span class="s1">&#39;</span><span class="p">):</span>  <span class="c1"># Currently only for Elemental Steps</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span><span class="n">value_format</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Batch.massbalance"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.massbalance">[docs]</a>    <span class="k">def</span> <span class="nf">massbalance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">MassBalance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">MassBalance</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">MassBalance</span><span class="o">.</span><span class="n">compound</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">]&#39;</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">coef</span><span class="p">,</span><span class="n">reaction</span> <span class="ow">in</span> <span class="n">MassBalance</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span>
+            <span class="k">elif</span> <span class="n">coef</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">coef</span><span class="si">:</span><span class="s1">+0.1f</span><span class="si">}</span><span class="s1">*&#39;</span>
+            <span class="n">r_expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">Aux</span><span class="si">}</span><span class="s1">r</span><span class="si">{</span><span class="n">reaction</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">expr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_expr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">var</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span></div>
+<div class="viewcode-block" id="Batch.jacobian_element"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.jacobian_element">[docs]</a>    <span class="k">def</span> <span class="nf">jacobian_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Jac_ij</span><span class="p">):</span>
+        <span class="n">C1</span><span class="p">,</span><span class="n">C2</span> <span class="o">=</span> <span class="n">Jac_ij</span><span class="o">.</span><span class="n">compound1</span><span class="p">,</span> <span class="n">Jac_ij</span><span class="o">.</span><span class="n">compound2</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Jac_ij</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">[</span><span class="si">{</span><span class="n">C1</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">C2</span><span class="o">.</span><span class="n">key</span><span class="si">}</span><span class="s1">]&#39;</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">coef</span><span class="p">,</span><span class="n">reaction</span> <span class="ow">in</span> <span class="n">Jac_ij</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">coef</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;+&#39;</span>
+            <span class="k">elif</span> <span class="n">coef</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Aux</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">coef</span><span class="si">:</span><span class="s1">+0.1f</span><span class="si">}</span><span class="s1">*&#39;</span>
+            <span class="n">r_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratelaw_partial</span><span class="p">(</span><span class="n">reaction</span><span class="p">,</span><span class="n">C2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">r_expr</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">expr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Aux</span> <span class="o">+</span> <span class="n">r_expr</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">expr</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">var</span> <span class="p">,</span><span class="s1">&#39;0&#39;</span>
+        <span class="k">return</span> <span class="n">var</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span></div>
+
+    <span class="c1"># auxiliary writing methods</span>
+    <span class="k">def</span> <span class="nf">_kinetic_constants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#Constants&#39;</span><span class="p">,]</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="c1"># vars,values = # In case we consider supporting reversible elemental steps?</span>
+            <span class="n">var</span><span class="p">,</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">reaction</span><span class="p">)</span>
+            <span class="n">constants</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">constants</span>
+    <span class="k">def</span> <span class="nf">_ratelaws</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">ratelaws</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#Ratelaws&#39;</span><span class="p">,]</span>
+        <span class="k">for</span> <span class="n">reaction</span> <span class="ow">in</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">reactions</span><span class="p">:</span>
+            <span class="n">var</span><span class="p">,</span><span class="n">law</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratelaw</span><span class="p">(</span><span class="n">reaction</span><span class="p">)</span>
+            <span class="n">ratelaws</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">law</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ratelaws</span>
+    <span class="k">def</span> <span class="nf">_massbalances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">MBs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#MassBalances&#39;</span><span class="p">,]</span>
+        <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+            <span class="n">MB</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">massbalance</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+            <span class="n">var</span><span class="p">,</span><span class="n">law</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">massbalance</span><span class="p">(</span><span class="n">MB</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">var</span><span class="p">:</span>
+                <span class="n">MBs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">law</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">MBs</span>
+    <span class="k">def</span> <span class="nf">_jacobian_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">Jac</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#Non-zero Elements&#39;</span><span class="p">,]</span>
+        <span class="n">jac_elements</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">jacobian</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">jac_ij</span> <span class="ow">in</span> <span class="n">jac_elements</span><span class="p">:</span> 
+            <span class="n">var</span><span class="p">,</span><span class="n">expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobian_element</span><span class="p">(</span><span class="n">jac_ij</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">expr</span> <span class="ow">and</span> <span class="n">expr</span> <span class="o">!=</span> <span class="s1">&#39;0&#39;</span><span class="p">:</span>
+                <span class="n">Jac</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Jac</span>
+    <span class="k">def</span> <span class="nf">_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;f&#39; in  dxdt = f(x,t) where x, dxdt and t</span>
+<span class="sd">        are vectors. This function corresponds to the system of diferential</span>
+<span class="sd">        equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1"> = np.zeros(</span><span class="si">{</span><span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,]</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the ratelaws block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">ratelaws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ratelaws</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ratelaws</span><span class="p">)</span>
+        <span class="c1"># Write the MassBalances block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">massbalances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_massbalances</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">massbalances</span><span class="p">)</span>
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;Jac&#39; in  dxdt = Jac(x,t) where x, dxdt</span>
+<span class="sd">        and t are vectors. This function corresponds to the Jacobian of the</span>
+<span class="sd">        system of differential equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1"> = np.zeros(shape=(</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">))&#39;</span><span class="p">,]</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the jacobian elements</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_elements</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_initial_concentrations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">simulation</span><span class="p">):</span>
+        <span class="n">concentrations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;concentrations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">concentrations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;xini[</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">] = </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Indent</span><span class="p">(</span><span class="n">concentrations</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="c1"># main writing methods</span>
+    <span class="k">def</span> <span class="nf">fill_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">out_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;out_filename&#39;</span><span class="p">,</span><span class="s1">&#39;data.txt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;out_filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">T</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fill_header</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+<div class="viewcode-block" id="Batch.write"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.Batch.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="c1">#lines.append(&#39;#Constants&#39;)</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">jacobian</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">tail</span><span class="p">]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">F</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">items</span><span class="p">))</span></div></div>
+
+<div class="viewcode-block" id="SemiBatch"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.SemiBatch">[docs]</a><span class="k">class</span> <span class="nc">SemiBatch</span><span class="p">(</span><span class="n">Batch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A writer to account for a SemiBatch Reactor with an influx of species </span>
+<span class="sd">    coupled after a &#39;tsection&#39; time of the total simulation with a Batch reactor. </span>
+<span class="sd">    As a consequence the Simulation parameters required for this type of model </span>
+<span class="sd">    require the parameters &#39;tsection&#39; and &#39;tfin&#39; as well as the parameters for </span>
+<span class="sd">    the initial SemiBatch reactor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flow : float</span>
+<span class="sd">        Flowrate in L/s</span>
+<span class="sd">    volume : float</span>
+<span class="sd">        Reactor Volume in L</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">flow</span><span class="p">,</span><span class="n">Vini</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># Keys of the different reactants added</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow</span> <span class="o">=</span> <span class="n">flow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vini</span> <span class="o">=</span> <span class="n">Vini</span> <span class="c1"># initial volume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cadd</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span> <span class="nf">_load_default_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_semibatch.head&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">_load_default_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_semibatch.tail&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># methods for object -&gt; str transformations</span>
+<div class="viewcode-block" id="SemiBatch.massbalance"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.SemiBatch.massbalance">[docs]</a>    <span class="k">def</span> <span class="nf">massbalance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">MassBalance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">MassBalance</span><span class="o">.</span><span class="n">compound</span><span class="o">.</span><span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">massbalance</span><span class="p">(</span><span class="n">MassBalance</span><span class="p">)</span>
+        
+        <span class="n">var</span><span class="p">,</span> <span class="n">expr</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">massbalance</span><span class="p">(</span><span class="n">MassBalance</span><span class="p">)</span>
+        <span class="n">expr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;tflow*Cin</span><span class="si">{</span><span class="n">MassBalance</span><span class="o">.</span><span class="n">compound</span><span class="o">.</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">expr</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="n">var</span><span class="p">,</span> <span class="n">expr</span></div>
+
+    <span class="c1"># main writing methods</span>
+    <span class="k">def</span> <span class="nf">fill_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">out_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;out_filename&#39;</span><span class="p">,</span><span class="s1">&#39;data.txt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;out_filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;Vini&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vini</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;Cadd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cadd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flow</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fill_header</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+
+    <span class="c1"># auxiliary writing methods</span>
+    <span class="k">def</span> <span class="nf">_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;f&#39; in  dxdt = f(x,t) where x, dxdt and t</span>
+<span class="sd">        are vectors. This function corresponds to the system of diferential</span>
+<span class="sd">        equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1"> = np.zeros(</span><span class="si">{</span><span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span><span class="si">}</span><span class="s1">+1)&#39;</span><span class="p">,]</span>
+        <span class="c1"># Write the Inlet Concentrations and Flow</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;tflow = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">flow</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">[-1] # flow/V; 1/s&#39;</span><span class="p">)</span>
+        <span class="n">inletC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flask_initial_concentrations</span><span class="p">()</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">inletC</span><span class="p">)</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the ratelaws block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">ratelaws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ratelaws</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ratelaws</span><span class="p">)</span>
+        <span class="c1"># Write the MassBalances block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">massbalances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_massbalances</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">massbalances</span><span class="p">)</span>
+        <span class="c1"># Include the Volume </span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[-1] = tflow # flow/V; 1/s&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[:] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[:]*</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">[-1]&#39;</span><span class="p">)</span>
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;Jac&#39; in  dxdt = Jac(x,t) where x, dxdt</span>
+<span class="sd">        and t are vectors. This function corresponds to the Jacobian of the</span>
+<span class="sd">        system of differential equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1"> = np.zeros(shape=(</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">+1,</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">+1))&#39;</span><span class="p">,]</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the jacobian elements</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_elements</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="c1"># Include the Volume </span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">[:,:] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">[:,:]*</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">[-1]&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_set_concentrations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">concentrations</span><span class="p">):</span>
+        <span class="n">reactor</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">flask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,(</span><span class="n">r</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="n">concentrations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> 
+            <span class="k">if</span> <span class="n">r</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> 
+                <span class="n">reactor</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span> 
+                <span class="n">flask</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;concentrations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reactor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cadd</span> <span class="o">=</span> <span class="n">flask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">flask</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">def</span> <span class="nf">_initial_concentrations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">simulation</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_concentrations</span><span class="p">(</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;concentrations&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_initial_concentrations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_flask_initial_concentrations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+        <span class="n">concentrations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Cadd</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">concentrations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Cin</span><span class="si">{</span><span class="n">key</span><span class="si">:</span><span class="s1">02.0f</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">concentrations</span></div>
+<div class="viewcode-block" id="SemiBatchExtended"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.SemiBatchExtended">[docs]</a><span class="k">class</span> <span class="nc">SemiBatchExtended</span><span class="p">(</span><span class="n">SemiBatch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extension of the SemiBatch reactor model that allows up to 2 chemical </span>
+<span class="sd">    systems, one per section.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_load_default_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_semibatch_extended.head&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">_load_default_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_semibatch_extended.tail&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">simulation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">convergence</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">simulation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+            <span class="n">concentrations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_concentrations</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;concentrations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">concentrations</span>
+        <span class="k">if</span> <span class="n">convergence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;convergence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">convergence</span><span class="o">.</span><span class="n">as_str</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">systems</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;f&#39; in  dxdt = f(x,t) where x, dxdt and t</span>
+<span class="sd">        are vectors. This function corresponds to the system of diferential</span>
+<span class="sd">        equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="si">}</span><span class="s1">_semi&#39;</span>
+
+        <span class="n">fadd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_function</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">level</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">_f</span><span class="si">}</span><span class="s1">_batch&#39;</span>
+        <span class="c1"># Remove the &quot;added compounds&quot;</span>
+        <span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">fnoadd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SemiBatch</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_function</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">level</span><span class="p">)</span>
+        
+        <span class="c1"># Return everything to normal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">_f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">_keys</span>
+
+
+        <span class="k">return</span> <span class="n">fadd</span> <span class="o">+</span> <span class="n">fnoadd</span>
+    <span class="k">def</span> <span class="nf">_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">systems</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">_jac_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span><span class="si">}</span><span class="s1">_semi&#39;</span>
+
+        <span class="n">jacadd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">level</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">_jac_f</span><span class="si">}</span><span class="s1">_batch&#39;</span>
+        <span class="c1"># Remove the &quot;added compounds&quot;</span>
+        <span class="n">_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">jacnoadd</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SemiBatch</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span> <span class="o">=</span> <span class="n">_jac_f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keys</span> <span class="o">=</span> <span class="n">_keys</span>
+
+        <span class="k">return</span> <span class="n">jacadd</span> <span class="o">+</span> <span class="n">jacnoadd</span>
+    
+    <span class="c1"># main methods for writing</span>
+<div class="viewcode-block" id="SemiBatchExtended.fill"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.SemiBatchExtended.fill">[docs]</a>    <span class="k">def</span> <span class="nf">fill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">system1</span><span class="p">,</span><span class="n">system2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads the information of the chemical system and updates the values</span>
+<span class="sd">        needed for writing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        system1 : ChemicalSystem</span>
+<span class="sd">            Chemical System to be written for the SemiBatch reactor model section</span>
+<span class="sd">        system2 : ChemicalSystem, optional</span>
+<span class="sd">            Chemical System to be written for the Batch reactor model section, </span>
+<span class="sd">            If none is provided it defaults to the system1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">system2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="n">systems</span> <span class="o">=</span> <span class="p">[</span><span class="n">system1</span><span class="p">,</span><span class="n">system1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">systems</span> <span class="o">=</span> <span class="p">[</span><span class="n">system1</span><span class="p">,</span><span class="n">system2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_header</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fill_tail</span><span class="p">(</span><span class="n">systems</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_function</span><span class="p">(</span><span class="n">systems</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jacobian</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian</span><span class="p">(</span><span class="n">systems</span><span class="p">)</span></div></div>
+<div class="viewcode-block" id="PFR"><a class="viewcode-back" href="../../../api/pykinetic.writers.python.html#pykinetic.writers.python.PFR">[docs]</a><span class="k">class</span> <span class="nc">PFR</span><span class="p">(</span><span class="n">Batch</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.</span>
+<span class="sd">    Models using this writer take inlet concentrations as floats and not tuples.</span>
+<span class="sd">    Allows providing the parameters through a SimulationParameters instance or </span>
+<span class="sd">    directly upon instantiation.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flow : float</span>
+<span class="sd">        Flowrate in L/s</span>
+<span class="sd">    volume : float</span>
+<span class="sd">        Reactor Volume in L</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">flow</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="n">volume</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flow</span> <span class="o">=</span> <span class="n">flow</span> <span class="c1"># L/s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span> <span class="c1">#L</span>
+    <span class="k">def</span> <span class="nf">_load_default_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_PFR.head&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">_load_default_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">TEMPLATES_PATH</span> <span class="o">/</span> <span class="s1">&#39;python_PFR.tail&#39;</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">F</span><span class="p">:</span>
+            <span class="n">txt</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">txt</span>
+    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;flow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;flow&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">flow</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+
+    <span class="c1"># main writing methods</span>
+    <span class="k">def</span> <span class="nf">fill_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">):</span>
+        <span class="n">out_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;out_filename&#39;</span><span class="p">,</span><span class="s1">&#39;data.txt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;out_filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">T</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fill_header</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;f&#39; in  dxdt = f(x,t) where x, dxdt and t</span>
+<span class="sd">        are vectors. This function corresponds to the system of diferential</span>
+<span class="sd">        equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1"> = np.zeros(</span><span class="si">{</span><span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,]</span>
+        <span class="c1"># Write the Inlet Concentrations and Flow</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;flow = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">flow</span><span class="si">}</span><span class="s1"> # flow; L/s&#39;</span><span class="p">)</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the ratelaws block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">ratelaws</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ratelaws</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ratelaws</span><span class="p">)</span>
+        <span class="c1"># Write the MassBalances block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">massbalances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_massbalances</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">massbalances</span><span class="p">)</span>
+        <span class="c1"># Include the Volume </span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[:] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">[:]/flow&#39;</span><span class="p">)</span>
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dxdt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">chemicalsys</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the code of function &#39;Jac&#39; in  dxdt = Jac(x,t) where x, dxdt</span>
+<span class="sd">        and t are vectors. This function corresponds to the Jacobian of the</span>
+<span class="sd">        system of differential equations for the mass balances of the system.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">definition</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;def </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac_f</span><span class="si">}</span><span class="s1">(t,</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s1">):&#39;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">chemicalsys</span><span class="o">.</span><span class="n">species</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1"> = np.zeros(shape=(</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">))&#39;</span><span class="p">,]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;flow = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">flow</span><span class="si">}</span><span class="s1"> # flow; L/s&#39;</span><span class="p">)</span>
+        <span class="c1"># Write the constants block</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">constants</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kinetic_constants</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">constants</span><span class="p">)</span>
+        <span class="c1"># Write the jacobian elements</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_elements</span><span class="p">(</span><span class="n">chemicalsys</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">elements</span><span class="p">)</span>
+        <span class="c1"># Include the Volume </span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">[:,:] = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">[:,:]/flow&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Function end</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;return </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">jac</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Add one indentation level</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Add function definition</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">definition</span><span class="p">)</span>
+
+        <span class="c1"># Add the indentation level of the function</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Indent</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="n">tab</span><span class="o">=</span><span class="s1">&#39;    &#39;</span><span class="p">,</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

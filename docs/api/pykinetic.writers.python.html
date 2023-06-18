@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>python &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="C++" href="pykinetic.writers.cplusplus.html" />
+    <link rel="prev" title="base" href="pykinetic.writers._base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pykinetic.html">pykinetic</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.classes.html">classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="pykinetic.writers.html">writers</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pykinetic.writers._base.html">base</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">python</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#batch">Batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pfr">PFR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#semibatch">SemiBatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#semibatchextended">SemiBatchExtended</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pykinetic.writers.cplusplus.html">C++</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.utils.html">utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.userinput.html">userinput</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="pykinetic.html">pykinetic</a></li>
+          <li class="breadcrumb-item"><a href="pykinetic.writers.html">writers</a></li>
+      <li class="breadcrumb-item active">python</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/pykinetic.writers.python.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pykinetic.writers.python">
+<span id="python"></span><h1>python<a class="headerlink" href="#module-pykinetic.writers.python" title="Permalink to this heading"></a></h1>
+<p>This module contains all the different writers per reactor for the python language.</p>
+<section id="batch">
+<h2>Batch<a class="headerlink" href="#batch" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.writers.python.</span></span><span class="sig-name descname"><span class="pre">Batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch" title="Permalink to this definition"></a></dt>
+<dd><p>Writer class of python scripts for Batch reactor models</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.constant">
+<span class="sig-name descname"><span class="pre">constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'{:0.10e}'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.constant" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in a reaction and returns 2 expressions, the string of the
+variable and the string with the value of the constant. I.e.</p>
+<p># Reaction(1 =&gt; 2)</p>
+<p>A = &lt;ElementalStep 1 of Type '=&gt;' with reacts=(1,) products(2,)&gt;</p>
+<p>'k01', '1.00000000' = PythonWriter.constant(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reaction</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.Reaction" title="pykinetic.classes.Reaction"><em>Reaction</em></a>) -- Any reaction</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>var,expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.jacobian_element">
+<span class="sig-name descname"><span class="pre">jacobian_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Jac_ij</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.jacobian_element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.jacobian_element" title="Permalink to this definition"></a></dt>
+<dd><p>Takes the partial differential of a MB and returns the variable of the
+jacobian and the string of the expression. I.e.</p>
+<p># Given a Chemical system with only Reaction('A &lt;=&gt; B')</p>
+<p># d[A]dt = -r1 + r2 = -k01[A] + k2[B]</p>
+<p># being A.key = 0 and B.key = 1</p>
+<p>C = &lt;JacobianElement(Reaction(1),Compound(A))&gt;</p>
+<p>'Jac[0,0]', '-k01' = PythonWriter.jacobian_element(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Jac_ij</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.JacobianElement" title="pykinetic.classes.JacobianElement"><em>JacobianElement</em></a>) -- Any JacobianElement object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>var,expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.massbalance">
+<span class="sig-name descname"><span class="pre">massbalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MassBalance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.massbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.massbalance" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in a mass balance and returns 2 expressions, the string of the
+variable and the string of the expression. I.e.</p>
+<p># Given a Chemical system with only Reaction('A &lt;=&gt; B')</p>
+<p># d[A]dt = -r1 + r2 = -k01[A] + k2[B]</p>
+<p># being A.key = 0 and B.key = 1</p>
+<p>A = &lt;ElementalStep 1 of Type '=&gt;' with reacts=(1,) products(2,)&gt;</p>
+<p>'dxdt[0]', '-k01*x[1] +k02[B]' = PythonWriter.massbalance(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reaction</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.MassBalance" title="pykinetic.classes.MassBalance"><em>MassBalance</em></a>) -- Any MassBalance</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>var,expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.ratelaw">
+<span class="sig-name descname"><span class="pre">ratelaw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.ratelaw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.ratelaw" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in a reaction and returns 2 expressions, the string of the
+variable and the string of the ratelaw expression. I.e.
+# Reaction(1 =&gt; 2)
+A = &lt;ElementalStep 1 of Type '=&gt;' with reacts=(1,) products(2,)&gt;
+'r01', 'k01*x[1]' = PythonWriter.ratelaw(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reaction</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.Reaction" title="pykinetic.classes.Reaction"><em>Reaction</em></a>) -- Any reaction</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>var,expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.ratelaw_partial">
+<span class="sig-name descname"><span class="pre">ratelaw_partial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.ratelaw_partial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.ratelaw_partial" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in a reaction and returns and the string of the partial derivative
+the ratelaw with respect to the concentration of compound. I.e.</p>
+<p># Reaction(1 =&gt; 2), Compound 1</p>
+<p>A = &lt;ElementalStep 1 of Type '=&gt;' with reacts=(1,) products(2,)&gt;</p>
+<p># r01,'k01*x[1]'ratelaw(A)</p>
+<p>'k01' = PythonWriter.ratelaw_partial(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reaction</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.Reaction" title="pykinetic.classes.Reaction"><em>Reaction</em></a>) -- Any reaction</p></li>
+<li><p><strong>compound</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.Compound" title="pykinetic.classes.Compound"><em>Compound</em></a>) -- Any compound</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.Batch.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemicalsys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#Batch.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.Batch.write" title="Permalink to this definition"></a></dt>
+<dd><p>Writes the current chemical system into the file specified</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="pfr">
+<h2>PFR<a class="headerlink" href="#pfr" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pykinetic.writers.python.PFR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.writers.python.</span></span><span class="sig-name descname"><span class="pre">PFR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#PFR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.PFR" title="Permalink to this definition"></a></dt>
+<dd><p>Writer class of python scripts for ideal Plug Flow Reactors (PFR) models.
+Models using this writer take inlet concentrations as floats and not tuples.
+Allows providing the parameters through a SimulationParameters instance or
+directly upon instantiation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flow</strong> (<em>float</em>) -- Flowrate in L/s</p></li>
+<li><p><strong>volume</strong> (<em>float</em>) -- Reactor Volume in L</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="semibatch">
+<h2>SemiBatch<a class="headerlink" href="#semibatch" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pykinetic.writers.python.SemiBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.writers.python.</span></span><span class="sig-name descname"><span class="pre">SemiBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vini</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#SemiBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.SemiBatch" title="Permalink to this definition"></a></dt>
+<dd><p>A writer to account for a SemiBatch Reactor with an influx of species
+coupled after a 'tsection' time of the total simulation with a Batch reactor.
+As a consequence the Simulation parameters required for this type of model
+require the parameters 'tsection' and 'tfin' as well as the parameters for
+the initial SemiBatch reactor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flow</strong> (<em>float</em>) -- Flowrate in L/s</p></li>
+<li><p><strong>volume</strong> (<em>float</em>) -- Reactor Volume in L</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.SemiBatch.massbalance">
+<span class="sig-name descname"><span class="pre">massbalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MassBalance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#SemiBatch.massbalance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.SemiBatch.massbalance" title="Permalink to this definition"></a></dt>
+<dd><p>Takes in a mass balance and returns 2 expressions, the string of the
+variable and the string of the expression. I.e.</p>
+<p># Given a Chemical system with only Reaction('A &lt;=&gt; B')</p>
+<p># d[A]dt = -r1 + r2 = -k01[A] + k2[B]</p>
+<p># being A.key = 0 and B.key = 1</p>
+<p>A = &lt;ElementalStep 1 of Type '=&gt;' with reacts=(1,) products(2,)&gt;</p>
+<p>'dxdt[0]', '-k01*x[1] +k02[B]' = PythonWriter.massbalance(A)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reaction</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.MassBalance" title="pykinetic.classes.MassBalance"><em>MassBalance</em></a>) -- Any MassBalance</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>variable and expresion of the reaction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>var,expr</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="semibatchextended">
+<h2>SemiBatchExtended<a class="headerlink" href="#semibatchextended" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pykinetic.writers.python.SemiBatchExtended">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.writers.python.</span></span><span class="sig-name descname"><span class="pre">SemiBatchExtended</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Vini</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#SemiBatchExtended"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.SemiBatchExtended" title="Permalink to this definition"></a></dt>
+<dd><p>Extension of the SemiBatch reactor model that allows up to 2 chemical
+systems, one per section.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pykinetic.writers.python.SemiBatchExtended.fill">
+<span class="sig-name descname"><span class="pre">fill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/writers/python.html#SemiBatchExtended.fill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.writers.python.SemiBatchExtended.fill" title="Permalink to this definition"></a></dt>
+<dd><p>Reads the information of the chemical system and updates the values
+needed for writing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>system1</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.ChemicalSystem" title="pykinetic.classes.ChemicalSystem"><em>ChemicalSystem</em></a>) -- Chemical System to be written for the SemiBatch reactor model section</p></li>
+<li><p><strong>system2</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.ChemicalSystem" title="pykinetic.classes.ChemicalSystem"><em>ChemicalSystem</em></a><em>, </em><em>optional</em>) -- Chemical System to be written for the Batch reactor model section,
+If none is provided it defaults to the system1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pykinetic.writers._base.html" class="btn btn-neutral float-left" title="base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pykinetic.writers.cplusplus.html" class="btn btn-neutral float-right" title="C++" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

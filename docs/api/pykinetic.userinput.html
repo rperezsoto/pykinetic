@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="python" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>userinput &mdash; pykinetic  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developers" href="../about/developers.html" />
+    <link rel="prev" title="utils" href="pykinetic.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pykinetic
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/writers.html">Writers</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/scripts_usage.html">Scripts Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/library_usage.html">Library Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/workflows.html">Workflows</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="pykinetic.html">pykinetic</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.classes.html">classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.writers.html">writers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pykinetic.utils.html">utils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">userinput</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about/developers.html">Developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/citation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/contribution.html">Contribution</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pykinetic</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="pykinetic.html">pykinetic</a></li>
+      <li class="breadcrumb-item active">userinput</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/pykinetic.userinput.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pykinetic.userinput">
+<span id="userinput"></span><h1>userinput<a class="headerlink" href="#module-pykinetic.userinput" title="Permalink to this heading"></a></h1>
+<p>This module contains the basic functions to read the user provided files and
+populate a ChemicalSystem class from them. The core function of this module is
+'populate_chemicalsystem_fromfiles'.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="pykinetic.userinput.MissingCompounds">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">MissingCompounds</span></span><a class="reference internal" href="../_modules/pykinetic/userinput.html#MissingCompounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.MissingCompounds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="pykinetic.userinput.MissingTransitionStates">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">MissingTransitionStates</span></span><a class="reference internal" href="../_modules/pykinetic/userinput.html#MissingTransitionStates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.MissingTransitionStates" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.check_missing_TS">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">check_missing_TS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TS_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#check_missing_TS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.check_missing_TS" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if all the labeled transition states of the reactions are 'defined'
+are defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.userinput.MissingTransitionStates" title="pykinetic.userinput.MissingTransitionStates"><strong>MissingTransitionStates</strong></a> -- </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.check_missing_compounds">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">check_missing_compounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemicalsystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_reactions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#check_missing_compounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.check_missing_compounds" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if all the compounds in the chemicalsystem are 'defined'
+within the ChemicalSystem instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pykinetic.userinput.MissingCompounds" title="pykinetic.userinput.MissingCompounds"><strong>MissingCompounds</strong></a> -- </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.create_TS_dict">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">create_TS_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TS_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'J/mol'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#create_TS_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.create_TS_dict" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.create_compounds">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">create_compounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_compounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'J/mol'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#create_compounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.create_compounds" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.is_energy">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">is_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#is_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.is_energy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns if a given string corresponds to an energy or not. If the string is
+a</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) -- A string that may be an energy</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>If True or True-like then the evaluated string is an energy.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool or truth-like value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.populate_chemicalsystem_fromfiles">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">populate_chemicalsystem_fromfiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemicalsystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'J/mol'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relativeE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#populate_chemicalsystem_fromfiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.populate_chemicalsystem_fromfiles" title="Permalink to this definition"></a></dt>
+<dd><p>Fills a chemicalsystem with the compounds and reactions specified in the
+compunds file and the reactions file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chemicalsystem</strong> (<a class="reference internal" href="pykinetic.classes.html#pykinetic.classes.ChemicalSystem" title="pykinetic.classes.ChemicalSystem"><em>pykinetic.classes.ChemicalSystem</em></a>) -- chemical system that will be populated</p></li>
+<li><p><strong>file_c</strong> (<em>str</em><em> or </em><em>Path</em>) -- path to the correctly formatted compounds file</p></li>
+<li><p><strong>file_r</strong> (<em>str</em><em> or </em><em>Path</em>) -- path to the correctly formatted reactions file</p></li>
+<li><p><strong>energy_unit</strong> (<em>str</em><em>, </em><em>optional</em>) -- default unit to assume when none is found, by default 'J/mol'</p></li>
+<li><p><strong>relativeE</strong> (<em>bool</em><em>, </em><em>optional</em>) -- If true the energies of the reactions are assumed to be the barriers
+relative to reactants instead of assumed to be the energy of the
+transition state connecting reactants and products, by default False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.prepare_inline_TS">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">prepare_inline_TS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">TS_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TS_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'J/mol'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#prepare_inline_TS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.prepare_inline_TS" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.read_compounds">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">read_compounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#read_compounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.read_compounds" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.read_reactions">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">read_reactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#read_reactions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.read_reactions" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pykinetic.userinput.split_reaction_line">
+<span class="sig-prename descclassname"><span class="pre">pykinetic.userinput.</span></span><span class="sig-name descname"><span class="pre">split_reaction_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction_text</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pykinetic/userinput.html#split_reaction_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pykinetic.userinput.split_reaction_line" title="Permalink to this definition"></a></dt>
+<dd><p>To-document</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pykinetic.utils.html" class="btn btn-neutral float-left" title="utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../about/developers.html" class="btn btn-neutral float-right" title="Developers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Raúl Pérez-Soto.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

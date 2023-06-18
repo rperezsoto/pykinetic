@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Library Usage" href="library_usage.html" />
-    <link rel="prev" title="File Formats" href="../getting_started/file_formats.html" /> 
+    <link rel="prev" title="Writers" href="../getting_started/writers.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,16 +46,21 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../getting_started/file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/writers.html">Writers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Scripts Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Scripts Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pykinetic-model-py">pykinetic-model.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pykinetic-scan-py">pykinetic-scan.py</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="library_usage.html">Library Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflows.html">Workflows</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/pykinetic.html">pykinetic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">About</span></p>
 <ul>
@@ -90,13 +95,43 @@
              
   <section id="scripts-usage">
 <h1>Scripts Usage<a class="headerlink" href="#scripts-usage" title="Permalink to this heading"></a></h1>
+<section id="pykinetic-model-py">
+<h2>pykinetic-model.py<a class="headerlink" href="#pykinetic-model-py" title="Permalink to this heading"></a></h2>
+<p>Creates a {python|c++} script that contains a system of mass balance equations
+(that represent a certain Chemical System) and the tools to solve it numerically.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py compounds.txt reactions.txt model.py --writer python
+<span class="gp">$ </span><span class="c1"># After editing the file and including the concentrations and simulation times</span>
+<span class="gp">$ </span>python model.py
+<span class="gp">$ </span><span class="c1"># A fast approach to visualize the data generated is with xmgrace</span>
+<span class="gp">$ </span><span class="c1"># model.data is just a csv file where the first column is the time.</span>
+<span class="gp">$ </span>xmgrace -nxy model.data
+</pre></div>
+</div>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pykinetic-model.py compounds.txt reactions.txt model.cpp --writer c++
+<span class="gp">$ </span><span class="c1"># After editing the file and including the concentrations and simulation times</span>
+<span class="gp">$ </span>g++ model.cpp -o model.exe
+<span class="gp">$ </span>./model.exe
+</pre></div>
+</div>
+</section>
+<section id="pykinetic-scan-py">
+<h2>pykinetic-scan.py<a class="headerlink" href="#pykinetic-scan-py" title="Permalink to this heading"></a></h2>
+<p>Creates a {python|c++} script that contains a system of mass balance equations
+(that represent a certain Chemical System) and the tools to solve it numerically
+per each value of a scanned energy/energies of compounds/TSs. Currently it is
+recommended to do a --dryrun and run each generated model by itself.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="c1"># it is recommended to use a simulation parameters file</span>
+<span class="gp">$ </span>pykinetic-scan.py compounds.txt reactions.txt <span class="m">0</span>.0 <span class="m">0</span>.5 <span class="m">5</span> --writer python --dryrun --I --simulation sim_params.txt
+</pre></div>
+</div>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../getting_started/file_formats.html" class="btn btn-neutral float-left" title="File Formats" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../getting_started/writers.html" class="btn btn-neutral float-left" title="Writers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="library_usage.html" class="btn btn-neutral float-right" title="Library Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

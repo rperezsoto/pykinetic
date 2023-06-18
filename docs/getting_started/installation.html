@@ -44,8 +44,16 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-the-dependencies">Installing the dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-pykinetic">Installing pykinetic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-the-tests">Running the tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uninstalling-pykinetic">Uninstalling pykinetic</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="file_formats.html">File Formats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writers.html">Writers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -53,9 +61,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/library_usage.html">Library Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/workflows.html">Workflows</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Python API</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../api/api.html">pykinetic Python's API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/pykinetic.html">pykinetic</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">About</span></p>
 <ul>
@@ -90,6 +98,93 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
+<ul>
+<li><p>python &gt;= 3.6 (3.7.3 or higher recommended)</p></li>
+<li><p>python library: setuptools</p></li>
+<li><p>python library: numpy (optional, needed to run the generated python scripts)</p></li>
+<li><p>python library: scipy (optional, needed to run the generated python scripts)</p></li>
+<li><p>c++ library: boost (optional, needed to run the generated c++ scripts)</p>
+<blockquote>
+<div><p>Note: proper documentation installation of the c++ library is being
+currently being reviewed.</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="installing-the-dependencies">
+<h2>Installing the dependencies<a class="headerlink" href="#installing-the-dependencies" title="Permalink to this heading"></a></h2>
+<p>python3.7 installation in Ubuntu 18.04 LTS</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo apt-get update
+<span class="gp">$ </span>sudo apt-get install python3.7 python3.7-dev
+</pre></div>
+</div>
+<p>If for any reason it is not reachable:</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo add-apt-repository ppa:deadsnakes/ppa
+<span class="gp">$ </span>sudo apt-get update
+<span class="gp">$ </span>sudo apt-get install python3.7 python3.7-dev
+</pre></div>
+</div>
+<p>Now you can skip the next step if you don't want to set up a virtual environment
+the lines below correspond to python3.7 but can be also applied to python3.6 or
+higher (Remember to change &quot;my_venv&quot; for the actual path of the directory where
+you want the virtual environment)</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>sudo apt-get install python3.7-venv
+<span class="gp">$ </span>python3.7 -m venv my_venv
+<span class="gp">$ </span><span class="nb">source</span> my_venv/bin/activate
+</pre></div>
+</div>
+<p>In the case of creating a virtual environment and running the
+previous &quot;source&quot; command, anytime you write &quot;python&quot; it will act as an alias
+for &quot;python3.7&quot; or whichever python executable you used for the virtual environment.
+(To leave the virtual environment run the &quot;deactivate&quot; command at anytime)</p>
+<p>If you have not created a virtual environment, all the following commands must
+explicitly use the python executable in which you are going to install the
+the package.
+Now we install the python default installer pip in our virtual environment</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install pip
+<span class="gp">$ </span>python -m pip install --upgrade pip
+<span class="gp">$ </span>python -m pip install setuptools
+</pre></div>
+</div>
+<p>If it proceeded without any errors (pip and setuptools should already be
+installed) otherwise please check the <a class="reference external" href="https://pip.pypa.io/en/stable/installing/">pip</a> documentation</p>
+<p>Now to install the optional dependencies (Skip if you do not want them):</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install numpy scipy
+<span class="gp">$ </span>sudo apt-get install libboost-dev
+</pre></div>
+</div>
+</section>
+<section id="installing-pykinetic">
+<h2>Installing pykinetic<a class="headerlink" href="#installing-pykinetic" title="Permalink to this heading"></a></h2>
+<p>Get the source code from github through git and install it.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/maserasgroup-repo/pykinetic.git pykinetic
+<span class="gp">$ </span>python -m pip install pykinetic/
+</pre></div>
+</div>
+<p>If you do not have git or do prefer to download manually the source
+code as a .zip or .tar.gz do it install it.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip install pykinetic-0.1.0.tar.gz
+</pre></div>
+</div>
+<blockquote>
+<div><p>Note: If you prefer to unpack it you can do it but it is not needed</p>
+</div></blockquote>
+</section>
+<section id="running-the-tests">
+<h2>Running the tests<a class="headerlink" href="#running-the-tests" title="Permalink to this heading"></a></h2>
+<p>After installing you should be able to run the tests:</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m unittest -v pykinetic.tests
+</pre></div>
+</div>
+</section>
+<section id="uninstalling-pykinetic">
+<h2>Uninstalling pykinetic<a class="headerlink" href="#uninstalling-pykinetic" title="Permalink to this heading"></a></h2>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python -m pip uninstall pykinetic
+</pre></div>
+</div>
+</section>
 </section>
 
 
