@@ -173,7 +173,7 @@ List of main developers and contact emails:
 *  Sergio Pablo-García [
    `ORCID <https://orcid.org/0000-0002-3327-9285>`__ , 
    `Github <https://github.com/spgarcica>`__ , 
-   email]
+   `email <spgarcica@gmail.com>`__]
 *  María Besora [
    `ORCID <http://orcid.org/0000-0002-6656-5827>`__ ,
    `Github <https://github.com/BesoraMaria>`__ ,
