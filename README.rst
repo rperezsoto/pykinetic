@@ -6,13 +6,19 @@ pykinetic
 A python library and command line tools for microkinetic modelling
 ------------------------------------------------------------------
 
+.. image:: https://zenodo.org/badge/333841133.svg
+   :target: https://zenodo.org/badge/latestdoi/333841133
+
 .. project-description-start
 
-This project consists of two command line apps "pykinetic-model.py" and 
-"pykinetic-scan.py" to facilitate the generation of microkinetic models. Both 
-apps generate a file that can be compiled/executed and that represents the 
-kinetic model. It includes the "pykinetic" python library in case that either
-the reactions or the chemical species are to be added programatically.
+Pykinetic is a project that aims to facilitate the automation and generation 
+of kinetic and microkinetic models. Pykinetic acts as an intermediate layer 
+between the user and the mathematical model that is then simulated to obtain the
+kinetic data. This functionality can be done either through the use of the 
+pykinetic python library or through the use of the command line apps: 
+"pykinetic-model.py" and "pykinetic-scan.py". The minimal source code to run the 
+simulation is the output of pykinetic and currently python and c++ are supported. 
+Compiling and executing that code leads to the simulation of the chemical system. 
 
 .. project-description-end
 
@@ -21,13 +27,14 @@ the reactions or the chemical species are to be added programatically.
    :depth: 2
    :local:
 
-.. setup-instructions-start
 
 Getting Started
 ---------------
 
 These instructions will get you a copy of the project up and running on your
 local machine.
+
+.. setup-instructions-start
 
 Prerequisites
 .............
@@ -72,7 +79,7 @@ you want the virtual environment)
    $ source my_venv/bin/activate
 
 In the case of creating a virtual environment and running the 
-previous "source" command the anytime you write "python" it is acting as alias 
+previous "source" command, anytime you write "python" it will act as an alias 
 for "python3.7" or whichever python executable you used for the virtual environment.
 (To leave the virtual environment run the "deactivate" command at anytime)
 
@@ -115,7 +122,7 @@ code as a .zip or .tar.gz do it install it.
 
 .. code:: shell-session
 
-   $ python -m pip install pykinetic-0.0.1.tar.gz
+   $ python -m pip install pykinetic-0.1.0.tar.gz
 
 .. 
    
@@ -157,7 +164,24 @@ Authors
 
 .. project-authors-start
 
-* **Raúl Pérez-Soto** - - https://github.com/rperezsoto
+List of main developers and contact emails:  
+
+*  Raúl Pérez-Soto [
+   `ORCID <https://orcid.org/0000-0002-6237-2155>`__ ,
+   `Github <https://github.com/rperezsoto>`__ ,
+   `email <rperezsoto.research@gmail.com>`__ ]
+*  Sergio Pablo-García [
+   `ORCID <https://orcid.org/0000-0002-3327-9285>`__ , 
+   `Github <https://github.com/spgarcica>`__ , 
+   email]
+*  María Besora [
+   `ORCID <http://orcid.org/0000-0002-6656-5827>`__ ,
+   `Github <https://github.com/BesoraMaria>`__ ,
+   `email <maria.besora@urv.cat>`__ ] 
+*  Feliu Maseras [
+   `ORCID <http://orcid.org/0000-0001-8806-2019>`__ ,
+   `Github <https://github.com/maserasgroup-repo>`__ , 
+   `email <fmaseras@iciq.es>`__] 
 
 .. project-authors-end
 

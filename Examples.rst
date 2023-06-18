@@ -1,3 +1,5 @@
+.. coloring-start 
+
 .. raw:: html
 
    <style> .red {color:#c76160; font-weight:bold; font-size:16px} </style>
@@ -7,6 +9,7 @@
 
 .. role:: green
 
+.. coloring-end
 
 ==================
 pykinetic examples
@@ -187,9 +190,12 @@ Reactions file example:
    10.0 - E([A···B···Cat]) kcal/mol, with the Compounds file example it would 
    result in a barrier of 6.0 kcal/mol.
 
+.. reactions-end
 
 Simulation parameters
 .....................
+
+.. parameters-start
 
 This file is optional and is generally useful when you already have a model
 and are going to generate different versions of the model and you don not want 
@@ -219,8 +225,7 @@ Example file:
    corresponds to the order in which they appear at the compounds file, 
    starting from 0)
 
-
-.. reactions-end
+.. parameters-end
 
 Packaged Scripts Examples
 -------------------------
@@ -273,19 +278,21 @@ recommended to do a --dryrun and run each generated model by itself.
 Library usage examples
 ----------------------
 
+.. library-usage-start
+
 Creating a model from scratch 
 .............................
 
 Lets assume the following compounds and reactions: 
 
-compounds :: 
+.. code:: none
 
    A    0.0  kcal/mol
    B    0.0  kcal/mol
    C    2.0  kcal/mol
    D   -2.0  kcal/mol
 
-reactions :: 
+.. code:: none
 
    A + B <=> C   !10.0 kcal/mol
    C      => D   !18.0 kcal/mol
@@ -347,7 +354,7 @@ Modifying and loading a model
    from pykinetic.classes import (Energy, Compound, Reaction,
                                   TransitionState)
    from pykinetic.utils import BiasedChemicalSystem, calc_standard_state_correction
-   from pykinetic.writers import PythonWriter as Writer
+   from pykinetic.writers.python import Batch as Writer
    from pykinetic.userinput import populate_chemicalsystem_fromfiles
    
    # We initialize the ChemicalSystem and we want to apply a SS correction
@@ -380,3 +387,5 @@ Modifying and loading a model
 
    # Now we proceed to write the model with std state correction. 
    writer.write(chemsys,'model_stdcorr.py')
+
+.. library-usage-end
