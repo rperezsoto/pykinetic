@@ -109,6 +109,11 @@ Now to install the optional dependencies (Skip if you do not want them):
 Installing pykinetic
 ....................
 
+Pykinetic can be directly installed through pip: 
+
+.. code:: shell-session
+
+   $ python -m pip install pykinetic
 
 Get the source code from github through git and install it.
 
