@@ -5,3 +5,7 @@ __pycache__
 .pytest_cache
 .versionner.rc
 .vscode*
+build
+*.pyc
+*.swp
+dist

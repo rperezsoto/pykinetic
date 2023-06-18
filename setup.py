@@ -9,7 +9,7 @@ setup(
     name = 'pykinetic',
     packages = find_packages(),#['pykinetic',],
     description = """A python library and command line apps to write 
-                     microkinetic models for """,
+                     microkinetic models for chemistry""",
     keywords = ['compchem', 'microkinetics'],
     author = 'Raúl Pérez-Soto',
     classifiers = ["Programming Language :: Python :: 3",],

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0","wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pykinetic"
+version = "0.1.0"
+authors = [
+  { name="Raúl Pérez-Soto", email="rperezsoto.research@gmail.com" },
+  { name="Sergio Pablo-García", email="spgarcica@gmail.com" },
+]
+description = "A python library and command line apps to write microkinetic models for chemistry"
+readme = "README.rst"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/rperezsoto/pykinetic"
+"Docs" = "https://rperezsoto.github.io/pykinetic/"
