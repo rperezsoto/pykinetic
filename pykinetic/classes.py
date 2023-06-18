@@ -597,7 +597,7 @@ class ChemicalSystem(object):
     def __repr__(self):
         n,m = self.shape
         cls = self.__class__.__name__
-        return '<{} with {} compounds and {} reactions>'.format(cls,n,m)
+        return '<{} with {} compounds and {} reactions>'.format(cls,m,n)
     def __contains__(self,item):
         return item in self.compounds or item in self.reactions
 
