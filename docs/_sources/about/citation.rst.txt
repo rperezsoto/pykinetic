@@ -11,5 +11,5 @@ Please cite this work as:
 
 With the appropriate version and DOI. The latest version is available at: 
 
-.. image:: https://zenodo.org/badge/333841133.svg
-   :target: https://zenodo.org/badge/latestdoi/333841133
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8053050.svg
+   :target: https://doi.org/10.5281/zenodo.8053050
