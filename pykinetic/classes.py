@@ -858,20 +858,40 @@ class SimulationParameters(Parameters):
         self['trep'] = self.get('trep',0)
         self['dt'] = self.get('dt',0)
         self['concentrations'] = self.get('concentrations',{'index':'value'})
+        self.uses_compound_labels_as_keys = False
     def read_concentrations(self):
         compounds_mark = ';'
         values_mark  = ','
         text = self.get('concentrations','index')
         self['concentrations'] = dict()
-        if text != 'index':
-            for compound in text.strip().split(compounds_mark): 
-                key,value = compound.split(values_mark,maxsplit=1)
-                key_int = int(key.strip())
-                if values_mark not in value:
-                    self['concentrations'][key_int] = float(value.strip())
-                else:
-                    values = tuple([float(v.strip()) for v in value.split(',')])
-                    self['concentrations'][key_int] = values
+        
+        if text == 'index':
+            return
+        
+        for compound in text.strip().split(compounds_mark):
+            
+            key,value = compound.split(values_mark,maxsplit=1)
+
+            try:
+                k = int(key.strip())
+            except ValueError:
+                k = key.strip()
+                self.uses_compound_labels_as_keys = True
+
+            multiple_values = values_mark in value
+            if not multiple_values:
+                self['concentrations'][k] = float(value.strip())
+            else:
+                values = tuple([float(v.strip()) for v in value.split(',')])
+                self['concentrations'][k] = values
+
+    def update_compound_labels_from(self,chemsys):
+        new_concentrations = dict()
+        for name,val in self['concentrations'].items(): 
+            key = chemsys.Name2Compound[name].key
+            new_concentrations[key] = val
+        self['concentrations'] = new_concentrations
+    
     @classmethod
     def read_from(cls,file):
         parameters = super().read_from(file) 
