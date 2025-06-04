@@ -267,7 +267,7 @@ class pyBatchTest(unittest.TestCase):
                     'Jac[3,2] = +k07*x[0]*x[1]']
         test = self.writer._jacobian_elements(self.chemsys)
         self.assertEqual(test,solution)
-class PySemiBatchTest(pyBatchTest):
+class pySemiBatchTest(pyBatchTest):
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
@@ -391,7 +391,7 @@ class pySemiBatchExtendedTest(pyBatchTest):
             self.assertEqual(sol_t,self.writer._tail)
     
 
-class PyPFRTest(pyBatchTest): 
+class pyPFRTest(pyBatchTest): 
     def setUp(self):
         self.concentrations = {0:(0.0,1.0),1:(1.0,0.0)}
         self.flow = 1.0
