@@ -6,6 +6,7 @@ populate a ChemicalSystem class from them. The core function of this module is
 
 import re 
 from itertools import chain
+from collections import Counter
 
 from .classes import Compound,Energy,Reaction,TransitionState,DiffusionTS
 
@@ -154,7 +155,11 @@ def create_compounds(raw_compounds,energy_unit='J/mol'):
     try: # Check if there is any duplicates
         assert len(set(compounds)) == len(compounds)
     except AssertionError as e: 
-        msg = 'Inconsistent number of compounds. Check for duplicates'
+        msg = 'Inconsistent number of compounds. Check for duplicates in:'
+        c = Counter(compounds)
+        for k,v in c.items(): 
+            if v > 1: 
+                msg += f'\n   -  {k.label}'
         raise ValueError(msg)
     return compounds
 
