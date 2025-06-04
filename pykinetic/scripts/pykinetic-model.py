@@ -152,8 +152,7 @@ def main():
     writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
                         jac_var='Jac',jac_fun_var='jacobian',
                         header=args.header,tail=args.tail)
-    writer.set_parameters(simulation=args.simulation,
-                          convergence=args.convergence)
+    
     # Initialize the ChemicalSystem 
     chemsys = BiasedChemicalSystem(bias=args.bias,T=args.Temperature,unit=unit)
     populate_chemicalsystem_fromfiles(chemsys,
@@ -162,6 +161,11 @@ def main():
                                       energy_unit=unit,
                                       relativeE=args.relative)
     chemsys.apply_bias()
+    
+    if args.simulation.uses_compound_labels_as_keys:
+        args.simulation.update_compound_labels_from(chemsys)
+    writer.set_parameters(simulation=args.simulation,
+                          convergence=args.convergence)
 
     data_file_name = f'{args.outfile.stem}.data' 
     writer.parameters['out_filename'] = data_file_name

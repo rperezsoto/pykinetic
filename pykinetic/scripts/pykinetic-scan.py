@@ -205,8 +205,6 @@ def main():
     writer = writer_cls(conc_var='x',mb_var='dxdt',fun_var='model',
                         jac_var='Jac',jac_fun_var='jacobian',
                         header=args.header,tail=args.tail)
-    writer.set_parameters(simulation=args.simulation,
-                          convergence=args.convergence)
 
     # Initialize the ChemicalSystem
     step = (args.stop - args.start)/args.steps
@@ -235,6 +233,11 @@ def main():
                 ts.scannable = True
     chemsys.apply_bias()
     chemsys.apply_scan()
+
+    if args.simulation.uses_compound_labels_as_keys:
+        args.simulation.update_compound_labels_from(chemsys)
+    writer.set_parameters(simulation=args.simulation,
+                          convergence=args.convergence)
 
     # Ensure that at least one compound or TS has the scannable attribute set up
     for item in chain(chemsys.compounds,chemsys.transitionstates): 
